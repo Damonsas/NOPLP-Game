@@ -1,0 +1,98 @@
+{
+  "id": 1,
+  "name": "Duel des Fruits",
+  "points": {
+    "50": {
+      "theme": "Pomme",
+      "songs": [
+        {
+          "title": "Pomme C",
+          "artist": "Calogero",
+          "audioUrl": "/audio/pomme-c-calogero.mp3",
+          "lyricsFile": "/lyrics/pomme-c-calogero.json"
+        },
+        {
+          "title": "Balance ton quoi",
+          "artist": "Pomme",
+          "audioUrl": "/audio/balance-ton-quoi-pomme.mp3",
+          "lyricsFile": "/lyrics/balance-ton-quoi-pomme.json"
+        }
+      ]
+    },
+    "40": {
+      "theme": "Cerise",
+      "songs": [
+        {
+          "title": "Cerise",
+          "artist": "Noir Désir",
+          "audioUrl": "/audio/cerise-noir-desir.mp3",
+          "lyricsFile": "/lyrics/cerise-noir-desir.json"
+        },
+        {
+          "title": "La Cerise",
+          "artist": "Manu Chao",
+          "audioUrl": "/audio/la-cerise-manu-chao.mp3",
+          "lyricsFile": "/lyrics/la-cerise-manu-chao.json"
+        }
+      ]
+    },
+    "30": {
+      "theme": "Orange",
+      "songs": [
+        {
+          "title": "Orange Mécanique",
+          "artist": "Téléphone",
+          "audioUrl": "/audio/orange-mecanique-telephone.mp3",
+          "lyricsFile": "/lyrics/orange-mecanique-telephone.json"
+        },
+        {
+          "title": "Orange",
+          "artist": "Indochine",
+          "audioUrl": "/audio/orange-indochine.mp3",
+          "lyricsFile": "/lyrics/orange-indochine.json"
+        }
+      ]
+    },
+    "20": {
+      "theme": "Banane",
+      "songs": [
+        {
+          "title": "Banana Split",
+          "artist": "Lio",
+          "audioUrl": "/audio/banana-split-lio.mp3",
+          "lyricsFile": "/lyrics/banana-split-lio.json"
+        },
+        {
+          "title": "Bananes",
+          "artist": "Philippe Katerine",
+          "audioUrl": "/audio/bananes-katerine.mp3",
+          "lyricsFile": "/lyrics/bananes-katerine.json"
+        }
+      ]
+    },
+    "10": {
+      "theme": "Fraise",
+      "songs": [
+        {
+          "title": "Fraise Vanille",
+          "artist": "Carte Blanche",
+          "audioUrl": "/audio/fraise-vanille-carte-blanche.mp3",
+          "lyricsFile": "/lyrics/fraise-vanille-carte-blanche.json"
+        },
+        {
+          "title": "Fraise Tagada",
+          "artist": "Samian",
+          "audioUrl": "/audio/fraise-tagada-samian.mp3",
+          "lyricsFile": "/lyrics/fraise-tagada-samian.json"
+        }
+      ]
+    }
+  },
+  "sameSong": {
+    "title": "Les Fruits de ma Colère",
+    "artist": "Hubert-Félix Thiéfaine",
+    "audioUrl": "/audio/les-fruits-de-ma-colere-thiefaine.mp3",
+    "lyricsFile": "/lyrics/les-fruits-de-ma-colere-thiefaine.json"
+  },
+  "createdAt": "2025-06-28T10:30:00Z"
+}

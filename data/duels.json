@@ -1,0 +1,78 @@
+[
+  {
+    "id": 1,
+    "name": "a",
+    "points": {
+      "10": {
+        "theme": "a",
+        "songs": [
+          {
+            "title": "a",
+            "artist": "a"
+          },
+          {
+            "title": "a",
+            "artist": "a"
+          }
+        ]
+      },
+      "20": {
+        "theme": "a",
+        "songs": [
+          {
+            "title": "a",
+            "artist": "a"
+          },
+          {
+            "title": "a",
+            "artist": "a"
+          }
+        ]
+      },
+      "30": {
+        "theme": "a",
+        "songs": [
+          {
+            "title": "a",
+            "artist": "a"
+          },
+          {
+            "title": "a",
+            "artist": "a"
+          }
+        ]
+      },
+      "40": {
+        "theme": "a",
+        "songs": [
+          {
+            "title": "aa",
+            "artist": "a"
+          },
+          {
+            "title": "a",
+            "artist": "a"
+          }
+        ]
+      },
+      "50": {
+        "theme": "a",
+        "songs": [
+          {
+            "title": "a",
+            "artist": "a"
+          },
+          {
+            "title": "a",
+            "artist": "a"
+          }
+        ]
+      }
+    },
+    "sameSong": {
+      "title": "a",
+      "artist": "a"
+    },
+    "createdAt": "2025-06-29T06:36:44.8548678+02:00"
+  }
+]

@@ -1,0 +1,17 @@
+@import "mixins.scss";
+
+:root{
+    background-color: rgb(0, 42, 169);
+}
+
+body{
+   @include text();
+}
+
+.song-option{
+    visibility: hidden;
+}
+
+.point-section{
+    visibility: hidden;
+}

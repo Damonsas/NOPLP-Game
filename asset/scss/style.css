@@ -1,0 +1,16 @@
+:root {
+  background-color: rgb(0, 42, 169);
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #f0f0f0;
+}
+
+.song-option {
+  visibility: hidden;
+}
+
+.point-section {
+  visibility: hidden;
+}/*# sourceMappingURL=style.css.map */
