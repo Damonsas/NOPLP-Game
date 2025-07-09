@@ -61,6 +61,10 @@ function generateDuelCard(duel, index) {
                     <span class="points">Même chanson</span>
                     <span class="song">Chanson: ${duel.sameSong.title} - ${duel.sameSong.artist}</span>
                 </div>
+                <div class="Final">
+                    <span class="points">Final</span>
+                    <span class="song">Chanson: ${duel.finalSong.title} - ${duel.finalSong.artist}</span>
+                </div>    
             </div>
             <div class="duel-actions">
                 <button onclick="editDuel(${index})">Modifier</button>
