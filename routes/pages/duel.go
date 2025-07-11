@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -45,13 +46,37 @@ type GameSession struct {
 	Status        string         `json:"status"` // "playing", "paused", "finished"
 }
 
+type LyricsCheckResponse struct {
+	Exists  bool   `json:"exists"`
+	Content string `json:"content,omitempty"`
+}
+
 var duels []Duel
 var gameSessions map[string]*GameSession
 var nextDuelID int = 1
 
+const (
+	duelSaveDataPath = "data/serverdata/duelsavedata"
+	prepDuelDataPath = "data/serverdata/prepdueldata"
+	paroleDataPath   = "data/serverdata/paroledata"
+)
+
 func init() {
 	duels = make([]Duel, 0)
 	gameSessions = make(map[string]*GameSession)
+
+	createDirectories()
+
+	loadDuelsFromServer()
+}
+
+func createDirectories() {
+	dirs := []string{duelSaveDataPath, prepDuelDataPath, paroleDataPath}
+	for _, dir := range dirs {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			fmt.Printf("Erreur lors de la création du dossier %s: %v\n", dir, err)
+		}
+	}
 }
 
 func DuelMaestroChallenger(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +143,7 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 
 	duels = append(duels, newDuel)
 
-	if err := saveDuelsToFile(); err != nil {
+	if err := saveDuelsToServer(); err != nil {
 		http.Error(w, "Erreur lors de la sauvegarde du fichier", http.StatusInternalServerError)
 		return
 	}
@@ -186,6 +211,11 @@ func UpdateDuel(w http.ResponseWriter, r *http.Request) {
 
 	duels[duelIndex] = updatedDuel
 
+	if err := saveDuelsToServer(); err != nil {
+		http.Error(w, "Erreur lors de la sauvegarde", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(updatedDuel)
 }
@@ -201,6 +231,12 @@ func DeleteDuel(w http.ResponseWriter, r *http.Request) {
 	for i, duel := range duels {
 		if duel.ID == duelID {
 			duels = append(duels[:i], duels[i+1:]...)
+
+			if err := saveDuelsToServer(); err != nil {
+				http.Error(w, "Erreur lors de la sauvegarde après suppression", http.StatusInternalServerError)
+				return
+			}
+
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
@@ -245,12 +281,225 @@ func LoadDuelFromJSON(w http.ResponseWriter, r *http.Request) {
 
 	duels = append(duels, loadedDuel)
 
+	if err := saveDuelsToServer(); err != nil {
+		http.Error(w, "Erreur lors de la sauvegarde", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(loadedDuel)
 }
 
-// StartGameSession démarre une nouvelle session de jeu pour un duel donné.
+func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
+	filename := r.URL.Query().Get("filename")
+	if filename == "" {
+		http.Error(w, "Nom de fichier manquant", http.StatusBadRequest)
+		return
+	}
+
+	filePath := filepath.Join(duelSaveDataPath, filename)
+	if !strings.HasSuffix(filePath, ".json") {
+		filePath += ".json"
+	}
+
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		http.Error(w, "Fichier non trouvé", http.StatusNotFound)
+		return
+	}
+
+	var loadedDuel Duel
+	if err := json.Unmarshal(fileContent, &loadedDuel); err != nil {
+		http.Error(w, "Erreur lors du décodage JSON du fichier", http.StatusBadRequest)
+		return
+	}
+
+	if err := validateDuel(&loadedDuel); err != nil {
+		http.Error(w, fmt.Sprintf("Fichier JSON de duel invalide: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	loadedDuel.ID = nextDuelID
+	nextDuelID++
+	loadedDuel.CreatedAt = time.Now()
+
+	duels = append(duels, loadedDuel)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(loadedDuel)
+}
+
+// ExportDuelToServer exporte un duel vers le dossier serveur
+func ExportDuelToServer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	duelID, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "ID du duel invalide", http.StatusBadRequest)
+		return
+	}
+
+	var duelToExport *Duel
+	for _, duel := range duels {
+		if duel.ID == duelID {
+			duelToExport = &duel
+			break
+		}
+	}
+
+	if duelToExport == nil {
+		http.Error(w, "Duel non trouvé", http.StatusNotFound)
+		return
+	}
+
+	// Créer un nom de fichier sécurisé
+	filename := strings.ReplaceAll(duelToExport.Name, " ", "_")
+	filename = strings.ReplaceAll(filename, "/", "_")
+	filename = fmt.Sprintf("%s_%d.json", filename, duelToExport.ID)
+
+	filePath := filepath.Join(duelSaveDataPath, filename)
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		http.Error(w, "Erreur lors de la création du fichier", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(duelToExport); err != nil {
+		http.Error(w, "Erreur lors de l'encodage JSON", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]string{
+		"message":  "Duel exporté avec succès",
+		"filename": filename,
+		"path":     filePath,
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+// SaveTemporaryDuel sauvegarde un duel temporaire
+func SaveTemporaryDuel(w http.ResponseWriter, r *http.Request) {
+	var tempDuel Duel
+	if err := json.NewDecoder(r.Body).Decode(&tempDuel); err != nil {
+		http.Error(w, "Erreur lors du décodage JSON", http.StatusBadRequest)
+		return
+	}
+
+	filename := "temp_duel.json"
+	filePath := filepath.Join(prepDuelDataPath, filename)
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		http.Error(w, "Erreur lors de la création du fichier temporaire", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(tempDuel); err != nil {
+		http.Error(w, "Erreur lors de l'encodage JSON", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]string{
+		"message": "Duel temporaire sauvegardé avec succès",
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+// LoadTemporaryDuel charge un duel temporaire
+func LoadTemporaryDuel(w http.ResponseWriter, r *http.Request) {
+	filename := "temp_duel.json"
+	filePath := filepath.Join(prepDuelDataPath, filename)
+
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		http.Error(w, "Aucun duel temporaire trouvé", http.StatusNotFound)
+		return
+	}
+
+	var tempDuel Duel
+	if err := json.Unmarshal(fileContent, &tempDuel); err != nil {
+		http.Error(w, "Erreur lors du décodage JSON du fichier temporaire", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(tempDuel)
+}
+
+// CheckLyricsFile vérifie si un fichier de paroles existe
+func CheckLyricsFile(w http.ResponseWriter, r *http.Request) {
+	filename := r.URL.Query().Get("filename")
+	if filename == "" {
+		http.Error(w, "Nom de fichier manquant", http.StatusBadRequest)
+		return
+	}
+
+	// Ajouter l'extension .txt si elle n'est pas présente
+	if !strings.HasSuffix(filename, ".txt") {
+		filename += ".txt"
+	}
+
+	filePath := filepath.Join(paroleDataPath, filename)
+
+	response := LyricsCheckResponse{
+		Exists: false,
+	}
+
+	if fileContent, err := os.ReadFile(filePath); err == nil {
+		response.Exists = true
+		response.Content = string(fileContent)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func GetLyricsFilesList(w http.ResponseWriter, r *http.Request) {
+	files, err := os.ReadDir(paroleDataPath)
+	if err != nil {
+		http.Error(w, "Erreur lors de la lecture du dossier paroles", http.StatusInternalServerError)
+		return
+	}
+
+	var lyricsFiles []string
+	for _, file := range files {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".txt") {
+			lyricsFiles = append(lyricsFiles, file.Name())
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(lyricsFiles)
+}
+
+func GetServerDuelsList(w http.ResponseWriter, r *http.Request) {
+	files, err := os.ReadDir(duelSaveDataPath)
+	if err != nil {
+		http.Error(w, "Erreur lors de la lecture du dossier duels", http.StatusInternalServerError)
+		return
+	}
+
+	var duelFiles []string
+	for _, file := range files {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".json") {
+			duelFiles = append(duelFiles, file.Name())
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(duelFiles)
+}
+
 func StartGameSession(w http.ResponseWriter, r *http.Request) {
 	var request struct {
 		DuelID int `json:"duelId"`
@@ -447,8 +696,36 @@ func validateDuel(duel *Duel) error {
 	return nil
 }
 
-func saveDuelsToFile() error {
-	filePath := filepath.Join("data", "data/servdata/duelsavedata/Sduels.json")
+func loadDuelsFromServer() error {
+	filePath := filepath.Join(duelSaveDataPath, "duels.json")
+
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		// Si le fichier n'existe pas, ce n'est pas une erreur
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	var loadedDuels []Duel
+	if err := json.Unmarshal(fileContent, &loadedDuels); err != nil {
+		return err
+	}
+
+	duels = loadedDuels
+
+	for _, duel := range duels {
+		if duel.ID >= nextDuelID {
+			nextDuelID = duel.ID + 1
+		}
+	}
+
+	return nil
+}
+
+func saveDuelsToServer() error {
+	filePath := filepath.Join(duelSaveDataPath, "duels.json")
 
 	file, err := os.Create(filePath)
 	if err != nil {
@@ -472,6 +749,16 @@ func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/api/duels/{id:[0-9]+}", UpdateDuel).Methods("PUT")
 	r.HandleFunc("/api/duels/{id:[0-9]+}", DeleteDuel).Methods("DELETE")
 	r.HandleFunc("/api/upload-duel", LoadDuelFromJSON).Methods("POST")
+
+	r.HandleFunc("/api/import-duel-server", ImportDuelFromServer).Methods("GET")
+	r.HandleFunc("/api/export-duel-server/{id:[0-9]+}", ExportDuelToServer).Methods("POST")
+	r.HandleFunc("/api/server-duels-list", GetServerDuelsList).Methods("GET")
+
+	r.HandleFunc("/api/temp-duel", SaveTemporaryDuel).Methods("POST")
+	r.HandleFunc("/api/temp-duel", LoadTemporaryDuel).Methods("GET")
+
+	r.HandleFunc("/api/check-lyrics", CheckLyricsFile).Methods("GET")
+	r.HandleFunc("/api/lyrics-list", GetLyricsFilesList).Methods("GET")
 
 	r.HandleFunc("/api/game-sessions", StartGameSession).Methods("POST")
 	r.HandleFunc("/api/game-sessions/{id}", GetGameSession).Methods("GET")
