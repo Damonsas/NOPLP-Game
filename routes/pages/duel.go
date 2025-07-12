@@ -44,6 +44,10 @@ type GameSession struct {
 	Team2Score    int            `json:"team2Score"`
 	StartedAt     time.Time      `json:"startedAt"`
 	Status        string         `json:"status"` // "playing", "paused", "finished"
+
+	CurrentSong   *Song  `json:"currentSong,omitempty"`   // La chanson actuellement jouée
+	LyricsContent string `json:"lyricsContent,omitempty"` // Le texte des paroles
+	LyricsVisible bool   `json:"lyricsVisible"`
 }
 
 type LyricsCheckResponse struct {
@@ -738,6 +742,54 @@ func saveDuelsToServer() error {
 	return encoder.Encode(duels)
 }
 
+func HandleStartSong(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sessionID := vars["id"]
+
+	var request struct {
+		Level     string `json:"level"`
+		SongIndex int    `json:"songIndex"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Requête invalide", http.StatusBadRequest)
+		return
+	}
+
+	// Appel de la logique depuis duellaunch.go
+	session, err := StartSong(sessionID, request.Level, request.SongIndex)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(session)
+}
+
+// HandleLyricsVisibility est appelé pour montrer/cacher les paroles.
+func HandleLyricsVisibility(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sessionID := vars["id"]
+
+	var request struct {
+		Visible bool `json:"visible"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Requête invalide", http.StatusBadRequest)
+		return
+	}
+
+	// Appel de la logique depuis duellaunch.go
+	session, err := SetLyricsVisibility(sessionID, request.Visible)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(session)
+}
+
 // SetupDuelRoutes configure toutes les routes pour l'application de duel.
 func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/duel", DuelMaestroChallenger).Methods("GET")
@@ -765,4 +817,7 @@ func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/api/game-sessions/{id}/select-song", SelectSongForLevel).Methods("POST")
 	r.HandleFunc("/api/game-sessions/{id}/update-score", UpdateGameScore).Methods("POST")
 	r.HandleFunc("/api/game-sessions/{id}/finish", FinishGameSession).Methods("POST")
+
+	r.HandleFunc("/api/game-sessions/{id}/start-song", HandleStartSong).Methods("POST")
+	r.HandleFunc("/api/game-sessions/{id}/lyrics-visibility", HandleLyricsVisibility).Methods("POST")
 }
