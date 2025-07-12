@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "lib": ["ES2015", "DOM"],
+    "module": "ESNext",
+    "outDir": "./asset/js/"
+  },
+  "include": [
+    "asset/js/**/*.ts"
+  ]
+}

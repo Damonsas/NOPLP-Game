@@ -25,6 +25,21 @@ interface Duel {
   updatedAt?: string;
 }
 
+interface GameSession {
+  id: string;
+  duelId: number;
+  currentLevel: string;
+  selectedSongs: { [key: string]: number }; 
+  team1Score: number;
+  team2Score: number;
+  startedAt: string; // Les dates en JSON sont souvent des chaînes (format ISO)
+  status: 'playing' | 'paused' | 'finished';
+
+  currentSong?: Song;
+  lyricsContent?: string;
+  lyricsVisible: boolean;
+}
+
 // --- Variable de stockage ---
 
 export let preparedDuels: Duel[] = [];
