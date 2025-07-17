@@ -6,6 +6,10 @@
     "outDir": "./asset/js/"
   },
   "include": [
-    "asset/js/**/*.ts"
+    "asset/js/*.ts"
+  ],
+  "files": [
+    "asset/js/duel.ts",
+    "asset/js/game-client.ts"
   ]
 }

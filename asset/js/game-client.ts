@@ -1,7 +1,17 @@
 
-const sessionId: string = 'ID_DE_LA_SESSION'; // L'ID sera récupéré dynamiquement
+interface Song {
+    title: string;
+    artist: string;
+}
 
-// La fonction attend des paramètres typés et retourne une promesse de GameSession
+interface GameSession {
+    currentSong: Song | null;
+    lyricsVisible: boolean;
+    lyricsContent: string | null;
+}
+
+const sessionId: string = 'ID_DE_LA_SESSION'; 
+
 async function callApi<T>(url: string, body: T): Promise<GameSession> {
     const response = await fetch(url, {
         method: 'POST',
@@ -14,19 +24,16 @@ async function callApi<T>(url: string, body: T): Promise<GameSession> {
     return response.json();
 }
 
-// Pour démarrer une chanson
 async function playSong(level: string, songIndex: number): Promise<void> {
     const updatedSession = await callApi(`/api/game-sessions/${sessionId}/start-song`, { level, songIndex });
     renderGame(updatedSession);
 }
 
-// Pour changer la visibilité des paroles
 async function setLyricsVisibility(visible: boolean): Promise<void> {
     const updatedSession = await callApi(`/api/game-sessions/${sessionId}/lyrics-visibility`, { visible });
     renderGame(updatedSession);
 }
 
-// La fonction de rendu sait exactement ce qu'elle reçoit
 function renderGame(session: GameSession): void {
     const songTitleElement = document.getElementById('song-title') as HTMLHeadingElement | null;
     const lyricsDiv = document.getElementById('lyrics') as HTMLDivElement | null;
@@ -44,7 +51,3 @@ function renderGame(session: GameSession): void {
         }
     }
 }
-
-// Exemple d'appel
-playSong('50', 0);
-setTimeout(() => setLyricsVisibility(false), 10000);
