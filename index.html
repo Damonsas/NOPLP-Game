@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/asset/scss/style.css">
+    <link rel="manifest" href="/manifest.json" />
+
     <script src="/asset/js/script.js"></script>
 
     <title>NOPLP-Game</title>
@@ -17,5 +19,12 @@
             <button type="submit">Connexion</button>
         </form>
     </section>
+    <script>
+        if ('service-worker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(() => console.log("Service Worker enregistré"))
+            .catch(err => console.error("Erreur SW:", err));
+        }
+</script>
 </body>
 </html>
