@@ -1,8 +1,8 @@
+/// <reference lib="webworker" />
 
-
-/// <reference lib="webworker" />;
 
 const CACHE_NAME = 'nopl-cache-v1';
+
 const urlsToCache: string[] = [
   '/',
   '/duel',
@@ -19,7 +19,8 @@ self.addEventListener('install', (event: ExtendableEvent) => {
 
 self.addEventListener('fetch', (event: FetchEvent) => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
   );
 });

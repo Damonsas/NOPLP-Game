@@ -8,8 +8,8 @@
   "include": [
     "asset/js/*.ts"
   ],
-  "files": [
-    "asset/js/duel.ts",
-    "asset/js/game-client.ts"
+  "exclude": [
+    "asset/js/service-worker.ts"
   ]
 }
+  
