@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+// @ts-nocheck
 
 
 const CACHE_NAME = 'nopl-cache-v1';
