@@ -93,29 +93,6 @@ func DuelGamePage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ID de duel manquant dans les paramètres de la requête", http.StatusBadRequest)
 		return
 	}
-
-	// Pour l'instant, simple affichage HTML.
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Duel en cours</title>
-        <meta charset="UTF-8">
-		<link rel="stylesheet" href="/asset/scss/style.css">
-    	<script src="/asset/js/script.js"></script>
-    	<script src="/asset/js/vocal.js"></script>
-    </head>
-    <body>
-        <h1>Duel en cours</h1>
-        <p>ID du duel: %s</p>
-        <form method="POST">
-			<input type="text">
-		</form>
-        <a href="/duel">Retour aux duels</a>
-    </body>
-    </html>
-    `, duelID)
 }
 
 func GetDuels(w http.ResponseWriter, r *http.Request) {
@@ -792,10 +769,11 @@ func HandleLyricsVisibility(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(session)
 }
 
-// SetupDuelRoutes configure toutes les routes pour l'application de duel.
 func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/duel", DuelMaestroChallenger).Methods("GET")
 	r.HandleFunc("/duel-game", DuelGamePage).Methods("GET")
+
+	r.HandleFunc("/duel-display", DisplayDuel).Methods("GET", "POST")
 
 	r.HandleFunc("/api/duels", GetDuels).Methods("GET")
 	r.HandleFunc("/api/duels", CreateDuel).Methods("POST")
