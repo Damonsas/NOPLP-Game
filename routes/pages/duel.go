@@ -109,7 +109,9 @@ func DuelGamePage(w http.ResponseWriter, r *http.Request) {
     <body>
         <h1>Duel en cours</h1>
         <p>ID du duel: %s</p>
-        <p>Interface de jeu en développement...</p>
+        <form method="POST">
+			<input type="text">
+		</form>
         <a href="/duel">Retour aux duels</a>
     </body>
     </html>

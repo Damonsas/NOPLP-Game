@@ -2,9 +2,23 @@ package game
 
 import (
 	"fmt"
+	"html/template"
+	"net/http"
 	"os"
 	"path/filepath"
 )
+
+// Affichage des duels créé dans la page dédié
+func affichduel(sessionID string, level string, songIndex int) (*GameSession, error) {
+	session := gameSessions[sessionID]
+	if r.Method == http.MethodPost {
+		session == r.FormValue("sessionduel")
+
+		session.Process()
+	}
+	tmpl := template.Must(template.ParseFiles("//la page généré dans duel si c'est possible"))
+	tmpl.Execute(w, session)
+}
 
 // StartSong charge une chanson et ses paroles dans la session de jeu.
 func StartSong(sessionID string, level string, songIndex int) (*GameSession, error) {
@@ -13,7 +27,6 @@ func StartSong(sessionID string, level string, songIndex int) (*GameSession, err
 		return nil, fmt.Errorf("session non trouvée : %s", sessionID)
 	}
 
-	// 1. Retrouver le duel complet à partir de l'ID stocké dans la session
 	var duel *Duel
 	for i := range duels {
 		if duels[i].ID == session.DuelID {
@@ -25,7 +38,6 @@ func StartSong(sessionID string, level string, songIndex int) (*GameSession, err
 		return nil, fmt.Errorf("duel non trouvé pour cette session")
 	}
 
-	// 2. Trouver la chanson sélectionnée
 	pointLevel, ok := duel.Points[level]
 	if !ok {
 		return nil, fmt.Errorf("niveau de points invalide : %s", level)
@@ -36,13 +48,11 @@ func StartSong(sessionID string, level string, songIndex int) (*GameSession, err
 	song := pointLevel.Songs[songIndex]
 	session.CurrentSong = &song
 
-	// 3. Charger les paroles depuis le fichier
-	session.LyricsContent = "Paroles non disponibles." // Message par défaut
+	session.LyricsContent = "Paroles non disponibles."
 	if song.LyricsFile != nil && *song.LyricsFile != "" {
-		// Le chemin vers le dossier des paroles est défini dans duel.go
+
 		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
-		if !filepath.IsAbs(filePath) { // Assure une construction de chemin robuste
-			// Le code utilise déjà os.ReadFile qui gère les chemins relatifs
+		if !filepath.IsAbs(filePath) {
 			content, err := os.ReadFile(filePath)
 			if err == nil {
 				session.LyricsContent = string(content)
@@ -50,13 +60,11 @@ func StartSong(sessionID string, level string, songIndex int) (*GameSession, err
 		}
 	}
 
-	// 4. Définir l'état initial : les paroles sont visibles au début
 	session.LyricsVisible = true
 
 	return session, nil
 }
 
-// SetLyricsVisibility modifie la visibilité des paroles pour une session.
 func SetLyricsVisibility(sessionID string, visible bool) (*GameSession, error) {
 	session, ok := gameSessions[sessionID]
 	if !ok {
