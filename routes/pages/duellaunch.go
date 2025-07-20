@@ -93,119 +93,119 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 
 	// Charger et exécuter le template
 	tmpl := `
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duel: {{.Duel.Name}}</title>
-    <link rel="stylesheet" href="/asset/scss/style.css">
-    <style>
-        .duel-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .duel-header { text-align: center; margin-bottom: 30px; }
-        .level-section { margin-bottom: 30px; border: 2px solid #ddd; border-radius: 8px; padding: 20px; }
-        .level-header { background: #f5f5f5; margin: -20px -20px 15px -20px; padding: 15px 20px; border-radius: 6px 6px 0 0; }
-        .songs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .song-card { border: 1px solid #ccc; border-radius: 6px; padding: 15px; background: #fafafa; }
-        .song-info { margin-bottom: 10px; }
-        .song-title { font-weight: bold; font-size: 1.1em; }
-        .song-artist { color: #666; font-style: italic; }
-        .lyrics-status { margin-top: 10px; font-size: 0.9em; }
-        .lyrics-available { color: #28a745; }
-        .lyrics-missing { color: #dc3545; }
-        .same-song-section { background: #e9ecef; border-radius: 8px; padding: 20px; margin-top: 30px; }
-        .actions { text-align: center; margin-top: 30px; }
-        .btn { padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-primary { background: #007bff; color: white; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-secondary { background: #6c757d; color: white; }
-        .metadata { font-size: 0.9em; color: #666; margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <div class="duel-container">
-        <div class="duel-header">
-            <h1>{{.Duel.Name}}</h1>
-            <div class="metadata">
-                <p>Créé le: {{.Duel.CreatedAt.Format "02/01/2006 à 15:04"}}</p>
-                {{if .Duel.UpdatedAt}}
-                <p>Mis à jour le: {{.Duel.UpdatedAt.Format "02/01/2006 à 15:04"}}</p>
-                {{end}}
-            </div>
-        </div>
+		<!DOCTYPE html>
+		<html lang="fr">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Duel: {{.Duel.Name}}</title>
+			<link rel="stylesheet" href="/asset/scss/style.css">
+			<style>
+				.duel-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+				.duel-header { text-align: center; margin-bottom: 30px; }
+				.level-section { margin-bottom: 30px; border: 2px solid #ddd; border-radius: 8px; padding: 20px; }
+				.level-header { background: #f5f5f5; margin: -20px -20px 15px -20px; padding: 15px 20px; border-radius: 6px 6px 0 0; }
+				.songs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+				.song-card { border: 1px solid #ccc; border-radius: 6px; padding: 15px; background: #fafafa; }
+				.song-info { margin-bottom: 10px; }
+				.song-title { font-weight: bold; font-size: 1.1em; }
+				.song-artist { color: #666; font-style: italic; }
+				.lyrics-status { margin-top: 10px; font-size: 0.9em; }
+				.lyrics-available { color: #28a745; }
+				.lyrics-missing { color: #dc3545; }
+				.same-song-section { background: #e9ecef; border-radius: 8px; padding: 20px; margin-top: 30px; }
+				.actions { text-align: center; margin-top: 30px; }
+				.btn { padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
+				.btn-primary { background: #007bff; color: white; }
+				.btn-success { background: #28a745; color: white; }
+				.btn-secondary { background: #6c757d; color: white; }
+				.metadata { font-size: 0.9em; color: #666; margin-top: 20px; }
+			</style>
+		</head>
+		<body>
+			<div class="duel-container">
+				<div class="duel-header">
+					<h1>{{.Duel.Name}}</h1>
+					<div class="metadata">
+						<p>Créé le: {{.Duel.CreatedAt.Format "02/01/2006 à 15:04"}}</p>
+						{{if .Duel.UpdatedAt}}
+						<p>Mis à jour le: {{.Duel.UpdatedAt.Format "02/01/2006 à 15:04"}}</p>
+						{{end}}
+					</div>
+				</div>
 
-        {{range .LevelsOrder}}
-        {{$level := .}}
-        {{$pointLevel := index $.Duel.Points $level}}
-        <div class="level-section">
-            <div class="level-header">
-                <h2>{{$level}} Points - {{$pointLevel.Theme}}</h2>
-            </div>
-            <div class="songs-grid">
-                {{range $index, $song := $pointLevel.Songs}}
-                <div class="song-card">
-                    <div class="song-info">
-                        <div class="song-title">{{$song.Title}}</div>
-                        <div class="song-artist">par {{$song.Artist}}</div>
-                    </div>
-                    {{if $song.AudioURL}}
-                    <div>
-                        <strong>Audio:</strong> <a href="{{$song.AudioURL}}" target="_blank">Écouter</a>
-                    </div>
-                    {{end}}
-                    <div class="lyrics-status">
-                        {{if index (index $.LyricsExists $level) $index}}
-                        <span class="lyrics-available">✓ Paroles disponibles</span>
-                        {{else}}
-                        <span class="lyrics-missing">✗ Paroles non disponibles</span>
-                        {{end}}
-                    </div>
-                </div>
-                {{end}}
-            </div>
-        </div>
-        {{end}}
+				{{range .LevelsOrder}}
+				{{$level := .}}
+				{{$pointLevel := index $.Duel.Points $level}}
+				<div class="level-section">
+					<div class="level-header">
+						<h2>{{$level}} Points - {{$pointLevel.Theme}}</h2>
+					</div>
+					<div class="songs-grid">
+						{{range $index, $song := $pointLevel.Songs}}
+						<div class="song-card">
+							<div class="song-info">
+								<div class="song-title">{{$song.Title}}</div>
+								<div class="song-artist">par {{$song.Artist}}</div>
+							</div>
+							{{if $song.AudioURL}}
+							<div>
+								<strong>Audio:</strong> <a href="{{$song.AudioURL}}" target="_blank">Écouter</a>
+							</div>
+							{{end}}
+							<div class="lyrics-status">
+								{{if index (index $.LyricsExists $level) $index}}
+								<span class="lyrics-available">✓ Paroles disponibles</span>
+								{{else}}
+								<span class="lyrics-missing">✗ Paroles non disponibles</span>
+								{{end}}
+							</div>
+						</div>
+						{{end}}
+					</div>
+				</div>
+				{{end}}
 
-        <div class="same-song-section">
-            <h2>La Même Chanson</h2>
-            <div class="song-card" style="max-width: 500px; margin: 0 auto;">
-                <div class="song-info">
-                    <div class="song-title">{{.Duel.SameSong.Title}}</div>
-                    <div class="song-artist">par {{.Duel.SameSong.Artist}}</div>
-                </div>
-                {{if .Duel.SameSong.AudioURL}}
-                <div>
-                    <strong>Audio:</strong> <a href="{{.Duel.SameSong.AudioURL}}" target="_blank">Écouter</a>
-                </div>
-                {{end}}
-                <div class="lyrics-status">
-                    {{if .SameSongLyricsExists}}
-                    <span class="lyrics-available">✓ Paroles disponibles</span>
-                    {{else}}
-                    <span class="lyrics-missing">✗ Paroles non disponibles</span>
-                    {{end}}
-                </div>
-            </div>
-        </div>
+				<div class="same-song-section">
+					<h2>La Même Chanson</h2>
+					<div class="song-card" style="max-width: 500px; margin: 0 auto;">
+						<div class="song-info">
+							<div class="song-title">{{.Duel.SameSong.Title}}</div>
+							<div class="song-artist">par {{.Duel.SameSong.Artist}}</div>
+						</div>
+						{{if .Duel.SameSong.AudioURL}}
+						<div>
+							<strong>Audio:</strong> <a href="{{.Duel.SameSong.AudioURL}}" target="_blank">Écouter</a>
+						</div>
+						{{end}}
+						<div class="lyrics-status">
+							{{if .SameSongLyricsExists}}
+							<span class="lyrics-available">✓ Paroles disponibles</span>
+							{{else}}
+							<span class="lyrics-missing">✗ Paroles non disponibles</span>
+							{{end}}
+						</div>
+					</div>
+				</div>
 
-        <div class="actions">
-            <form method="POST" style="display: inline;">
-                <input type="hidden" name="action" value="start_session">
-                <button type="submit" class="btn btn-success">Démarrer une partie</button>
-            </form>
-            
-            <form method="POST" style="display: inline;">
-                <input type="hidden" name="action" value="export">
-                <button type="submit" class="btn btn-primary">Exporter ce duel</button>
-            </form>
-            
-            <a href="/duel" class="btn btn-secondary">Retour aux duels</a>
-        </div>
-    </div>
+				<div class="actions">
+					<form method="POST" style="display: inline;">
+						<input type="hidden" name="action" value="start_session">
+						<button type="submit" class="btn btn-success">Démarrer une partie</button>
+					</form>
+					
+					<form method="POST" style="display: inline;">
+						<input type="hidden" name="action" value="export">
+						<button type="submit" class="btn btn-primary">Exporter ce duel</button>
+					</form>
+					
+					<a href="/duel" class="btn btn-secondary">Retour aux duels</a>
+				</div>
+			</div>
 
-    <script src="/asset/js/script.js"></script>
-</body>
-</html>`
+			<script src="/asset/js/script.js"></script>
+		</body>
+		</html>`
 
 	t, err := template.New("duel").Parse(tmpl)
 	if err != nil {
