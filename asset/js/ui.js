@@ -2,8 +2,6 @@ import * as duelLogic from './duel.js';
 
 const DUEL_POINTS_CATEGORIES = [50, 40, 30, 20, 10];
 
-// --- Fonctions de Rendu HTML ---
-
 function renderDuelList() {
     const container = document.querySelector(".Sectionduel");
     if (!container) return;
@@ -83,7 +81,7 @@ function generatePointSection(points, pointData) {
     `;
 }
 
-// --- Fonctions du Formulaire de Création/Édition ---
+//Fonctions du Formulaire de Création/Édition
 
 function openDuelForm(duel = null, index = -1) {
     const isEditing = duel !== null;
@@ -164,7 +162,7 @@ function showImportJsonForm() {
     document.querySelector(".Sectionduel").innerHTML = importHtml;
 }
 
-// --- Fonctions de collecte et de remplissage de formulaire ---
+//Fonctions de collecte et de remplissage de formulaire
 
 function collectFormData() {
     const name = document.getElementById('duelName').value;
@@ -243,7 +241,7 @@ function showNotification(message, type = 'success') {
     setTimeout(() => notif.remove(), 4000);
 }
 
-// --- Gestionnaires d'événements ---
+//Gestionnaires d'événements
 
 document.addEventListener('click', async (event) => {
     const target = event.target;
