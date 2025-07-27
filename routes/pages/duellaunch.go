@@ -11,7 +11,8 @@ import (
 
 // DisplayDuel affiche le contenu d'un duel préparé
 func DisplayDuel(w http.ResponseWriter, r *http.Request) {
-	// Récupérer l'ID du duel depuis les paramètres de l'URL
+	fmt.Println(">>> Requête reçue pour /duel-game, traitement par DisplayDuel...")
+
 	duelID := r.URL.Query().Get("duelId")
 	if duelID == "" {
 		http.Error(w, "ID de duel manquant dans les paramètres de la requête", http.StatusBadRequest)
@@ -128,9 +129,10 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 					<h1>{{.Duel.Name}}</h1>
 					<div class="metadata">
 						<p>Créé le: {{.Duel.CreatedAt.Format "02/01/2006 à 15:04"}}</p>
-						{{if .Duel.UpdatedAt}}
-						<p>Mis à jour le: {{.Duel.UpdatedAt.Format "02/01/2006 à 15:04"}}</p>
+						{{with .Duel.UpdatedAt}}
+							<p>Mis à jour le: {{.Format "02/01/2006 à 15:04"}}</p>
 						{{end}}
+
 					</div>
 				</div>
 
@@ -213,11 +215,12 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := t.Execute(w, templateData); err != nil {
+		fmt.Println("Erreur lors de l'exécution du template :", err)
 		http.Error(w, "Erreur lors de l'exécution du template", http.StatusInternalServerError)
 		return
 	}
+
 }
 
 // StartSong charge une chanson et ses paroles dans la session de jeu.

@@ -274,6 +274,34 @@ func LoadDuelFromJSON(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(loadedDuel)
 }
 
+// prepareDuelForExport prépare un duel pour l'export en s'assurant qu'il a un ID et des métadonnées valides
+func prepareDuelForExport(duel *Duel) error {
+	updateNextDuelID()
+
+	needsSave := false
+
+	// S'assurer que le duel a un ID valide
+	if duel.ID == 0 {
+		duel.ID = nextDuelID
+		nextDuelID++
+		needsSave = true
+	}
+
+	// S'assurer que createdAt est défini
+	if duel.CreatedAt.IsZero() {
+		duel.CreatedAt = time.Now()
+		needsSave = true
+	}
+
+	// Sauvegarder les modifications si nécessaire
+	if needsSave {
+		return saveDuelsToServer()
+	}
+
+	return nil
+}
+
+// ImportDuelFromServer charge un duel depuis le système de fichiers du serveur
 func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
 	filename := r.URL.Query().Get("filename")
 	if filename == "" {
@@ -292,6 +320,49 @@ func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// S'assurer que nextDuelID est à jour avant l'import
+	updateNextDuelID()
+
+	// Essayer d'abord de charger comme un tableau (format duels.json complet)
+	var loadedDuels []Duel
+	if err := json.Unmarshal(fileContent, &loadedDuels); err == nil && len(loadedDuels) > 0 {
+		// Format tableau complet - importer tous les duels
+		var importedDuels []Duel
+
+		for _, loadedDuel := range loadedDuels {
+			if err := validateDuel(&loadedDuel); err != nil {
+				http.Error(w, fmt.Sprintf("Fichier JSON de duel invalide: %v", err), http.StatusBadRequest)
+				return
+			}
+
+			// Générer un nouvel ID unique même si le duel en avait déjà un
+			loadedDuel.ID = nextDuelID
+			nextDuelID++
+			loadedDuel.CreatedAt = time.Now()
+			// Réinitialiser UpdatedAt pour un nouvel import
+			loadedDuel.UpdatedAt = nil
+
+			duels = append(duels, loadedDuel)
+			importedDuels = append(importedDuels, loadedDuel)
+		}
+
+		// Sauvegarder immédiatement pour persister les nouveaux IDs
+		if err := saveDuelsToServer(); err != nil {
+			http.Error(w, "Erreur lors de la sauvegarde après import", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		response := map[string]interface{}{
+			"message": fmt.Sprintf("%d duel(s) importé(s) avec succès", len(importedDuels)),
+			"duels":   importedDuels,
+		}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	// Sinon, essayer de charger comme un duel unique
 	var loadedDuel Duel
 	if err := json.Unmarshal(fileContent, &loadedDuel); err != nil {
 		http.Error(w, "Erreur lors du décodage JSON du fichier", http.StatusBadRequest)
@@ -303,67 +374,231 @@ func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Générer un nouvel ID unique même si le duel en avait déjà un
 	loadedDuel.ID = nextDuelID
 	nextDuelID++
 	loadedDuel.CreatedAt = time.Now()
+	// Réinitialiser UpdatedAt pour un nouvel import
+	loadedDuel.UpdatedAt = nil
 
 	duels = append(duels, loadedDuel)
+
+	// Sauvegarder immédiatement pour persister le nouvel ID
+	if err := saveDuelsToServer(); err != nil {
+		http.Error(w, "Erreur lors de la sauvegarde après import", http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(loadedDuel)
 }
 
-// ExportDuelToServer exporte un duel vers le dossier serveur
 func ExportDuelToServer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	duelID, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "ID du duel invalide", http.StatusBadRequest)
+		http.Error(w, "ID invalide", http.StatusBadRequest)
 		return
 	}
 
-	var duelToExport *Duel
-	for _, duel := range duels {
-		if duel.ID == duelID {
-			duelToExport = &duel
+	var selected *Duel
+	for i := range duels {
+		if duels[i].ID == duelID {
+			selected = &duels[i]
 			break
 		}
 	}
 
-	if duelToExport == nil {
-		http.Error(w, "Duel non trouvé", http.StatusNotFound)
+	if selected == nil {
+		http.Error(w, "Duel introuvable", http.StatusNotFound)
 		return
 	}
 
-	// Créer un nom de fichier sécurisé
-	filename := strings.ReplaceAll(duelToExport.Name, " ", "_")
-	filename = strings.ReplaceAll(filename, "/", "_")
-	filename = fmt.Sprintf("%s_%d.json", filename, duelToExport.ID)
+	// Préparer le duel pour l'export
+	if err := prepareDuelForExport(selected); err != nil {
+		http.Error(w, "Erreur lors de la préparation du duel", http.StatusInternalServerError)
+		return
+	}
 
-	filePath := filepath.Join(duelSaveDataPath, filename)
+	// Nettoyer le nom pour le nom de fichier
+	cleanName := sanitizeFileName(selected.Name)
+	fileName := fmt.Sprintf("%s_id_%d.json", cleanName, selected.ID)
+	filePath := filepath.Join(duelSaveDataPath, fileName)
+
+	// Créer un duel individuel (format compatible avec votre structure)
+	exportDuel := *selected
 
 	file, err := os.Create(filePath)
 	if err != nil {
-		http.Error(w, "Erreur lors de la création du fichier", http.StatusInternalServerError)
+		http.Error(w, "Erreur création du fichier", http.StatusInternalServerError)
 		return
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(duelToExport); err != nil {
-		http.Error(w, "Erreur lors de l'encodage JSON", http.StatusInternalServerError)
+	if err := encoder.Encode(exportDuel); err != nil {
+		http.Error(w, "Erreur d'encodage JSON", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	response := map[string]string{
-		"message":  "Duel exporté avec succès",
-		"filename": filename,
+	response := map[string]interface{}{
+		"message":  "Duel sauvegardé avec succès sur le serveur",
+		"filename": fileName,
 		"path":     filePath,
+		"duelId":   selected.ID,
+		"duelName": selected.Name,
 	}
 	json.NewEncoder(w).Encode(response)
+}
+
+// DownloadDuel permet au client de télécharger un duel au format JSON
+func DownloadDuel(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	duelID, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "ID invalide", http.StatusBadRequest)
+		return
+	}
+
+	var selected *Duel
+	for i := range duels {
+		if duels[i].ID == duelID {
+			selected = &duels[i]
+			break
+		}
+	}
+
+	if selected == nil {
+		http.Error(w, "Duel introuvable", http.StatusNotFound)
+		return
+	}
+
+	// Préparer le duel pour l'export
+	if err := prepareDuelForExport(selected); err != nil {
+		http.Error(w, "Erreur lors de la préparation du duel", http.StatusInternalServerError)
+		return
+	}
+
+	// Nettoyer le nom pour le nom de fichier
+	cleanName := sanitizeFileName(selected.Name)
+	fileName := fmt.Sprintf("%s_id_%d.json", cleanName, selected.ID)
+
+	// Créer un duel individuel (format compatible avec votre structure)
+	exportDuel := *selected
+
+	// Encoder en JSON
+	jsonData, err := json.MarshalIndent(exportDuel, "", "  ")
+	if err != nil {
+		http.Error(w, "Erreur d'encodage JSON", http.StatusInternalServerError)
+		return
+	}
+
+	// Définir les headers pour le téléchargement
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
+	w.Header().Set("Content-Length", strconv.Itoa(len(jsonData)))
+
+	// Envoyer le fichier
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
+// sanitizeFileName nettoie un nom pour qu'il soit valide comme nom de fichier
+func sanitizeFileName(name string) string {
+	// Remplacer les caractères problématiques par des underscores
+	replacements := []string{" ", "/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
+	cleanName := name
+	for _, char := range replacements {
+		cleanName = strings.ReplaceAll(cleanName, char, "_")
+	}
+
+	// Supprimer les underscores multiples consécutifs
+	for strings.Contains(cleanName, "__") {
+		cleanName = strings.ReplaceAll(cleanName, "__", "_")
+	}
+
+	// Supprimer les underscores en début/fin
+	cleanName = strings.Trim(cleanName, "_")
+
+	// S'assurer qu'il n'est pas vide
+	if cleanName == "" {
+		cleanName = "duel"
+	}
+
+	return cleanName
+}
+
+// updateNextDuelID met à jour nextDuelID pour éviter les conflits d'IDs
+func updateNextDuelID() {
+	maxID := 0
+	for _, duel := range duels {
+		if duel.ID > maxID {
+			maxID = duel.ID
+		}
+	}
+	nextDuelID = maxID + 1
+}
+
+// validateDuel vérifie que la structure d'un duel est complète et correcte.
+func validateDuel(duel *Duel) error {
+	if duel.Name == "" {
+		return fmt.Errorf("le nom du duel est requis")
+	}
+
+	requiredLevels := []string{"50", "40", "30", "20", "10"}
+	if len(duel.Points) != len(requiredLevels) {
+		return fmt.Errorf("le nombre de niveaux de points est incorrect. Requis: %v", requiredLevels)
+	}
+
+	for _, level := range requiredLevels {
+		pointLevel, exists := duel.Points[level]
+		if !exists {
+			return fmt.Errorf("le niveau %s points est manquant", level)
+		}
+
+		if pointLevel.Theme == "" {
+			return fmt.Errorf("le thème pour %s points est requis", level)
+		}
+
+		if len(pointLevel.Songs) != 2 {
+			return fmt.Errorf("exactement 2 chansons sont requises pour le niveau %s points", level)
+		}
+
+		for i, song := range pointLevel.Songs {
+			if song.Title == "" {
+				return fmt.Errorf("le titre de la chanson %d pour %s points est requis", i+1, level)
+			}
+			if song.Artist == "" {
+				return fmt.Errorf("l'artiste de la chanson %d pour %s points est requis", i+1, level)
+			}
+		}
+	}
+
+	if duel.SameSong.Title == "" {
+		return fmt.Errorf("le titre de 'La Même Chanson' est requis")
+	}
+	if duel.SameSong.Artist == "" {
+		return fmt.Errorf("l'artiste de 'La Même Chanson' est requis")
+	}
+
+	return nil
+}
+
+func saveDuelsToServer() error {
+	filePath := filepath.Join(duelSaveDataPath, "duels.json")
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(duels)
 }
 
 // SaveTemporaryDuel sauvegarde un duel temporaire
@@ -634,51 +869,6 @@ func FinishGameSession(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(session)
 }
 
-// validateDuel vérifie que la structure d'un duel est complète et correcte.
-func validateDuel(duel *Duel) error {
-	if duel.Name == "" {
-		return fmt.Errorf("le nom du duel est requis")
-	}
-
-	requiredLevels := []string{"50", "40", "30", "20", "10"}
-	if len(duel.Points) != len(requiredLevels) {
-		return fmt.Errorf("le nombre de niveaux de points est incorrect. Requis: %v", requiredLevels)
-	}
-
-	for _, level := range requiredLevels {
-		pointLevel, exists := duel.Points[level]
-		if !exists {
-			return fmt.Errorf("le niveau %s points est manquant", level)
-		}
-
-		if pointLevel.Theme == "" {
-			return fmt.Errorf("le thème pour %s points est requis", level)
-		}
-
-		if len(pointLevel.Songs) != 2 {
-			return fmt.Errorf("exactement 2 chansons sont requises pour le niveau %s points", level)
-		}
-
-		for i, song := range pointLevel.Songs {
-			if song.Title == "" {
-				return fmt.Errorf("le titre de la chanson %d pour %s points est requis", i+1, level)
-			}
-			if song.Artist == "" {
-				return fmt.Errorf("l'artiste de la chanson %d pour %s points est requis", i+1, level)
-			}
-		}
-	}
-
-	if duel.SameSong.Title == "" {
-		return fmt.Errorf("le titre de 'La Même Chanson' est requis")
-	}
-	if duel.SameSong.Artist == "" {
-		return fmt.Errorf("l'artiste de 'La Même Chanson' est requis")
-	}
-
-	return nil
-}
-
 func loadDuelsFromServer() error {
 	filePath := filepath.Join(duelSaveDataPath, "duels.json")
 
@@ -705,20 +895,6 @@ func loadDuelsFromServer() error {
 	}
 
 	return nil
-}
-
-func saveDuelsToServer() error {
-	filePath := filepath.Join(duelSaveDataPath, "duels.json")
-
-	file, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	return encoder.Encode(duels)
 }
 
 func HandleStartSong(w http.ResponseWriter, r *http.Request) {
@@ -771,7 +947,7 @@ func HandleLyricsVisibility(w http.ResponseWriter, r *http.Request) {
 
 func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/duel", DuelMaestroChallenger).Methods("GET")
-	r.HandleFunc("/duel-game", DuelGamePage).Methods("GET")
+	r.HandleFunc("/duel-game", DisplayDuel).Methods("GET", "POST")
 
 	r.HandleFunc("/duel-display", DisplayDuel).Methods("GET", "POST")
 
@@ -784,6 +960,7 @@ func SetupDuelRoutes(r *mux.Router) {
 
 	r.HandleFunc("/api/import-duel-server", ImportDuelFromServer).Methods("GET")
 	r.HandleFunc("/api/export-duel-server/{id:[0-9]+}", ExportDuelToServer).Methods("POST")
+	r.HandleFunc("/api/download-duel/{id:[0-9]+}", DownloadDuel).Methods("GET")
 	r.HandleFunc("/api/server-duels-list", GetServerDuelsList).Methods("GET")
 
 	r.HandleFunc("/api/temp-duel", SaveTemporaryDuel).Methods("POST")

@@ -53,8 +53,7 @@ function generateDuelCard(duel, index) {
             <div class="duel-actions">
                 <button class="edit-btn">Modifier</button>
                 <button class="delete-btn">Supprimer</button>
-                <button class="start-btn">Commencer le duel</button>
-                <button class="export-server-btn">Exporter vers serveur</button>
+                <a href="/duel-game?duelId=${duel.id}" class="start-btn" style="text-decoration: none; display: inline-block; padding: 10px 20px; background-color: #28a745; color: white; border-radius: 5px;">Commencer le duel</a>                <button class="export-server-btn">Exporter vers serveur</button>
                 <button class="export-file-btn">Exporter JSON local</button>
             </div>
         </div>
@@ -257,8 +256,6 @@ document.addEventListener('click', async (event) => {
         }
     } else if (target.matches('.edit-btn')) {
         openDuelForm(duelLogic.preparedDuels[index], index);
-    } else if (target.matches('.start-btn')) {
-        window.location.href = `/duel-game?duelId=${index}`;
     } else if (target.matches('.export-file-btn')) {
         const duel = duelLogic.preparedDuels[index];
         const dataStr = JSON.stringify(duel, null, 2);
