@@ -118,57 +118,59 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 				{{range .LevelsOrder}}
 				{{$level := .}}
 				{{$pointLevel := index $.Duel.Points $level}}
-				<div class="level-section">
-					<div class="level-header">
-						<h2>{{$level}} Points - {{$pointLevel.Theme}}</h2>
-					</div>
-					<div class="songs-grid">
-						{{range $index, $song := $pointLevel.Songs}}
-						<div class="song-card">
-							<div class="song-info">
-								<div class="song-title">{{$song.Title}}</div>
-								<div class="song-artist">par {{$song.Artist}}</div>
+				<section class = "duel-form">
+					<div class="level-section">
+						<div class="level-header">
+							<h2>{{$level}} Points - {{$pointLevel.Theme}}</h2>
+						</div>
+						
+						<div class="songs-grid">
+							{{range $index, $song := $pointLevel.Songs}}
+							<div class="song-card">
+								<div class="song-info">
+									<div class="song-title">{{$song.Title}}</div>
+									<div class="song-artist">par {{$song.Artist}}</div>
+								</div>
+								{{if $song.AudioURL}}
+								<div>
+									<strong>Audio:</strong> <a href="{{$song.AudioURL}}" target="_blank">Écouter</a>
+								</div>
+								{{end}}
+								<div class="lyrics-status">
+									{{if index (index $.LyricsExists $level) $index}}
+									<span class="lyrics-available">✓ Paroles disponibles</span>
+									{{else}}
+									<span class="lyrics-missing">✗ Paroles non disponibles</span>
+									{{end}}
+								</div>
 							</div>
-							{{if $song.AudioURL}}
+							{{end}}
+						</div>
+					</div>
+					{{end}}
+
+					<div class="same-song-section">
+						<h2>La Même Chanson</h2>
+						<div class="song-card" style="max-width: 500px; margin: 0 auto;">
+							<div class="song-info">
+								<div class="song-title">{{.Duel.SameSong.Title}}</div>
+								<div class="song-artist">par {{.Duel.SameSong.Artist}}</div>
+							</div>
+							{{if .Duel.SameSong.AudioURL}}
 							<div>
-								<strong>Audio:</strong> <a href="{{$song.AudioURL}}" target="_blank">Écouter</a>
+								<strong>Audio:</strong> <a href="{{.Duel.SameSong.AudioURL}}" target="_blank">Écouter</a>
 							</div>
 							{{end}}
 							<div class="lyrics-status">
-								{{if index (index $.LyricsExists $level) $index}}
+								{{if .SameSongLyricsExists}}
 								<span class="lyrics-available">✓ Paroles disponibles</span>
 								{{else}}
 								<span class="lyrics-missing">✗ Paroles non disponibles</span>
 								{{end}}
 							</div>
 						</div>
-						{{end}}
 					</div>
-				</div>
-				{{end}}
-
-				<div class="same-song-section">
-					<h2>La Même Chanson</h2>
-					<div class="song-card" style="max-width: 500px; margin: 0 auto;">
-						<div class="song-info">
-							<div class="song-title">{{.Duel.SameSong.Title}}</div>
-							<div class="song-artist">par {{.Duel.SameSong.Artist}}</div>
-						</div>
-						{{if .Duel.SameSong.AudioURL}}
-						<div>
-							<strong>Audio:</strong> <a href="{{.Duel.SameSong.AudioURL}}" target="_blank">Écouter</a>
-						</div>
-						{{end}}
-						<div class="lyrics-status">
-							{{if .SameSongLyricsExists}}
-							<span class="lyrics-available">✓ Paroles disponibles</span>
-							{{else}}
-							<span class="lyrics-missing">✗ Paroles non disponibles</span>
-							{{end}}
-						</div>
-					</div>
-				</div>
-
+				</section>
 				<div class="actions">
 					<form method="POST" style="display: inline;">
 						<input type="hidden" name="action" value="start_session">
