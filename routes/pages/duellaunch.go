@@ -101,27 +101,6 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<title>Duel: {{.Duel.Name}}</title>
 			<link rel="stylesheet" href="/asset/scss/style.css">
-			<style>
-				.duel-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-				.duel-header { text-align: center; margin-bottom: 30px; }
-				.level-section { margin-bottom: 30px; border: 2px solid #ddd; border-radius: 8px; padding: 20px; }
-				.level-header { background: #f5f5f5; margin: -20px -20px 15px -20px; padding: 15px 20px; border-radius: 6px 6px 0 0; }
-				.songs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-				.song-card { border: 1px solid #ccc; border-radius: 6px; padding: 15px; background: #fafafa; }
-				.song-info { margin-bottom: 10px; }
-				.song-title { font-weight: bold; font-size: 1.1em; }
-				.song-artist { color: #666; font-style: italic; }
-				.lyrics-status { margin-top: 10px; font-size: 0.9em; }
-				.lyrics-available { color: #28a745; }
-				.lyrics-missing { color: #dc3545; }
-				.same-song-section { background: #e9ecef; border-radius: 8px; padding: 20px; margin-top: 30px; }
-				.actions { text-align: center; margin-top: 30px; }
-				.btn { padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
-				.btn-primary { background: #007bff; color: white; }
-				.btn-success { background: #28a745; color: white; }
-				.btn-secondary { background: #6c757d; color: white; }
-				.metadata { font-size: 0.9em; color: #666; margin-top: 20px; }
-			</style>
 		</head>
 		<body>
 			<div class="duel-container">

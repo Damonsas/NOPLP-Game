@@ -1,0 +1,17 @@
+body {
+    display: flex;
+    flex-direction: column-reverse;
+    .duel-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .duel-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        max-width: 600px;
+    }
+}
