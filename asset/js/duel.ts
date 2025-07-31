@@ -77,11 +77,12 @@ function saveDuelsToStorage(): void {
  */
 export async function addDuel(duelData: Duel): Promise<void> {
     try {
-        // Étape 1: Envoyer au serveur et attendre la réponse
         const response = await fetch('/api/duels', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(duelData)
+            // ---- MODIFICATION CLÉ ----
+            // On envoie un tableau contenant le nouveau duel
+            body: JSON.stringify([duelData])
         });
 
         if (!response.ok) {
@@ -89,17 +90,19 @@ export async function addDuel(duelData: Duel): Promise<void> {
             throw new Error(errorText || 'Erreur lors de la sauvegarde sur le serveur');
         }
 
-        // Étape 2: Utiliser le duel renvoyé par le serveur (avec l'ID correct)
-        const savedDuel: Duel = await response.json();
-        
-        preparedDuels.push(savedDuel); // Ajouter le duel avec les données confirmées par le serveur
-        
-        // Étape 3: Sauvegarder dans le stockage local
-        saveDuelsToStorage();
+        // Le serveur répond maintenant avec un tableau, ex: [{...}]
+        const savedDuels: Duel[] = await response.json();
+
+        // On vérifie que la réponse est correcte et on prend le premier élément
+        if (savedDuels && savedDuels.length > 0) {
+            preparedDuels.push(savedDuels[0]); // Ajouter le duel avec l'ID confirmé par le serveur
+            saveDuelsToStorage();
+        } else {
+            throw new Error("La réponse du serveur était invalide après la création du duel.");
+        }
 
     } catch (error) {
         console.error("Failed to save duel to server:", error);
-        // Propager l'erreur pour que l'UI puisse l'afficher
         throw error;
     }
 }

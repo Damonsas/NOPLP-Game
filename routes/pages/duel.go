@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -70,6 +71,10 @@ func init() {
 	gameSessions = make(map[string]*GameSession)
 
 	createDirectories()
+	if err := loadDuelsFromServer(); err != nil {
+		log.Printf("ERREUR CRITIQUE: Impossible de charger les duels depuis le fichier: %v\n", err)
+	}
+	log.Printf("Serveur démarré avec %d duel(s) chargé(s).", len(duels))
 
 	loadDuelsFromServer()
 }
@@ -103,35 +108,42 @@ func GetDuels(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateDuel(w http.ResponseWriter, r *http.Request) {
-	var newDuel Duel
+	var duelsToCreate []Duel // On attend maintenant un tableau de duels
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Erreur lors de la lecture du corps de la requête", http.StatusBadRequest)
 		return
 	}
 
-	if err := json.Unmarshal(body, &newDuel); err != nil {
-		http.Error(w, "Erreur lors du décodage JSON", http.StatusBadRequest)
+	if err := json.Unmarshal(body, &duelsToCreate); err != nil {
+		http.Error(w, "Erreur lors du décodage JSON : un tableau de duels est attendu.", http.StatusBadRequest)
 		return
 	}
+
+	// Pour la création via formulaire, on s'attend à un seul duel dans le tableau
+	if len(duelsToCreate) != 1 {
+		http.Error(w, "La création ne peut concerner qu'un seul duel à la fois.", http.StatusBadRequest)
+		return
+	}
+
+	// On extrait le duel du tableau
+	newDuel := duelsToCreate[0]
 
 	if err := validateDuel(&newDuel); err != nil {
 		http.Error(w, fmt.Sprintf("Données de duel invalides: %v", err), http.StatusBadRequest)
 		return
 	}
 
+	// La logique d'assignation d'ID reste la même et est correcte
 	updateNextDuelID()
-
 	if (newDuel.ID != 0 && isIDTaken(newDuel.ID)) || newDuel.ID == 0 {
 		newDuel.ID = nextDuelID
 		nextDuelID++
 	}
-
 	newDuel.CreatedAt = time.Now()
-	newDuel.UpdatedAt = nil // Toujours réinitialiser à la création/import
+	newDuel.UpdatedAt = nil
 
 	duels = append(duels, newDuel)
-
 	updateNextDuelID()
 
 	if err := saveDuelsToServer(); err != nil {
@@ -141,8 +153,10 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	// Renvoyer le duel final (avec l'ID correct) au client
-	json.NewEncoder(w).Encode(newDuel)
+
+	// ---- MODIFICATION CLÉ ----
+	// On renvoie aussi un tableau contenant le duel créé (avec son nouvel ID)
+	json.NewEncoder(w).Encode([]Duel{newDuel})
 }
 
 func GetDuelByID(w http.ResponseWriter, r *http.Request) {
