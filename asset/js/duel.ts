@@ -12,6 +12,7 @@ interface PointCategory {
 }
 
 interface Duel {
+  id: string;
   name: string;
   points: {
     '10': PointCategory;
@@ -68,15 +69,40 @@ function saveDuelsToStorage(): void {
 }
 
 /**
- * Ajoute un nouveau duel à la liste et sauvegarde.
+ * Ajoute un nouveau duel.
+ * 1. L'envoie au serveur qui lui assigne un ID définitif.
+ * 2. Utilise la réponse du serveur pour l'ajouter à la liste locale.
+ * 3. Sauvegarde la liste locale dans le localStorage.
  * @param duelData Les données du duel à ajouter.
  */
-export function addDuel(duelData: Duel): void {
-    preparedDuels.push(duelData);
-    saveDuelsToStorage();
-    saveDuelToServer(duelData).catch(error => console.error("Failed to save duel to server:", error));
-}
+export async function addDuel(duelData: Duel): Promise<void> {
+    try {
+        // Étape 1: Envoyer au serveur et attendre la réponse
+        const response = await fetch('/api/duels', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(duelData)
+        });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Erreur lors de la sauvegarde sur le serveur');
+        }
+
+        // Étape 2: Utiliser le duel renvoyé par le serveur (avec l'ID correct)
+        const savedDuel: Duel = await response.json();
+        
+        preparedDuels.push(savedDuel); // Ajouter le duel avec les données confirmées par le serveur
+        
+        // Étape 3: Sauvegarder dans le stockage local
+        saveDuelsToStorage();
+
+    } catch (error) {
+        console.error("Failed to save duel to server:", error);
+        // Propager l'erreur pour que l'UI puisse l'afficher
+        throw error;
+    }
+}
 /**
  * Met à jour un duel existant.
  * @param index L'index du duel à mettre à jour.

@@ -120,11 +120,19 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newDuel.ID = nextDuelID
-	nextDuelID++
+	updateNextDuelID()
+
+	if (newDuel.ID != 0 && isIDTaken(newDuel.ID)) || newDuel.ID == 0 {
+		newDuel.ID = nextDuelID
+		nextDuelID++
+	}
+
 	newDuel.CreatedAt = time.Now()
+	newDuel.UpdatedAt = nil // Toujours réinitialiser à la création/import
 
 	duels = append(duels, newDuel)
+
+	updateNextDuelID()
 
 	if err := saveDuelsToServer(); err != nil {
 		http.Error(w, "Erreur lors de la sauvegarde du fichier", http.StatusInternalServerError)
@@ -133,6 +141,7 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	// Renvoyer le duel final (avec l'ID correct) au client
 	json.NewEncoder(w).Encode(newDuel)
 }
 
@@ -300,8 +309,15 @@ func prepareDuelForExport(duel *Duel) error {
 
 	return nil
 }
+func isIDTaken(id int) bool {
+	for _, duel := range duels {
+		if duel.ID == id {
+			return true
+		}
+	}
+	return false
+}
 
-// ImportDuelFromServer charge un duel depuis le système de fichiers du serveur
 func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
 	filename := r.URL.Query().Get("filename")
 	if filename == "" {
@@ -310,62 +326,16 @@ func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filePath := filepath.Join(duelSaveDataPath, filename)
-	if !strings.HasSuffix(filePath, ".json") {
-		filePath += ".json"
-	}
-
 	fileContent, err := os.ReadFile(filePath)
 	if err != nil {
-		http.Error(w, "Fichier non trouvé", http.StatusNotFound)
+		http.Error(w, "Fichier non trouvé sur le serveur", http.StatusNotFound)
 		return
 	}
 
-	// S'assurer que nextDuelID est à jour avant l'import
-	updateNextDuelID()
-
-	// Essayer d'abord de charger comme un tableau (format duels.json complet)
-	var loadedDuels []Duel
-	if err := json.Unmarshal(fileContent, &loadedDuels); err == nil && len(loadedDuels) > 0 {
-		// Format tableau complet - importer tous les duels
-		var importedDuels []Duel
-
-		for _, loadedDuel := range loadedDuels {
-			if err := validateDuel(&loadedDuel); err != nil {
-				http.Error(w, fmt.Sprintf("Fichier JSON de duel invalide: %v", err), http.StatusBadRequest)
-				return
-			}
-
-			// Générer un nouvel ID unique même si le duel en avait déjà un
-			loadedDuel.ID = nextDuelID
-			nextDuelID++
-			loadedDuel.CreatedAt = time.Now()
-			// Réinitialiser UpdatedAt pour un nouvel import
-			loadedDuel.UpdatedAt = nil
-
-			duels = append(duels, loadedDuel)
-			importedDuels = append(importedDuels, loadedDuel)
-		}
-
-		// Sauvegarder immédiatement pour persister les nouveaux IDs
-		if err := saveDuelsToServer(); err != nil {
-			http.Error(w, "Erreur lors de la sauvegarde après import", http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		response := map[string]interface{}{
-			"message": fmt.Sprintf("%d duel(s) importé(s) avec succès", len(importedDuels)),
-			"duels":   importedDuels,
-		}
-		json.NewEncoder(w).Encode(response)
-		return
-	}
-
-	// Sinon, essayer de charger comme un duel unique
+	// 1. Charger le duel depuis le fichier JSON
 	var loadedDuel Duel
 	if err := json.Unmarshal(fileContent, &loadedDuel); err != nil {
-		http.Error(w, "Erreur lors du décodage JSON du fichier", http.StatusBadRequest)
+		http.Error(w, "Erreur lors du décodage du fichier JSON. Assurez-vous que c'est un objet de duel unique.", http.StatusBadRequest)
 		return
 	}
 
@@ -374,16 +344,35 @@ func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Générer un nouvel ID unique même si le duel en avait déjà un
-	loadedDuel.ID = nextDuelID
-	nextDuelID++
-	loadedDuel.CreatedAt = time.Now()
-	// Réinitialiser UpdatedAt pour un nouvel import
-	loadedDuel.UpdatedAt = nil
+	// 2. Assurer l'unicité du nom (optionnel mais recommandé)
+	for _, duel := range duels {
+		if duel.Name == loadedDuel.Name {
+			http.Error(w, fmt.Sprintf("Un duel avec le nom '%s' existe déjà.", loadedDuel.Name), http.StatusConflict)
+			return
+		}
+	}
 
+	updateNextDuelID()
+
+	message := fmt.Sprintf("Duel '%s' importé avec succès.", loadedDuel.Name)
+	originalID := loadedDuel.ID
+
+	if loadedDuel.ID == 0 || isIDTaken(loadedDuel.ID) {
+		if loadedDuel.ID != 0 {
+			message = fmt.Sprintf("Duel '%s' importé. L'ID original %d était déjà pris, un nouvel ID %d a été assigné.", loadedDuel.Name, originalID, nextDuelID)
+		} else {
+			message = fmt.Sprintf("Duel '%s' importé. Aucun ID n'était présent, un nouvel ID %d a été assigné.", loadedDuel.Name, nextDuelID)
+		}
+		loadedDuel.ID = nextDuelID
+		nextDuelID++
+	}
+
+	loadedDuel.CreatedAt = time.Now()
+	loadedDuel.UpdatedAt = nil
 	duels = append(duels, loadedDuel)
 
-	// Sauvegarder immédiatement pour persister le nouvel ID
+	updateNextDuelID()
+
 	if err := saveDuelsToServer(); err != nil {
 		http.Error(w, "Erreur lors de la sauvegarde après import", http.StatusInternalServerError)
 		return
@@ -391,7 +380,11 @@ func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(loadedDuel)
+	response := map[string]interface{}{
+		"message": message,
+		"duel":    loadedDuel,
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 func ExportDuelToServer(w http.ResponseWriter, r *http.Request) {

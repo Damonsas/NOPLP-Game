@@ -331,7 +331,9 @@ document.addEventListener('click', async (event) => {
     }
 });
 
-document.addEventListener('submit', (event) => {
+// ui.js
+
+document.addEventListener('submit', async (event) => { // Rendre le handler async
     event.preventDefault();
     const target = event.target;
 
@@ -343,11 +345,16 @@ document.addEventListener('submit', (event) => {
         if (editingIndex > -1) {
             duelLogic.updateDuel(editingIndex, formData);
             showNotification('Duel mis à jour avec succès', 'success');
+            renderDuelList();
         } else {
-            duelLogic.addDuel(formData);
-            showNotification('Duel créé avec succès', 'success');
+            try {
+                await duelLogic.addDuel(formData); // Attendre la fin de l'ajout
+                showNotification('Duel créé avec succès', 'success');
+                renderDuelList();
+            } catch (error) {
+                showNotification(`Erreur lors de la création : ${error.message}`, 'error');
+            }
         }
-        renderDuelList();
     } else if (target.matches('#importForm')) {
         const fileInput = document.getElementById('duelFile');
         const file = fileInput.files[0];
@@ -356,24 +363,24 @@ document.addEventListener('submit', (event) => {
             return;
         }
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) { // Rendre la fonction onload async
             try {
                 const duelData = JSON.parse(e.target.result);
-                if (!duelData.name || !duelData.points || !duelData.sameSong) {
+                if (!duelData.name || !duelData.points || !duelData.sameSong) { //
                     throw new Error('Format de fichier invalide');
                 }
-                duelLogic.addDuel(duelData);
+                
+                await duelLogic.addDuel(duelData); 
+                
                 renderDuelList();
                 showNotification(`Duel "${duelData.name}" importé avec succès`, 'success');
             } catch (error) {
-                showNotification('Erreur: fichier JSON invalide', 'error');
+                showNotification(`Erreur: ${error.message}`, 'error');
             }
         };
         reader.readAsText(file);
     }
 });
-
-// Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
     duelLogic.loadDuelsFromStorage();
     renderDuelList();
