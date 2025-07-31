@@ -331,9 +331,8 @@ document.addEventListener('click', async (event) => {
     }
 });
 
-// ui.js
 
-document.addEventListener('submit', async (event) => { // Rendre le handler async
+document.addEventListener('submit', async (event) => { 
     event.preventDefault();
     const target = event.target;
 
@@ -348,7 +347,7 @@ document.addEventListener('submit', async (event) => { // Rendre le handler asyn
             renderDuelList();
         } else {
             try {
-                await duelLogic.addDuel(formData); // Attendre la fin de l'ajout
+                await duelLogic.addDuel(formData); 
                 showNotification('Duel créé avec succès', 'success');
                 renderDuelList();
             } catch (error) {
@@ -363,10 +362,10 @@ document.addEventListener('submit', async (event) => { // Rendre le handler asyn
             return;
         }
         const reader = new FileReader();
-        reader.onload = async function(e) { // Rendre la fonction onload async
+        reader.onload = async function(e) { 
             try {
                 const duelData = JSON.parse(e.target.result);
-                if (!duelData.name || !duelData.points || !duelData.sameSong) { //
+                if (!duelData.name || !duelData.points || !duelData.sameSong) {
                     throw new Error('Format de fichier invalide');
                 }
                 

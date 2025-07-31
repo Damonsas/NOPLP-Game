@@ -108,7 +108,7 @@ func GetDuels(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateDuel(w http.ResponseWriter, r *http.Request) {
-	var duelsToCreate []Duel // On attend maintenant un tableau de duels
+	var duelsToCreate []Duel
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Erreur lors de la lecture du corps de la requête", http.StatusBadRequest)
@@ -120,13 +120,11 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Pour la création via formulaire, on s'attend à un seul duel dans le tableau
 	if len(duelsToCreate) != 1 {
 		http.Error(w, "La création ne peut concerner qu'un seul duel à la fois.", http.StatusBadRequest)
 		return
 	}
 
-	// On extrait le duel du tableau
 	newDuel := duelsToCreate[0]
 
 	if err := validateDuel(&newDuel); err != nil {
@@ -134,7 +132,6 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// La logique d'assignation d'ID reste la même et est correcte
 	updateNextDuelID()
 	if (newDuel.ID != 0 && isIDTaken(newDuel.ID)) || newDuel.ID == 0 {
 		newDuel.ID = nextDuelID
@@ -154,8 +151,6 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	// ---- MODIFICATION CLÉ ----
-	// On renvoie aussi un tableau contenant le duel créé (avec son nouvel ID)
 	json.NewEncoder(w).Encode([]Duel{newDuel})
 }
 
@@ -297,26 +292,22 @@ func LoadDuelFromJSON(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(loadedDuel)
 }
 
-// prepareDuelForExport prépare un duel pour l'export en s'assurant qu'il a un ID et des métadonnées valides
 func prepareDuelForExport(duel *Duel) error {
 	updateNextDuelID()
 
 	needsSave := false
 
-	// S'assurer que le duel a un ID valide
 	if duel.ID == 0 {
 		duel.ID = nextDuelID
 		nextDuelID++
 		needsSave = true
 	}
 
-	// S'assurer que createdAt est défini
 	if duel.CreatedAt.IsZero() {
 		duel.CreatedAt = time.Now()
 		needsSave = true
 	}
 
-	// Sauvegarder les modifications si nécessaire
 	if needsSave {
 		return saveDuelsToServer()
 	}
@@ -422,18 +413,15 @@ func ExportDuelToServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Préparer le duel pour l'export
 	if err := prepareDuelForExport(selected); err != nil {
 		http.Error(w, "Erreur lors de la préparation du duel", http.StatusInternalServerError)
 		return
 	}
 
-	// Nettoyer le nom pour le nom de fichier
 	cleanName := sanitizeFileName(selected.Name)
 	fileName := fmt.Sprintf("%s_id_%d.json", cleanName, selected.ID)
 	filePath := filepath.Join(duelSaveDataPath, fileName)
 
-	// Créer un duel individuel (format compatible avec votre structure)
 	exportDuel := *selected
 
 	file, err := os.Create(filePath)
@@ -461,7 +449,6 @@ func ExportDuelToServer(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// DownloadDuel permet au client de télécharger un duel au format JSON
 func DownloadDuel(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	duelID, err := strconv.Atoi(vars["id"])
@@ -483,54 +470,43 @@ func DownloadDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Préparer le duel pour l'export
 	if err := prepareDuelForExport(selected); err != nil {
 		http.Error(w, "Erreur lors de la préparation du duel", http.StatusInternalServerError)
 		return
 	}
 
-	// Nettoyer le nom pour le nom de fichier
 	cleanName := sanitizeFileName(selected.Name)
 	fileName := fmt.Sprintf("%s_id_%d.json", cleanName, selected.ID)
 
-	// Créer un duel individuel (format compatible avec votre structure)
 	exportDuel := *selected
 
-	// Encoder en JSON
 	jsonData, err := json.MarshalIndent(exportDuel, "", "  ")
 	if err != nil {
 		http.Error(w, "Erreur d'encodage JSON", http.StatusInternalServerError)
 		return
 	}
 
-	// Définir les headers pour le téléchargement
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
 	w.Header().Set("Content-Length", strconv.Itoa(len(jsonData)))
 
-	// Envoyer le fichier
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
 
-// sanitizeFileName nettoie un nom pour qu'il soit valide comme nom de fichier
 func sanitizeFileName(name string) string {
-	// Remplacer les caractères problématiques par des underscores
 	replacements := []string{" ", "/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
 	cleanName := name
 	for _, char := range replacements {
 		cleanName = strings.ReplaceAll(cleanName, char, "_")
 	}
 
-	// Supprimer les underscores multiples consécutifs
 	for strings.Contains(cleanName, "__") {
 		cleanName = strings.ReplaceAll(cleanName, "__", "_")
 	}
 
-	// Supprimer les underscores en début/fin
 	cleanName = strings.Trim(cleanName, "_")
 
-	// S'assurer qu'il n'est pas vide
 	if cleanName == "" {
 		cleanName = "duel"
 	}
@@ -538,7 +514,6 @@ func sanitizeFileName(name string) string {
 	return cleanName
 }
 
-// updateNextDuelID met à jour nextDuelID pour éviter les conflits d'IDs
 func updateNextDuelID() {
 	maxID := 0
 	for _, duel := range duels {
@@ -549,7 +524,6 @@ func updateNextDuelID() {
 	nextDuelID = maxID + 1
 }
 
-// validateDuel vérifie que la structure d'un duel est complète et correcte.
 func validateDuel(duel *Duel) error {
 	if duel.Name == "" {
 		return fmt.Errorf("le nom du duel est requis")
@@ -608,7 +582,6 @@ func saveDuelsToServer() error {
 	return encoder.Encode(duels)
 }
 
-// SaveTemporaryDuel sauvegarde un duel temporaire
 func SaveTemporaryDuel(w http.ResponseWriter, r *http.Request) {
 	var tempDuel Duel
 	if err := json.NewDecoder(r.Body).Decode(&tempDuel); err != nil {
@@ -640,7 +613,6 @@ func SaveTemporaryDuel(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// LoadTemporaryDuel charge un duel temporaire
 func LoadTemporaryDuel(w http.ResponseWriter, r *http.Request) {
 	filename := "temp_duel.json"
 	filePath := filepath.Join(prepDuelDataPath, filename)
@@ -661,7 +633,6 @@ func LoadTemporaryDuel(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(tempDuel)
 }
 
-// CheckLyricsFile vérifie si un fichier de paroles existe
 func CheckLyricsFile(w http.ResponseWriter, r *http.Request) {
 	filename := r.URL.Query().Get("filename")
 	if filename == "" {
@@ -669,7 +640,6 @@ func CheckLyricsFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ajouter l'extension .txt si elle n'est pas présente
 	if !strings.HasSuffix(filename, ".txt") {
 		filename += ".txt"
 	}

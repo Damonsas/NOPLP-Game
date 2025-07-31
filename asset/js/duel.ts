@@ -80,8 +80,7 @@ export async function addDuel(duelData: Duel): Promise<void> {
         const response = await fetch('/api/duels', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // ---- MODIFICATION CLÉ ----
-            // On envoie un tableau contenant le nouveau duel
+           
             body: JSON.stringify([duelData])
         });
 
@@ -90,7 +89,6 @@ export async function addDuel(duelData: Duel): Promise<void> {
             throw new Error(errorText || 'Erreur lors de la sauvegarde sur le serveur');
         }
 
-        // Le serveur répond maintenant avec un tableau, ex: [{...}]
         const savedDuels: Duel[] = await response.json();
 
         // On vérifie que la réponse est correcte et on prend le premier élément
@@ -113,12 +111,10 @@ export async function addDuel(duelData: Duel): Promise<void> {
  */
 export function updateDuel(index: number, duelData: Duel): void {
     if (preparedDuels[index]) {
-        // Conserve la date de création originale
         duelData.createdAt = preparedDuels[index].createdAt;
         duelData.updatedAt = new Date().toISOString();
         preparedDuels[index] = duelData;
         saveDuelsToStorage();
-        // Potentiellement, ajouter une logique pour mettre à jour sur le serveur aussi
     }
 }
 
@@ -131,7 +127,6 @@ export function deleteDuel(index: number): void {
     saveDuelsToStorage();
 }
 
-// --- Fonctions d'interaction avec le serveur ---
 
 /**
  * Vérifie si un fichier de paroles existe sur le serveur.
