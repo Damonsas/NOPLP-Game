@@ -11,6 +11,8 @@ body {
         align-items: center;
         width: 100%;
         .song-grid{ 
+            display: flex;
+            flex-direction: column-reverse;
             opacity: 0;
             transform: translateX(-30px);
             animation: slideInLeft 0.5s ease-out forwards;
@@ -29,4 +31,5 @@ body {
             }
             }
 
-    }}
+    }
+}

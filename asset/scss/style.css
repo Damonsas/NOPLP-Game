@@ -11,6 +11,8 @@ body .duel-form {
   width: 100%;
 }
 body .duel-form .song-grid {
+  display: flex;
+  flex-direction: column-reverse;
   opacity: 0;
   transform: translateX(-30px);
   animation: slideInLeft 0.5s ease-out forwards;
