@@ -103,91 +103,103 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 			<link rel="stylesheet" href="/asset/scss/style.css">
 		</head>
 		<body>
-			<div class="duel-container">
-				<div class="duel-header">
-					<h1>{{.Duel.Name}}</h1>
-					<div class="metadata">
-						<p>Créé le: {{.Duel.CreatedAt.Format "02/01/2006 à 15:04"}}</p>
-						{{with .Duel.UpdatedAt}}
-							<p>Mis à jour le: {{.Format "02/01/2006 à 15:04"}}</p>
-						{{end}}
+    <div class="duel-container">
+        <div class="duel-header">
+            <h1>{{.Duel.Name}}</h1>
+            <div class="metadata">
+                <p>Créé le: {{.Duel.CreatedAt.Format "02/01/2006 à 15:04"}}</p>
+                {{with .Duel.UpdatedAt}}
+                    <p>Mis à jour le: {{.Format "02/01/2006 à 15:04"}}</p>
+                {{end}}
+            </div>
+        </div>
 
-					</div>
-				</div>
+        <section class="duel-form">
+            <!-- Section "La Même Chanson" tout en haut -->
+            <div class="same-song-section">
+                <button class="same-song-button" onclick="toggleElement('same-song-details')">
+                    🎵 La Même Chanson
+                </button>
+                <div id="same-song-details" class="hidden-element song-card" style="max-width: 500px; margin: 0 auto;">
+                    <div class="song-info">
+                        <div class="song-title">{{.Duel.SameSong.Title}}</div>
+                        <div class="song-artist">par {{.Duel.SameSong.Artist}}</div>
+                    </div>
+                    {{if .Duel.SameSong.AudioURL}}
+                    <div>
+                        <strong>Audio:</strong> <a href="{{.Duel.SameSong.AudioURL}}" target="_blank">Écouter</a>
+                    </div>
+                    {{end}}
+                    <div class="lyrics-status">
+                        {{if .SameSongLyricsExists}}
+                        <span class="lyrics-available">✓ Paroles disponibles</span>
+                        {{else}}
+                        <span class="lyrics-missing">✗ Paroles non disponibles</span>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
 
-				{{range .LevelsOrder}}
-				{{$level := .}}
-				{{$pointLevel := index $.Duel.Points $level}}
-				<section class = "duel-form">
-					<div class="level-section">
-						<div class="level-header">
-							<h2>{{$level}} Points - {{$pointLevel.Theme}}</h2>
-						</div>
-						
-						<div class="songs-grid">
-							{{range $index, $song := $pointLevel.Songs}}
-							<div class="song-card">
-								<div class="song-info">
-									<div class="song-title">{{$song.Title}}</div>
-									<div class="song-artist">par {{$song.Artist}}</div>
-								</div>
-								{{if $song.AudioURL}}
-								<div>
-									<strong>Audio:</strong> <a href="{{$song.AudioURL}}" target="_blank">Écouter</a>
-								</div>
-								{{end}}
-								<div class="lyrics-status">
-									{{if index (index $.LyricsExists $level) $index}}
-									<span class="lyrics-available">✓ Paroles disponibles</span>
-									{{else}}
-									<span class="lyrics-missing">✗ Paroles non disponibles</span>
-									{{end}}
-								</div>
-							</div>
-							{{end}}
-						</div>
-					</div>
-					{{end}}
+            <div class="points-grid">
+                {{range .LevelsOrder}}
+                {{$level := .}}
+                {{$pointLevel := index $.Duel.Points $level}}
+                <button class="point-button" onclick="toggleLevelSongs('level-{{$level}}')">
+                    <div>{{$level}} Points</div>
+                    <div style="font-size: 14px; margin-top: 5px;">{{$pointLevel.Theme}}</div>
+                </button>
+                {{end}}
+            </div>
 
-					<div class="same-song-section">
-						<h2>La Même Chanson</h2>
-						<div class="song-card" style="max-width: 500px; margin: 0 auto;">
-							<div class="song-info">
-								<div class="song-title">{{.Duel.SameSong.Title}}</div>
-								<div class="song-artist">par {{.Duel.SameSong.Artist}}</div>
-							</div>
-							{{if .Duel.SameSong.AudioURL}}
-							<div>
-								<strong>Audio:</strong> <a href="{{.Duel.SameSong.AudioURL}}" target="_blank">Écouter</a>
-							</div>
-							{{end}}
-							<div class="lyrics-status">
-								{{if .SameSongLyricsExists}}
-								<span class="lyrics-available">✓ Paroles disponibles</span>
-								{{else}}
-								<span class="lyrics-missing">✗ Paroles non disponibles</span>
-								{{end}}
-							</div>
-						</div>
-					</div>
-				</section>
-				<div class="actions">
-					<form method="POST" style="display: inline;">
-						<input type="hidden" name="action" value="start_session">
-						<button type="submit" class="btn btn-success">Démarrer une partie</button>
-					</form>
-					
-					<form method="POST" style="display: inline;">
-						<input type="hidden" name="action" value="export">
-						<button type="submit" class="btn btn-primary">Exporter ce duel</button>
-					</form>
-					
-					<a href="/duel" class="btn btn-secondary">Retour aux duels</a>
-				</div>
-			</div>
+            {{range .LevelsOrder}}
+            {{$level := .}}
+            {{$pointLevel := index $.Duel.Points $level}}
+            <div id="level-{{$level}}" class="hidden-element songs-for-level">
+                <div class="level-section">
+                    <div class="level-header">
+                        <h3>{{$level}} Points - {{$pointLevel.Theme}}</h3>
+                    </div>
+                    <div class="level-songs-container">
+                        {{range $index, $song := $pointLevel.Songs}}
+                        <div class="song-card">
+                            <div class="song-info">
+                                <div class="song-title">{{$song.Title}}</div>
+                                <div class="song-artist">par {{$song.Artist}}</div>
+                            </div>
+                            {{if $song.AudioURL}}
+                            <div>
+                                <strong>Audio:</strong> <a href="{{$song.AudioURL}}" target="_blank">Écouter</a>
+                            </div>
+                            {{end}}
+                            <div class="lyrics-status">
+                                {{if index (index $.LyricsExists $level) $index}}
+                                <span class="lyrics-available">✓ Paroles disponibles</span>
+                                {{else}}
+                                <span class="lyrics-missing">✗ Paroles non disponibles</span>
+                                {{end}}
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </section>
 
-			<script src="/asset/js/script.js"></script>
-		</body>
+        <div class="actions">
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="action" value="start_session">
+                <button type="submit" class="btn btn-success">Démarrer une partie</button>
+            </form>
+            
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="action" value="export">
+                <button type="submit" class="btn btn-primary">Exporter ce duel</button>
+            </form>
+            
+            <a href="/duel" class="btn btn-secondary">Retour aux duels</a>
+        </div>
+    </div>
 		</html>`
 
 	t, err := template.New("duel").Parse(tmpl)
