@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func GetLyrics(w http.ResponseWriter, r *http.Request) {
+func GetLyricsFinal(w http.ResponseWriter, r *http.Request) {
 	// Extraire les paramètres de l'URL
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 5 {
@@ -77,7 +77,7 @@ func GetLyrics(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(lyricsData)
 }
 
-func MaskLyrics(lyrics string, points int) string {
+func MaskLyricsFinal(lyrics string, points int) string {
 	if lyrics == "" {
 		return lyrics
 	}
