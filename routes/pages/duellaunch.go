@@ -1,13 +1,23 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 )
+
+type LyricsData struct {
+	Titre   string `json:"titre"`
+	Artiste string `json:"artiste"`
+	Parole  string `json:"parole"`
+}
 
 // DisplayDuel affiche le contenu d'un duel préparé
 func DisplayDuel(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +59,6 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Préparer les données pour le template
 	templateData := struct {
 		Duel                 *Duel
 		LevelsOrder          []string
@@ -62,7 +71,6 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 		SameSongLyricsExists: sameSongLyricsExists,
 	}
 
-	// Vérifier l'existence des fichiers de paroles pour chaque chanson
 	for _, level := range templateData.LevelsOrder {
 		templateData.LyricsExists[level] = make(map[int]bool)
 		if pointLevel, exists := selectedDuel.Points[level]; exists {
@@ -77,22 +85,18 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Traitement des formulaires POST (si nécessaire pour des actions)
 	if r.Method == http.MethodPost {
 		action := r.FormValue("action")
 		switch action {
 		case "start_session":
-			// Rediriger vers la création d'une session de jeu
 			http.Redirect(w, r, fmt.Sprintf("/duel-game?duelId=%d", id), http.StatusSeeOther)
 			return
 		case "export":
-			// Rediriger vers l'export du duel
 			http.Redirect(w, r, fmt.Sprintf("/api/export-duel-server/%d", id), http.StatusSeeOther)
 			return
 		}
 	}
 
-	// Charger et exécuter le template
 	tmpl := `
 		<!DOCTYPE html>
 		<html lang="fr">
@@ -161,7 +165,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
                     </div>
                     <div class="level-songs-container">
                         {{range $index, $song := $pointLevel.Songs}}
-                        <div class="song-card">
+                        <div class="song-card" onclick="previewSong('{{$song.Title}}', '{{$song.Artist}}')">
                             <div class="song-info">
                                 <div class="song-title">{{$song.Title}}</div>
                                 <div class="song-artist">par {{$song.Artist}}</div>
@@ -178,6 +182,14 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
                                 <span class="lyrics-missing">✗ Paroles non disponibles</span>
                                 {{end}}
                             </div>
+                            <div class="song-actions">
+                                <button class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Title}}', '{{$song.Artist}}')">
+                                    🎵 Aperçu
+                                </button>
+                                <button class="btn-select" onclick="event.stopPropagation(); selectSong('{{$level}}', {{$index}}, '{{$song.Title}}', '{{$song.Artist}}')">
+                                    Sélectionner
+                                </button>
+                            </div>
                         </div>
                         {{end}}
                     </div>
@@ -185,6 +197,23 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
             </div>
             {{end}}
         </section>
+
+        <!-- Lecteur de musique global -->
+        <div id="music-player" class="music-player" style="display: none;">
+            <h4 id="current-song-info">Aucune chanson sélectionnée</h4>
+            <div class="audio-controls">
+                <audio id="audio-player" controls style="width: 100%;">
+                    Votre navigateur ne supporte pas l'élément audio.
+                </audio>
+            </div>
+            <button onclick="toggleLyrics()" class="btn btn-secondary">Afficher/Masquer les paroles</button>
+        </div>
+
+        <!-- Container pour les paroles -->
+        <div id="lyrics-container" class="lyrics-container" style="display: none;">
+            <h4>Paroles</h4>
+            <div id="lyrics-text" class="lyrics-text"></div>
+        </div>
 
         <div class="actions">
             <form method="POST" style="display: inline;">
@@ -200,6 +229,153 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
             <a href="/duel" class="btn btn-secondary">Retour aux duels</a>
         </div>
     </div>
+
+    <script>
+        let currentAudio = null;
+        let currentLyrics = "";
+        let currentLevel = "";
+        
+        // Fonction pour basculer l'affichage des éléments
+        function toggleElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (element.style.display === 'none' || element.classList.contains('hidden-element')) {
+                element.style.display = 'block';
+                element.classList.remove('hidden-element');
+            } else {
+                element.style.display = 'none';
+                element.classList.add('hidden-element');
+            }
+        }
+
+        function toggleLevelSongs(levelId) {
+            toggleElement(levelId);
+        }
+
+        // Fonction pour obtenir l'URL d'aperçu de YouTube
+        async function getYouTubePreview(title, artist) {
+            try {
+                // Utilisation de l'API YouTube Search (nécessite une clé API)
+                const query = encodeURIComponent(title + " " + artist + " instrumental");
+                const searchUrl = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + query + "&type=video&key=YOUR_YOUTUBE_API_KEY";
+                
+                // Pour le moment, utilisons une URL de démonstration
+                // En production, vous devrez remplacer par votre clé API YouTube
+                console.log("Recherche YouTube pour:", title, artist);
+                return null; // Retourner null pour utiliser un fichier audio local ou une autre source
+            } catch (error) {
+                console.error("Erreur lors de la recherche YouTube:", error);
+                return null;
+            }
+        }
+
+        // Fonction pour prévisualiser une chanson
+        async function previewSong(title, artist) {
+            console.log("Aperçu de la chanson:", title, "par", artist);
+            
+            // Afficher le lecteur
+            document.getElementById('music-player').style.display = 'block';
+            document.getElementById('current-song-info').textContent = "Aperçu: " + title + " par " + artist;
+            
+            // Arrêter l'audio précédent s'il y en a un
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            
+            // Pour l'instant, utilisons un fichier audio de démonstration
+            // En production, vous pourrez intégrer l'API YouTube ou Spotify
+            const audioPlayer = document.getElementById('audio-player');
+            audioPlayer.src = "/demo-audio.mp3"; // Fichier de démonstration
+            
+            // Cacher les paroles pendant l'aperçu
+            document.getElementById('lyrics-container').style.display = 'none';
+        }
+
+        // Fonction pour sélectionner une chanson et charger les paroles
+        async function selectSong(level, songIndex, title, artist) {
+            console.log("Chanson sélectionnée:", title, "par", artist, "niveau:", level, "index:", songIndex);
+            
+            currentLevel = level;
+            
+            // Afficher le lecteur
+            document.getElementById('music-player').style.display = 'block';
+            document.getElementById('current-song-info').textContent = title + " par " + artist + " (" + level + " points)";
+            
+            // Charger les paroles
+            try {
+                const response = await fetch('/api/get-lyrics/' + level + '/' + songIndex);
+                if (response.ok) {
+                    const lyricsData = await response.json();
+                    currentLyrics = lyricsData.parole || lyricsData.lyrics || "Paroles non disponibles";
+                    displayMaskedLyrics(currentLyrics, parseInt(level));
+                } else {
+                    currentLyrics = "Paroles non disponibles";
+                    document.getElementById('lyrics-text').textContent = currentLyrics;
+                }
+            } catch (error) {
+                console.error("Erreur lors du chargement des paroles:", error);
+                currentLyrics = "Erreur de chargement des paroles";
+                document.getElementById('lyrics-text').textContent = currentLyrics;
+            }
+            
+            // Charger l'audio (instrumental si possible)
+            const audioPlayer = document.getElementById('audio-player');
+            // Ici vous pourrez intégrer l'API de votre choix pour l'audio instrumental
+            audioPlayer.src = "/demo-instrumental.mp3"; // Fichier de démonstration
+            
+            // Afficher les paroles
+            document.getElementById('lyrics-container').style.display = 'block';
+        }
+
+        // Fonction pour masquer les paroles selon le niveau de points
+        function displayMaskedLyrics(lyrics, points) {
+            if (!lyrics) return;
+            
+            // Calculer le pourcentage de masquage selon les points
+            let maskPercentage;
+            switch(points) {
+                case 50: maskPercentage = 0.8; break;  // 80% masqué pour 50 points
+                case 40: maskPercentage = 0.6; break;  // 60% masqué pour 40 points
+                case 30: maskPercentage = 0.4; break;  // 40% masqué pour 30 points
+                case 20: maskPercentage = 0.2; break;  // 20% masqué pour 20 points
+                case 10: maskPercentage = 0.1; break;  // 10% masqué pour 10 points
+                default: maskPercentage = 0.3; break;
+            }
+            
+            const words = lyrics.split(' ');
+            const wordsToMask = Math.floor(words.length * maskPercentage);
+            
+            // Créer un array d'indices à masquer de manière aléatoire
+            const indicesToMask = [];
+            while (indicesToMask.length < wordsToMask) {
+                const randomIndex = Math.floor(Math.random() * words.length);
+                if (!indicesToMask.includes(randomIndex)) {
+                    indicesToMask.push(randomIndex);
+                }
+            }
+            
+            // Appliquer le masquage
+            const maskedWords = words.map((word, index) => {
+                if (indicesToMask.includes(index)) {
+                    return '<span class="masked-text">' + '█'.repeat(word.length) + '</span>';
+                }
+                return word;
+            });
+            
+            document.getElementById('lyrics-text').innerHTML = maskedWords.join(' ');
+        }
+
+        // Fonction pour basculer l'affichage des paroles
+        function toggleLyrics() {
+            const lyricsContainer = document.getElementById('lyrics-container');
+            if (lyricsContainer.style.display === 'none') {
+                lyricsContainer.style.display = 'block';
+            } else {
+                lyricsContainer.style.display = 'none';
+            }
+        }
+    </script>
+		</body>
 		</html>`
 
 	t, err := template.New("duel").Parse(tmpl)
@@ -216,7 +392,133 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// StartSong charge une chanson et ses paroles dans la session de jeu.
+// GetLyrics - Handler pour récupérer les paroles d'une chanson
+func GetLyrics(w http.ResponseWriter, r *http.Request) {
+	// Extraire les paramètres de l'URL
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) < 5 {
+		http.Error(w, "Paramètres manquants", http.StatusBadRequest)
+		return
+	}
+
+	level := parts[3]
+	songIndexStr := parts[4]
+
+	songIndex, err := strconv.Atoi(songIndexStr)
+	if err != nil {
+		http.Error(w, "Index de chanson invalide", http.StatusBadRequest)
+		return
+	}
+
+	// Trouver le duel actuel (vous devrez adapter selon votre logique)
+	// Pour cet exemple, je prends le premier duel disponible
+	if len(duels) == 0 {
+		http.Error(w, "Aucun duel disponible", http.StatusNotFound)
+		return
+	}
+
+	duel := &duels[0] // Adaptez selon votre logique de session
+
+	pointLevel, ok := duel.Points[level]
+	if !ok {
+		http.Error(w, "Niveau de points invalide", http.StatusBadRequest)
+		return
+	}
+
+	if songIndex < 0 || songIndex >= len(pointLevel.Songs) {
+		http.Error(w, "Index de chanson invalide", http.StatusBadRequest)
+		return
+	}
+
+	song := pointLevel.Songs[songIndex]
+
+	// Charger les paroles depuis le fichier JSON
+	var lyricsData LyricsData
+	if song.LyricsFile != nil && *song.LyricsFile != "" {
+		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
+		if !filepath.IsAbs(filePath) {
+			content, err := os.ReadFile(filePath)
+			if err == nil {
+				if err := json.Unmarshal(content, &lyricsData); err == nil {
+					w.Header().Set("Content-Type", "application/json")
+					json.NewEncoder(w).Encode(lyricsData)
+					return
+				}
+			}
+		}
+	}
+
+	// Si pas de paroles trouvées
+	lyricsData = LyricsData{
+		Titre:   song.Title,
+		Artiste: song.Artist,
+		Parole:  "Paroles non disponibles",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(lyricsData)
+}
+
+// MaskLyrics masque une partie des paroles selon le niveau de difficulté
+func MaskLyrics(lyrics string, points int) string {
+	if lyrics == "" {
+		return lyrics
+	}
+
+	// Calculer le pourcentage de masquage selon les points
+	var maskPercentage float64
+	switch points {
+	case 50:
+		maskPercentage = 0.8 // 80% masqué pour 50 points (très difficile)
+	case 40:
+		maskPercentage = 0.6 // 60% masqué pour 40 points
+	case 30:
+		maskPercentage = 0.4 // 40% masqué pour 30 points
+	case 20:
+		maskPercentage = 0.2 // 20% masqué pour 20 points
+	case 10:
+		maskPercentage = 0.1 // 10% masqué pour 10 points (facile)
+	default:
+		maskPercentage = 0.3
+	}
+
+	// Diviser le texte en mots
+	words := strings.Fields(lyrics)
+	if len(words) == 0 {
+		return lyrics
+	}
+
+	// Calculer le nombre de mots à masquer
+	wordsToMask := int(float64(len(words)) * maskPercentage)
+	if wordsToMask == 0 && maskPercentage > 0 {
+		wordsToMask = 1
+	}
+
+	// Créer un générateur de nombres aléatoires avec seed basée sur le temps
+	rand.Seed(time.Now().UnixNano())
+
+	// Sélectionner aléatoirement les indices des mots à masquer
+	indicesToMask := make(map[int]bool)
+	for len(indicesToMask) < wordsToMask && len(indicesToMask) < len(words) {
+		randomIndex := rand.Intn(len(words))
+		indicesToMask[randomIndex] = true
+	}
+
+	// Appliquer le masquage
+	maskedWords := make([]string, len(words))
+	for i, word := range words {
+		if indicesToMask[i] {
+			// Remplacer par des underscores ou des caractères de masquage
+			maskedWords[i] = strings.Repeat("_", len(word))
+		} else {
+			maskedWords[i] = word
+		}
+	}
+
+	return strings.Join(maskedWords, " ")
+}
+
+// StartSong démarre une chanson avec ses paroles
 func StartSong(sessionID string, level string, songIndex int) (*GameSession, error) {
 	session, ok := gameSessions[sessionID]
 	if !ok {
