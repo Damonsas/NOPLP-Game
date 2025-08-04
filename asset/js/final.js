@@ -186,24 +186,21 @@ class MusicGameClient {
             return;
         let maskPercentage;
         switch (points) {
-            case 50:
+            case 20000:
                 maskPercentage = 0.8;
                 break; // 80% masqué pour 50 points
-            case 40:
+            case 10000:
                 maskPercentage = 0.6;
                 break; // 60% masqué pour 40 points
-            case 30:
+            case 5000:
                 maskPercentage = 0.4;
                 break; // 40% masqué pour 30 points
-            case 20:
+            case 2000:
                 maskPercentage = 0.2;
                 break; // 20% masqué pour 20 points
-            case 10:
+            case 1000:
                 maskPercentage = 0.1;
                 break; // 10% masqué pour 10 points
-            default:
-                maskPercentage = 0.3;
-                break;
         }
         const words = lyrics.split(' ');
         const wordsToMask = Math.floor(words.length * maskPercentage);
@@ -254,12 +251,11 @@ class MusicGameClient {
     }
     calculateCurrentMaskPercentage() {
         switch (this.gameState.currentLevel) {
-            case 50: return 0.8;
-            case 40: return 0.6;
-            case 30: return 0.4;
-            case 20: return 0.2;
-            case 10: return 0.1;
-            default: return 0.3;
+            case 20000: return 0.8;
+            case 10000: return 0.6;
+            case 5000: return 0.4;
+            case 2000: return 0.2;
+            case 1000: return 0.1;
         }
     }
     displayMaskedLyricsWithPercentage(lyrics, maskPercentage) {
