@@ -3,7 +3,7 @@
 @import "game.scss";
 
 :root{
-    background-color: rgb(51, 45, 171);
+    background: linear-gradient(45deg, #4336ff, #9198e5, #4336ff);
 }
 
 body{
@@ -20,4 +20,5 @@ body{
 
 button{
     @include button-style();
+    color: #fff;
         }

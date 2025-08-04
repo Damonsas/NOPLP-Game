@@ -29,6 +29,7 @@ body {
 
         .point-button {
             @include button-style();
+            color: #fff;
 
         }
 
@@ -46,18 +47,8 @@ body {
         }
 
         .same-song-button {
-            background: linear-gradient(45deg, #4e7fcd, #4e2ecc);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            display: block;
-            margin: 0 auto 20px auto;
+            @include button-style();
+            color: #fff;
         }
 
         .same-song-button:hover {
@@ -93,7 +84,7 @@ body {
 				.lyrics-container {
 					margin: 15px 0;
 					padding: 15px;
-					background: #fff;
+					background: #2629bd;
 					border: 1px solid #ddd;
 					border-radius: 5px;
 					max-height: 300px;
