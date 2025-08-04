@@ -3,3 +3,17 @@
     color: #f0f0f0;
     
 }
+
+@mixin button-style(){
+    background: linear-gradient(45deg, #162d94, #7e65d1);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    border-color: #c1cefd;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
