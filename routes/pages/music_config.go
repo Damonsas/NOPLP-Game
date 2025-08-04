@@ -4,7 +4,6 @@ import (
 	"os"
 )
 
-// MusicConfig contient la configuration pour les API musicales
 type MusicConfig struct {
 	YouTubeAPIKey       string
 	SpotifyClientID     string
@@ -15,10 +14,8 @@ type MusicConfig struct {
 	EnableLocal         bool
 }
 
-// Singleton pour la configuration
 var musicConfig *MusicConfig
 
-// GetMusicConfig retourne la configuration musicale
 func GetMusicConfig() *MusicConfig {
 	if musicConfig == nil {
 		musicConfig = loadMusicConfig()
@@ -26,7 +23,6 @@ func GetMusicConfig() *MusicConfig {
 	return musicConfig
 }
 
-// loadMusicConfig charge la configuration depuis les variables d'environnement
 func loadMusicConfig() *MusicConfig {
 	config := &MusicConfig{
 		YouTubeAPIKey:       os.Getenv("YOUTUBE_API_KEY"),
@@ -38,7 +34,6 @@ func loadMusicConfig() *MusicConfig {
 		EnableLocal:         os.Getenv("ENABLE_LOCAL") != "false",
 	}
 
-	// Valeurs par défaut
 	if config.LocalAudioPath == "" {
 		config.LocalAudioPath = "./data/audio"
 	}
@@ -46,44 +41,32 @@ func loadMusicConfig() *MusicConfig {
 	return config
 }
 
-// IsYouTubeEnabled vérifie si YouTube est configuré et activé
 func (c *MusicConfig) IsYouTubeEnabled() bool {
 	return c.EnableYouTube && c.YouTubeAPIKey != ""
 }
 
-// IsSpotifyEnabled vérifie si Spotify est configuré et activé
 func (c *MusicConfig) IsSpotifyEnabled() bool {
 	return c.EnableSpotify && c.SpotifyClientID != "" && c.SpotifyClientSecret != ""
 }
 
-// IsLocalEnabled vérifie si la recherche locale est activée
 func (c *MusicConfig) IsLocalEnabled() bool {
 	return c.EnableLocal && c.LocalAudioPath != ""
 }
 
-// Alternative API configuration pour utiliser des APIs gratuites ou alternatives
-
-// FreeMusicAPIs contient les configurations pour les APIs gratuites
 type FreeMusicAPIs struct {
-	// Deezer (gratuit pour les aperçus)
 	DeezerAPIURL string
 
-	// Last.fm (gratuit)
 	LastFMAPIKey string
 	LastFMAPIURL string
 
-	// MusicBrainz (gratuit)
 	MusicBrainzAPIURL string
 
-	// iTunes/Apple Music (gratuit pour la recherche)
 	iTunesAPIURL string
 
-	// FreeSound (pour les effets sonores)
 	FreeSoundAPIKey string
 	FreeSoundAPIURL string
 }
 
-// GetFreeMusicAPIs retourne la configuration des APIs gratuites
 func GetFreeMusicAPIs() *FreeMusicAPIs {
 	return &FreeMusicAPIs{
 		DeezerAPIURL:      "https://api.deezer.com",
@@ -96,11 +79,9 @@ func GetFreeMusicAPIs() *FreeMusicAPIs {
 	}
 }
 
-// InitializeMusicAPIs initialise les routes et la configuration
 func InitializeMusicAPIs() {
 	config := GetMusicConfig()
 
-	// Log de la configuration
 	if config.IsYouTubeEnabled() {
 		println("✓ YouTube API activée")
 	} else {
@@ -119,11 +100,9 @@ func InitializeMusicAPIs() {
 		println("⚠ Recherche locale non configurée")
 	}
 
-	// Enregistrer les routes
 	RegisterMusicRoutes()
 }
 
-// Instructions pour configurer les APIs
 const ConfigurationInstructions = `
 # Configuration des API Musicales
 
