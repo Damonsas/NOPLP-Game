@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-// YouTubeResponse structure pour la réponse de l'API YouTube
 type YouTubeResponse struct {
 	Items []struct {
 		ID struct {
@@ -21,14 +20,12 @@ type YouTubeResponse struct {
 	} `json:"items"`
 }
 
-// SpotifyTokenResponse structure pour l'authentification Spotify
 type SpotifyTokenResponse struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
 	ExpiresIn   int    `json:"expires_in"`
 }
 
-// SpotifySearchResponse structure pour la recherche Spotify
 type SpotifySearchResponse struct {
 	Tracks struct {
 		Items []struct {
@@ -45,16 +42,14 @@ type SpotifySearchResponse struct {
 	} `json:"tracks"`
 }
 
-// MusicSearchResult structure pour le résultat de recherche unifié
 type MusicSearchResult struct {
 	Title      string `json:"title"`
 	Artist     string `json:"artist"`
 	PreviewURL string `json:"preview_url"`
 	SourceURL  string `json:"source_url"`
-	Source     string `json:"source"` // "youtube", "spotify", "local"
+	Source     string `json:"source"`
 }
 
-// SearchMusicHandler gère les recherches de musique
 func SearchMusicHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
@@ -73,38 +68,32 @@ func SearchMusicHandler(w http.ResponseWriter, r *http.Request) {
 	config := GetMusicConfig()
 	results := []MusicSearchResult{}
 
-	// 1. Recherche locale d'abord (plus rapide)
 	if config.IsLocalEnabled() {
 		if localResult := searchLocal(title, artist, instrumental); localResult != nil {
 			results = append(results, *localResult)
 		}
 	}
 
-	// 2. Recherche Deezer (API gratuite, rapide)
 	if deezerResult, err := searchDeezer(title, artist); err == nil && deezerResult != nil {
 		results = append(results, *deezerResult)
 	}
 
-	// 3. Recherche iTunes (API gratuite)
 	if itunesResult, err := searchITunes(title, artist); err == nil && itunesResult != nil {
 		results = append(results, *itunesResult)
 	}
 
-	// 4. Recherche Spotify (si configuré)
 	if config.IsSpotifyEnabled() {
 		if spotifyResult, err := searchSpotify(title, artist); err == nil && spotifyResult != nil {
 			results = append(results, *spotifyResult)
 		}
 	}
 
-	// 5. Recherche YouTube (si configuré et instrumental demandé)
 	if config.IsYouTubeEnabled() && instrumental {
 		if youtubeResult, err := searchYouTube(title, artist, instrumental); err == nil && youtubeResult != nil {
 			results = append(results, *youtubeResult)
 		}
 	}
 
-	// Si aucun résultat trouvé, retourner un résultat par défaut
 	if len(results) == 0 {
 		results = append(results, MusicSearchResult{
 			Title:      title,
@@ -119,14 +108,12 @@ func SearchMusicHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(results)
 }
 
-// searchYouTube recherche sur YouTube
 func searchYouTube(title, artist string, instrumental bool) (*MusicSearchResult, error) {
 	config := GetMusicConfig()
 	if !config.IsYouTubeEnabled() {
 		return nil, fmt.Errorf("YouTube API non configurée")
 	}
 
-	// Construire la requête de recherche
 	query := title
 	if artist != "" {
 		query += " " + artist
@@ -166,7 +153,6 @@ func searchYouTube(title, artist string, instrumental bool) (*MusicSearchResult,
 	}, nil
 }
 
-// searchDeezer recherche sur Deezer (API gratuite)
 func searchDeezer(title, artist string) (*MusicSearchResult, error) {
 	query := title
 	if artist != "" {
@@ -214,7 +200,6 @@ func searchDeezer(title, artist string) (*MusicSearchResult, error) {
 	}, nil
 }
 
-// searchITunes recherche sur iTunes (API gratuite)
 func searchITunes(title, artist string) (*MusicSearchResult, error) {
 	query := title
 	if artist != "" {
@@ -259,26 +244,22 @@ func searchITunes(title, artist string) (*MusicSearchResult, error) {
 	}, nil
 }
 
-// searchSpotify recherche sur Spotify
 func searchSpotify(title, artist string) (*MusicSearchResult, error) {
 	config := GetMusicConfig()
 	if !config.IsSpotifyEnabled() {
-		return nil, fmt.Errorf("Spotify API non configurée")
+		return nil, fmt.Errorf("spotify API non configurée")
 	}
 
-	// Construire la requête de recherche
 	query := title
 	if artist != "" {
 		query += " artist:" + artist
 	}
 
-	// Obtenir un token d'accès
 	token, err := getSpotifyToken(config.SpotifyClientID, config.SpotifyClientSecret)
 	if err != nil {
 		return nil, err
 	}
 
-	// Faire la recherche
 	searchURL := fmt.Sprintf(
 		"https://api.spotify.com/v1/search?q=%s&type=track&limit=1",
 		url.QueryEscape(query),
@@ -356,15 +337,10 @@ func getSpotifyToken(clientID, clientSecret string) (string, error) {
 	return tokenResp.AccessToken, nil
 }
 
-// searchLocal recherche dans les fichiers audio locaux
 func searchLocal(title, artist string, instrumental bool) *MusicSearchResult {
-	// Ici vous pouvez implémenter la logique pour chercher dans vos fichiers locaux
-	// Par exemple, dans un dossier "audio" avec une structure organisée
 
-	// Exemple de logique de recherche locale
-	audioPath := "/audio/" // Chemin vers vos fichiers audio
+	audioPath := "/audio/"
 
-	// Construire le nom de fichier potentiel
 	filename := strings.ToLower(strings.ReplaceAll(title, " ", "_"))
 	if artist != "" {
 		filename = strings.ToLower(strings.ReplaceAll(artist, " ", "_")) + "_" + filename
@@ -373,7 +349,6 @@ func searchLocal(title, artist string, instrumental bool) *MusicSearchResult {
 		filename += "_instrumental"
 	}
 
-	// Vérifier différents formats
 	extensions := []string{".mp3", ".wav", ".ogg", ".m4a"}
 	for _, ext := range extensions {
 		fullPath := audioPath + filename + ext
@@ -393,7 +368,6 @@ func searchLocal(title, artist string, instrumental bool) *MusicSearchResult {
 	return nil
 }
 
-// GetInstrumentalHandler endpoint pour obtenir la version instrumentale
 func GetInstrumentalHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
@@ -408,10 +382,8 @@ func GetInstrumentalHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Rechercher spécifiquement la version instrumentale
 	result, err := searchYouTube(title, artist, true)
 	if err != nil {
-		// Fallback sur une recherche locale
 		if localResult := searchLocal(title, artist, true); localResult != nil {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(localResult)
@@ -426,7 +398,6 @@ func GetInstrumentalHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-// AudioProxyHandler proxy pour servir les fichiers audio avec CORS
 func AudioProxyHandler(w http.ResponseWriter, r *http.Request) {
 	audioURL := r.URL.Query().Get("url")
 	if audioURL == "" {
@@ -434,12 +405,10 @@ func AudioProxyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ajouter les headers CORS
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	// Proxy la requête vers l'URL audio
 	resp, err := http.Get(audioURL)
 	if err != nil {
 		http.Error(w, "Erreur lors du chargement de l'audio", http.StatusInternalServerError)
@@ -447,16 +416,12 @@ func AudioProxyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	// Copier les headers de contenu
 	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
 	w.Header().Set("Content-Length", resp.Header.Get("Content-Length"))
 
-	// Copier le contenu
 	w.WriteHeader(resp.StatusCode)
-	// io.Copy(w, resp.Body) // Vous devrez importer "io"
 }
 
-// RegisterMusicRoutes enregistre toutes les routes liées à la musique
 func RegisterMusicRoutes() {
 	http.HandleFunc("/api/search-music", SearchMusicHandler)
 	http.HandleFunc("/api/get-instrumental", GetInstrumentalHandler)
