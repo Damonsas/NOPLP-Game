@@ -377,6 +377,7 @@ func searchLocal(title, artist string, instrumental bool) *MusicSearchResult {
 	extensions := []string{".mp3", ".wav", ".ogg", ".m4a"}
 	for _, ext := range extensions {
 		fullPath := audioPath + filename + ext
+		_ = fullPath
 		// Dans un vrai cas, vous vérifieriez si le fichier existe
 		// if _, err := os.Stat(fullPath); err == nil {
 		//     return &MusicSearchResult{
