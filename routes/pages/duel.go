@@ -337,7 +337,6 @@ func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 1. Charger le duel depuis le fichier JSON
 	var loadedDuel Duel
 	if err := json.Unmarshal(fileContent, &loadedDuel); err != nil {
 		http.Error(w, "Erreur lors du décodage du fichier JSON. Assurez-vous que c'est un objet de duel unique.", http.StatusBadRequest)
@@ -349,7 +348,6 @@ func ImportDuelFromServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 2. Assurer l'unicité du nom (optionnel mais recommandé)
 	for _, duel := range duels {
 		if duel.Name == loadedDuel.Name {
 			http.Error(w, fmt.Sprintf("Un duel avec le nom '%s' existe déjà.", loadedDuel.Name), http.StatusConflict)
