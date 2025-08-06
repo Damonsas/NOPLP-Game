@@ -170,6 +170,7 @@ function collectFormData() {
         return null;
     }
     const formData = {
+        id: Date.now(),
         name,
         points: {},
         sameSong: {
