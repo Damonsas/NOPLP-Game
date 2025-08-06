@@ -15,14 +15,12 @@ body{
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 100vh;
     }
     #présentation{
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 100vh;
     }
 }
 ol{
@@ -33,6 +31,11 @@ ol{
     .btn{
         @include button-style();
         color: #fff;
+        a{
+            text-decoration: none;
+            color: #fff;
+            text-align: center;
+        }
         
     }
 }
