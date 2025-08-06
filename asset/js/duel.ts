@@ -33,7 +33,7 @@ interface GameSession {
   selectedSongs: { [key: string]: number }; 
   team1Score: number;
   team2Score: number;
-  startedAt: string; // Les dates en JSON sont souvent des chaînes (format ISO)
+  startedAt: string; 
   status: 'playing' | 'paused' | 'finished';
 
   currentSong?: Song;
@@ -41,15 +41,11 @@ interface GameSession {
   lyricsVisible: boolean;
 }
 
-// --- Variable de stockage ---
 
 export let preparedDuels: Duel[] = [];
 
-// --- Fonctions de gestion des données ---
 
-/**
- * Charge les duels depuis le localStorage.
- */
+
 export function loadDuelsFromStorage(): void {
     if (typeof(Storage) !== "undefined") {
         const saved = localStorage.getItem('preparedDuels');
@@ -59,9 +55,7 @@ export function loadDuelsFromStorage(): void {
     }
 }
 
-/**
- * Sauvegarde la liste des duels dans le localStorage.
- */
+
 function saveDuelsToStorage(): void {
     if (typeof(Storage) !== "undefined") {
         localStorage.setItem('preparedDuels', JSON.stringify(preparedDuels));
@@ -91,7 +85,6 @@ export async function addDuel(duelData: Duel): Promise<void> {
 
         const savedDuels: Duel[] = await response.json();
 
-        // On vérifie que la réponse est correcte et on prend le premier élément
         if (savedDuels && savedDuels.length > 0) {
             preparedDuels.push(savedDuels[0]); // Ajouter le duel avec l'ID confirmé par le serveur
             saveDuelsToStorage();

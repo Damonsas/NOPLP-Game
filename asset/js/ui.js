@@ -80,7 +80,6 @@ function generatePointSection(points, pointData) {
     `;
 }
 
-//Fonctions du Formulaire de Création/Édition
 
 function openDuelForm(duel = null, index = -1) {
     const isEditing = duel !== null;
@@ -161,7 +160,6 @@ function showImportJsonForm() {
     document.querySelector(".Sectionduel").innerHTML = importHtml;
 }
 
-//Fonctions de collecte et de remplissage de formulaire
 
 function collectFormData() {
     const name = document.getElementById('duelName').value;
