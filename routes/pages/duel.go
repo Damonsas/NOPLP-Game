@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/gorilla/mux"
 )
@@ -638,8 +640,10 @@ func CheckLyricsFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !strings.HasSuffix(filename, ".txt") {
-		filename += ".txt"
+	filename = normalizeName(filename)
+
+	if !strings.HasSuffix(filename, ".json") {
+		filename += ".json"
 	}
 
 	filePath := filepath.Join(paroleDataPath, filename)
@@ -655,6 +659,42 @@ func CheckLyricsFile(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func normalizeName(input string) string {
+	input = strings.ToLower(input)
+	input = removeAccents(input)
+	input = regexp.MustCompile(`[^a-z0-9]+`).ReplaceAllString(input, " ")
+	input = strings.TrimSpace(input)
+	input = strings.ReplaceAll(input, " ", "_")
+	return input
+}
+
+func removeAccents(s string) string {
+	var sb strings.Builder
+	for _, r := range s {
+		if r > unicode.MaxASCII {
+			r = unicode.To(unicode.LowerCase, r)
+			switch r {
+			case 'à', 'â', 'ä':
+				r = 'a'
+			case 'ç':
+				r = 'c'
+			case 'é', 'è', 'ê', 'ë':
+				r = 'e'
+			case 'î', 'ï':
+				r = 'i'
+			case 'ô', 'ö':
+				r = 'o'
+			case 'ù', 'û', 'ü':
+				r = 'u'
+			default:
+				r = '-'
+			}
+		}
+		sb.WriteRune(r)
+	}
+	return sb.String()
 }
 
 func GetLyricsFilesList(w http.ResponseWriter, r *http.Request) {
