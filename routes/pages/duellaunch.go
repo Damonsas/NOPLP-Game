@@ -357,7 +357,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
             // Appliquer le masquage
             const maskedWords = words.map((word, index) => {
                 if (indicesToMask.includes(index)) {
-                    return '<span class="masked-text">' + '█'.repeat(word.length) + '</span>';
+					return '<span class="masked" data-word="' + word + '">█'.repeat(word.length) + '</span>';
                 }
                 return word;
             });
@@ -459,63 +459,101 @@ func GetLyrics(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(lyricsData)
 }
 
-// MaskLyrics masque une partie des paroles selon le niveau de difficulté
 func MaskLyrics(lyrics string, points int) string {
 	if lyrics == "" {
 		return lyrics
 	}
 
-	// Calculer le pourcentage de masquage selon les points
+	sections := splitLyricsBySections(lyrics)
+
+	var targetSection string
+	switch {
+	case points >= 40:
+		targetSection = "Couplet 2"
+	case points >= 10 && points <= 30:
+		targetSection = "Refrain"
+	default:
+		targetSection = "" // Pas de section ciblée
+	}
+
+	// Si la section existe, appliquer le masquage uniquement sur elle
+	if content, ok := sections[targetSection]; ok {
+		sections[targetSection] = maskSectionContent(content, points)
+	}
+
+	// Reconstruire les paroles avec sections masquées
+	var rebuiltLyrics strings.Builder
+	for section, content := range sections {
+		rebuiltLyrics.WriteString("[" + section + "]\n")
+		rebuiltLyrics.WriteString(content + "\n\n")
+	}
+
+	return strings.TrimSpace(rebuiltLyrics.String())
+}
+
+// Découpe les paroles par section
+func splitLyricsBySections(lyrics string) map[string]string {
+	lines := strings.Split(lyrics, "\n")
+	currentSection := "Intro"
+	sections := make(map[string]string)
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
+			currentSection = strings.Trim(line, "[]")
+		} else {
+			sections[currentSection] += line + "\n"
+		}
+	}
+
+	return sections
+}
+
+// Applique le masquage à une section de texte
+func maskSectionContent(text string, points int) string {
 	var maskPercentage float64
 	switch points {
 	case 50:
-		maskPercentage = 0.8 // 80% masqué pour 50 points (très difficile)
+		maskPercentage = 0.8
 	case 40:
-		maskPercentage = 0.6 // 60% masqué pour 40 points
+		maskPercentage = 0.6
 	case 30:
-		maskPercentage = 0.4 // 40% masqué pour 30 points
+		maskPercentage = 0.4
 	case 20:
-		maskPercentage = 0.2 // 20% masqué pour 20 points
+		maskPercentage = 0.2
 	case 10:
-		maskPercentage = 0.1 // 10% masqué pour 10 points (facile)
+		maskPercentage = 0.1
 	default:
 		maskPercentage = 0.3
 	}
 
-	// Diviser le texte en mots
-	words := strings.Fields(lyrics)
+	words := strings.Fields(text)
 	if len(words) == 0 {
-		return lyrics
+		return text
 	}
 
-	// Calculer le nombre de mots à masquer
 	wordsToMask := int(float64(len(words)) * maskPercentage)
 	if wordsToMask == 0 && maskPercentage > 0 {
 		wordsToMask = 1
 	}
 
-	// Créer un générateur de nombres aléatoires avec seed basée sur le temps
 	rand.Seed(time.Now().UnixNano())
-
-	// Sélectionner aléatoirement les indices des mots à masquer
 	indicesToMask := make(map[int]bool)
 	for len(indicesToMask) < wordsToMask && len(indicesToMask) < len(words) {
 		randomIndex := rand.Intn(len(words))
 		indicesToMask[randomIndex] = true
 	}
 
-	// Appliquer le masquage
-	maskedWords := make([]string, len(words))
 	for i, word := range words {
 		if indicesToMask[i] {
-			// Remplacer par des underscores ou des caractères de masquage
-			maskedWords[i] = strings.Repeat("_", len(word))
-		} else {
-			maskedWords[i] = word
+			words[i] = strings.Repeat("_", len(word))
 		}
 	}
 
-	return strings.Join(maskedWords, " ")
+	return strings.Join(words, " ")
 }
 
 // StartSong démarre une chanson avec ses paroles

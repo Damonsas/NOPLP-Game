@@ -10,8 +10,32 @@
 
 body{
    @include text();
+   #index{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+    }
+    #présentation{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+    }
 }
-
+ol{
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    .btn{
+        @include button-style();
+        color: #fff;
+        
+    }
+}
 .song-option{
     visibility: hidden;
 }

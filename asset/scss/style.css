@@ -1,3 +1,4 @@
+@charset "UTF-8";
 body .duel-container {
   display: flex;
   flex-direction: column;
@@ -147,6 +148,39 @@ body .level-songs-container {
 body {
   font-family: Arial, Helvetica, sans-serif;
   color: #f0f0f0;
+}
+body #index {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+body #présentation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+ol {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+ol .btn {
+  background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
+  padding: 12px 25px;
+  border-radius: 25px;
+  border-color: #f0f0f0;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: #fff;
 }
 
 .song-option {

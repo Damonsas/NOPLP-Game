@@ -8,16 +8,19 @@
 
     <script type="module" src="/asset/js/script.js"></script>
 
-    <title>NOPLP-Game</title>
+    <title>NOPLP-le-jeu</title>
 </head>
 <body>
-    <h1>Bienvenue dans NOPLP-Game !</h1>
-    <section id="Connexion">
-        <h2>Connecte-toi</h2>
-        <form action="/welcome" method="get" >
-            <input type="text" name="name" placeholder="Votre nom">
-            <button type="submit">Connexion</button>
-        </form>
+    <section id="index">
+        <h1>Bienvenue dans NOPLP-Game !</h1>
+        
+        <section id="Connexion">
+            <h2>Connecte-toi</h2>
+            <form action="/welcome" method="get" >
+                <input type="text" name="name" placeholder="Votre nom">
+                <button type="submit">Connexion</button>
+            </form>
+        </section>
     </section>
     <script>
         if ('service-worker' in navigator) {
