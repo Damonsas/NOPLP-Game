@@ -144,6 +144,20 @@ body .songSelect {
   margin: 10px 0;
 }
 
+a {
+  text-decoration: none;
+  color: #fff;
+  background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
+  padding: 12px 25px;
+  border-radius: 25px;
+  border-color: #f0f0f0;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
 :root {
   background: linear-gradient(45deg, #4336ff, #9198e5, #4336ff);
   background-size: cover;
@@ -166,6 +180,20 @@ body #présentation {
   align-items: center;
   justify-content: center;
 }
+body #présentation h1 {
+  font-size: 4rem;
+  color: #fff;
+  text-shadow: 0 0 5px #ff005e, 0 0 10px #ff005e, 0 0 20px #ff005e, 0 0 40px #ff005e, 0 0 80px #ff005e;
+  animation: glow 1.5s infinite alternate;
+}
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 5px #ff005e, 0 0 10px #ff005e, 0 0 20px #ff005e, 0 0 40px #ff005e, 0 0 80px #ff005e;
+  }
+  100% {
+    text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff, 0 0 40px #00d4ff, 0 0 80px #00d4ff, 0 0 160px #00d4ff;
+  }
+}
 
 ol {
   list-style: none;
@@ -184,11 +212,11 @@ ol .btn {
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   color: #fff;
+  text-align: center;
 }
 ol .btn a {
   text-decoration: none;
   color: #fff;
-  text-align: center;
 }
 
 .song-option {

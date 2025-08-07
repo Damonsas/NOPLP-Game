@@ -206,7 +206,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 						Votre navigateur ne supporte pas l'élément audio.
 					</audio>
 				</div>
-				// <button onclick="toggleLyrics()" class="btn btn-secondary">Afficher/Masquer les paroles</button>
+				
 			</div>
 
 			<div id="lyrics-container" class="lyrics-container" style="display: none;">
@@ -219,10 +219,6 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
                 <button type="submit" class="btn btn-success">Démarrer une partie</button>
             </form>
             
-            // <form method="POST" style="display: inline;">
-            //     <input type="hidden" name="action" value="export">
-            //     <button type="submit" class="btn btn-primary">Exporter ce duel</button>
-            // </form>
             
             <a href="/duel" class="btn btn-secondary">Retour aux duels</a>
         </div>
