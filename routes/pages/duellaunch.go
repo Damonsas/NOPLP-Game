@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type LyricsData struct {
@@ -389,34 +391,43 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// GetLyrics - Handler pour récupérer les paroles d'une chanson
 func GetLyrics(w http.ResponseWriter, r *http.Request) {
-	// Extraire les paramètres de l'URL
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 5 {
-		http.Error(w, "Paramètres manquants", http.StatusBadRequest)
-		return
-	}
-
-	level := parts[3]
-	songIndexStr := parts[4]
-
+	vars := mux.Vars(r)
+	level := vars["level"]
+	songIndexStr := vars["songIndex"]
 	songIndex, err := strconv.Atoi(songIndexStr)
 	if err != nil {
 		http.Error(w, "Index de chanson invalide", http.StatusBadRequest)
 		return
 	}
+	// Récupérer le duelId depuis les paramètres de query ou la session
+	// Pour l'instant, utilisons le premier duel ou trouvons une autre logique
+	duelIDStr := r.URL.Query().Get("duelId")
+	var selectedDuel *Duel
 
-	// Trouver le duel actuel (vous devrez adapter selon votre logique)
-	// Pour cet exemple, je prends le premier duel disponible
-	if len(duels) == 0 {
+	if duelIDStr != "" {
+		duelID, err := strconv.Atoi(duelIDStr)
+		if err == nil {
+			for i := range duels {
+				if duels[i].ID == duelID {
+					selectedDuel = &duels[i]
+					break
+				}
+			}
+		}
+	}
+
+	// Fallback : utiliser le premier duel si aucun ID spécifié
+	if selectedDuel == nil && len(duels) > 0 {
+		selectedDuel = &duels[0]
+	}
+
+	if selectedDuel == nil {
 		http.Error(w, "Aucun duel disponible", http.StatusNotFound)
 		return
 	}
 
-	duel := &duels[0] // Adaptez selon votre logique de session
-
-	pointLevel, ok := duel.Points[level]
+	pointLevel, ok := selectedDuel.Points[level]
 	if !ok {
 		http.Error(w, "Niveau de points invalide", http.StatusBadRequest)
 		return
@@ -429,14 +440,29 @@ func GetLyrics(w http.ResponseWriter, r *http.Request) {
 
 	song := pointLevel.Songs[songIndex]
 
+	// Debug : afficher les informations
+	fmt.Printf("DEBUG - Recherche paroles pour: %s - %s\n", song.Title, song.Artist)
+	fmt.Printf("DEBUG - LyricsFile: %v\n", song.LyricsFile)
+
 	// Charger les paroles depuis le fichier JSON
-	var lyricsData LyricsData
+	var lyricsData map[string]interface{}
 	if song.LyricsFile != nil && *song.LyricsFile != "" {
 		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
-		if !filepath.IsAbs(filePath) {
+		fmt.Printf("DEBUG - Chemin du fichier: %s\n", filePath)
+
+		// Vérifier si le fichier existe
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			fmt.Printf("DEBUG - Fichier n'existe pas: %s\n", filePath)
+		} else {
 			content, err := os.ReadFile(filePath)
-			if err == nil {
-				if err := json.Unmarshal(content, &lyricsData); err == nil {
+			if err != nil {
+				fmt.Printf("DEBUG - Erreur lecture fichier: %v\n", err)
+			} else {
+				fmt.Printf("DEBUG - Contenu fichier lu, taille: %d bytes\n", len(content))
+				if err := json.Unmarshal(content, &lyricsData); err != nil {
+					fmt.Printf("DEBUG - Erreur parsing JSON: %v\n", err)
+				} else {
+					fmt.Printf("DEBUG - JSON parsé avec succès\n")
 					w.Header().Set("Content-Type", "application/json")
 					json.NewEncoder(w).Encode(lyricsData)
 					return
@@ -444,14 +470,12 @@ func GetLyrics(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
 	// Si pas de paroles trouvées
-	lyricsData = LyricsData{
-		Titre:   song.Title,
-		Artiste: song.Artist,
-		Parole:  "Paroles non disponibles",
+	lyricsData = map[string]interface{}{
+		"titre":   song.Title,
+		"artiste": song.Artist,
+		"parole":  "Paroles non disponibles",
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(lyricsData)
 }

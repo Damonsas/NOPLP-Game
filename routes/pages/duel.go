@@ -48,8 +48,8 @@ type GameSession struct {
 	StartedAt     time.Time      `json:"startedAt"`
 	Status        string         `json:"status"` // "playing", "paused", "finished"
 
-	CurrentSong   *Song  `json:"currentSong,omitempty"`   // La chanson actuellement jouée
-	LyricsContent string `json:"lyricsContent,omitempty"` // Le texte des paroles
+	CurrentSong   *Song  `json:"currentSong,omitempty"`
+	LyricsContent string `json:"lyricsContent,omitempty"`
 	LyricsVisible bool   `json:"lyricsVisible"`
 }
 
@@ -733,6 +733,42 @@ func GetServerDuelsList(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(duelFiles)
 }
 
+func DebugDuelData(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("=== DEBUG DUEL DATA ===\n")
+	fmt.Printf("Nombre de duels: %d\n", len(duels))
+	fmt.Printf("paroleDataPath: %s\n", paroleDataPath)
+
+	files, err := os.ReadDir(paroleDataPath)
+	if err != nil {
+		fmt.Printf("Erreur lecture dossier paroles: %v\n", err)
+	} else {
+		fmt.Printf("Fichiers dans %s:\n", paroleDataPath)
+		for _, file := range files {
+			fmt.Printf("  - %s\n", file.Name())
+		}
+	}
+
+	if len(duels) > 0 {
+		duel := duels[0]
+		fmt.Printf("Premier duel: %s (ID: %d)\n", duel.Name, duel.ID)
+		for level, pointLevel := range duel.Points {
+			fmt.Printf("  Niveau %s: %s\n", level, pointLevel.Theme)
+			for i, song := range pointLevel.Songs {
+				fmt.Printf("    Chanson %d: %s - %s\n", i, song.Title, song.Artist)
+				if song.LyricsFile != nil {
+					fmt.Printf("      Fichier paroles: %s\n", *song.LyricsFile)
+				} else {
+					fmt.Printf("      Pas de fichier paroles\n")
+				}
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Debug info printed to console"))
+}
+
 func StartGameSession(w http.ResponseWriter, r *http.Request) {
 	var request struct {
 		DuelID int `json:"duelId"`
@@ -936,7 +972,6 @@ func HandleStartSong(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(session)
 }
 
-// HandleLyricsVisibility est appelé pour montrer/cacher les paroles.
 func HandleLyricsVisibility(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	sessionID := vars["id"]
@@ -949,7 +984,6 @@ func HandleLyricsVisibility(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Appel de la logique depuis duellaunch.go
 	session, err := SetLyricsVisibility(sessionID, request.Visible)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -965,6 +999,7 @@ func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/duel-game", DisplayDuel).Methods("GET", "POST")
 
 	r.HandleFunc("/duel-display", DisplayDuel).Methods("GET", "POST")
+	r.HandleFunc("/api/debug-duel-data", DebugDuelData).Methods("GET")
 
 	r.HandleFunc("/api/duels", GetDuels).Methods("GET")
 	r.HandleFunc("/api/duels", CreateDuel).Methods("POST")
@@ -981,6 +1016,7 @@ func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/api/temp-duel", SaveTemporaryDuel).Methods("POST")
 	r.HandleFunc("/api/temp-duel", LoadTemporaryDuel).Methods("GET")
 
+	r.HandleFunc("/api/get-lyrics/{level}/{songIndex:[0-9]+}", GetLyrics).Methods("GET")
 	r.HandleFunc("/api/check-lyrics", CheckLyricsFile).Methods("GET")
 	r.HandleFunc("/api/lyrics-list", GetLyricsFilesList).Methods("GET")
 
