@@ -107,7 +107,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 			<link rel="stylesheet" href="/asset/scss/style.css">
 		</head>
 		<body>
-    <div class="duel-container">
+    <div class="duelContainer">
         <div class="duel-header">
             <h1>{{.Duel.Name}}</h1>
             <div class="metadata">
@@ -198,36 +198,37 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
             {{end}}
         </section>
 
-        <!-- Lecteur de musique global -->
-        <div id="music-player" class="music-player" style="display: none;">
-            <h4 id="current-song-info">Aucune chanson sélectionnée</h4>
-            <div class="audio-controls">
-                <audio id="audio-player" controls style="width: 100%;">
-                    Votre navigateur ne supporte pas l'élément audio.
-                </audio>
-            </div>
-            <button onclick="toggleLyrics()" class="btn btn-secondary">Afficher/Masquer les paroles</button>
-        </div>
+        <section class="songSelect duel-container">
+			<div id="music-player" class="music-player" style="display: none;">
+				<h4 id="current-song-info">Aucune chanson sélectionnée</h4>
+				<div class="audio-controls">
+					<audio id="audio-player" controls style="width: 100%;">
+						Votre navigateur ne supporte pas l'élément audio.
+					</audio>
+				</div>
+				// <button onclick="toggleLyrics()" class="btn btn-secondary">Afficher/Masquer les paroles</button>
+			</div>
 
-        <!-- Container pour les paroles -->
-        <div id="lyrics-container" class="lyrics-container" style="display: none;">
-            <h4>Paroles</h4>
-            <div id="lyrics-text" class="lyrics-text"></div>
-        </div>
-
-        <div class="actions">
+			<div id="lyrics-container" class="lyrics-container" style="display: none;">
+				<h4>Paroles</h4>
+				<div id="lyrics-text" class="lyrics-text"></div>
+			</div>
+			<div class="actions">
             <form method="POST" style="display: inline;">
                 <input type="hidden" name="action" value="start_session">
                 <button type="submit" class="btn btn-success">Démarrer une partie</button>
             </form>
             
-            <form method="POST" style="display: inline;">
-                <input type="hidden" name="action" value="export">
-                <button type="submit" class="btn btn-primary">Exporter ce duel</button>
-            </form>
+            // <form method="POST" style="display: inline;">
+            //     <input type="hidden" name="action" value="export">
+            //     <button type="submit" class="btn btn-primary">Exporter ce duel</button>
+            // </form>
             
             <a href="/duel" class="btn btn-secondary">Retour aux duels</a>
         </div>
+		</section>
+
+        
     </div>
 
     <script>
