@@ -272,13 +272,22 @@ class MusicGameClient {
                 indicesToMask.push(randomIndex);
             }
         }
-        const maskedWords = words.map((word, index) => {
-            if (indicesToMask.includes(index)) {
-                return `<span class="masked-text">${'█'.repeat(word.length)}</span>`;
+        const visibleSections = ["intro", "couplet1"];
+        const maskedSections = ["refrain", "couplet2"]; // selon points
+        const displayedLyrics = Object.entries(lyrics.sections)
+            .map(([section, lines]) => {
+            if (visibleSections.includes(section)) {
+                return lines.join('<br>');
             }
-            return word;
-        });
-        this.displayLyrics(maskedWords.join(' '));
+            return lines
+                .map(line => line
+                .split(" ")
+                .map(word => `<span class="masked" data-word="${word}">${'█'.repeat(word.length)}</span>`)
+                .join(" "))
+                .join('<br>');
+        })
+            .join("<br><br>");
+        document.getElementById("lyricsDisplay").innerHTML = displayedLyrics;
     }
     stopCurrentAudio() {
         if (this.currentAudio) {

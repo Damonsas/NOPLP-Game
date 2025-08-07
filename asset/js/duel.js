@@ -7,12 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// --- Variable de stockage ---
 export let preparedDuels = [];
-// --- Fonctions de gestion des données ---
-/**
- * Charge les duels depuis le localStorage.
- */
 export function loadDuelsFromStorage() {
     if (typeof (Storage) !== "undefined") {
         const saved = localStorage.getItem('preparedDuels');
@@ -21,9 +16,6 @@ export function loadDuelsFromStorage() {
         }
     }
 }
-/**
- * Sauvegarde la liste des duels dans le localStorage.
- */
 function saveDuelsToStorage() {
     if (typeof (Storage) !== "undefined") {
         localStorage.setItem('preparedDuels', JSON.stringify(preparedDuels));
@@ -49,7 +41,6 @@ export function addDuel(duelData) {
                 throw new Error(errorText || 'Erreur lors de la sauvegarde sur le serveur');
             }
             const savedDuels = yield response.json();
-            // On vérifie que la réponse est correcte et on prend le premier élément
             if (savedDuels && savedDuels.length > 0) {
                 preparedDuels.push(savedDuels[0]); // Ajouter le duel avec l'ID confirmé par le serveur
                 saveDuelsToStorage();

@@ -4,13 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -221,7 +219,8 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
                 <button type="submit" class="btn btn-success">Démarrer une partie</button>
             </form>
             
-            
+            <button id="startLyricsBtn" class="start-lyrics-button">Commencer les paroles</button>
+
             <a href="/duel" class="btn btn-secondary">Retour aux duels</a>
         </div>
 		</section>
@@ -494,12 +493,13 @@ func MaskLyrics(lyrics string, points int) string {
 	case points >= 10 && points <= 30:
 		targetSection = "Refrain"
 	default:
-		targetSection = "" // Pas de section ciblée
+		targetSection = ""
 	}
 
 	// Si la section existe, appliquer le masquage uniquement sur elle
 	if content, ok := sections[targetSection]; ok {
-		sections[targetSection] = maskSectionContent(content, points)
+		lines := strings.Split(strings.TrimSpace(content), "\n")
+		sections[targetSection] = MaskedSectionContent(targetSection, lines, points)
 	}
 
 	// Reconstruire les paroles avec sections masquées
@@ -534,47 +534,38 @@ func splitLyricsBySections(lyrics string) map[string]string {
 }
 
 // Applique le masquage à une section de texte
-func maskSectionContent(text string, points int) string {
-	var maskPercentage float64
+func MaskedSectionContent(sectionName string, lines []string, points int) string {
+	// Définir les sections visibles selon les points
+	showSection := false
+
 	switch points {
-	case 50:
-		maskPercentage = 0.8
-	case 40:
-		maskPercentage = 0.6
-	case 30:
-		maskPercentage = 0.4
-	case 20:
-		maskPercentage = 0.2
-	case 10:
-		maskPercentage = 0.1
+	case 50, 40:
+		// Montrer seulement couplet1
+		showSection = strings.ToLower(sectionName) == "couplet1"
+	case 30, 20, 10:
+		// Montrer tous sauf les refrains
+		showSection = !strings.Contains(strings.ToLower(sectionName), "refrain")
 	default:
-		maskPercentage = 0.3
+		showSection = true
 	}
 
-	words := strings.Fields(text)
-	if len(words) == 0 {
-		return text
+	// Si section visible, retourner normalement
+	if showSection {
+		return strings.Join(lines, "<br>")
 	}
 
-	wordsToMask := int(float64(len(words)) * maskPercentage)
-	if wordsToMask == 0 && maskPercentage > 0 {
-		wordsToMask = 1
-	}
-
-	rand.Seed(time.Now().UnixNano())
-	indicesToMask := make(map[int]bool)
-	for len(indicesToMask) < wordsToMask && len(indicesToMask) < len(words) {
-		randomIndex := rand.Intn(len(words))
-		indicesToMask[randomIndex] = true
-	}
-
-	for i, word := range words {
-		if indicesToMask[i] {
-			words[i] = strings.Repeat("_", len(word))
+	// Sinon, appliquer le masquage
+	var maskedLines []string
+	for _, line := range lines {
+		words := strings.Fields(line)
+		maskedWords := make([]string, len(words))
+		for i, word := range words {
+			maskedWords[i] = strings.Repeat("█", len(word))
 		}
+		maskedLines = append(maskedLines, strings.Join(maskedWords, " "))
 	}
 
-	return strings.Join(words, " ")
+	return strings.Join(maskedLines, "<br>")
 }
 
 // StartSong démarre une chanson avec ses paroles

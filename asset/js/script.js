@@ -6,6 +6,13 @@ function toggleElement(elementId) {
     }
 }
 
+document.getElementById("startLyricsBtn").addEventListener("click", () => {
+  document.getElementById("songSelect").style.display = "none";
+  document.getElementById("lyricsSection").style.display = "block";
+  startLyrics();
+});
+
+
 // Fonction pour toggle les chansons d'un niveau et fermer les autres
 function toggleLevelSongs(levelId) {
     const element = document.getElementById(levelId);

@@ -296,10 +296,12 @@ class MusicGameClient {
 
         const maskedWords = words.map((word, index) => {
             if (indicesToMask.includes(index)) {
-                return `<span class="masked-text">${'█'.repeat(word.length)}</span>`;
+                const safeWord = word.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<span class="masked" data-word="${safeWord}">${'█'.repeat(word.length)}</span>`;
             }
             return word;
         });
+
 
         this.displayLyrics(maskedWords.join(' '));
     }
