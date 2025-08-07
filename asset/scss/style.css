@@ -154,14 +154,12 @@ body #index {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
 }
 body #présentation {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
 }
 
 ol {
@@ -181,6 +179,11 @@ ol .btn {
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   color: #fff;
+}
+ol .btn a {
+  text-decoration: none;
+  color: #fff;
+  text-align: center;
 }
 
 .song-option {
