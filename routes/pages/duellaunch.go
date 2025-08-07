@@ -216,7 +216,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 				<div id="lyrics-text" class="lyrics-text"></div>
 			</div>
 			<div class="actions">
-            <form method="POST" style="display: inline;">
+            <form method="POST"  style="display: none;">
                 <input type="hidden" name="action" value="start_session">
                 <button type="submit" class="btn btn-success">Démarrer une partie</button>
             </form>
