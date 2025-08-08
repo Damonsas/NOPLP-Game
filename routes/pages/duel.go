@@ -46,7 +46,7 @@ type GameSession struct {
 	Team1Score    int            `json:"team1Score"`
 	Team2Score    int            `json:"team2Score"`
 	StartedAt     time.Time      `json:"startedAt"`
-	Status        string         `json:"status"` // "playing", "paused", "finished"
+	Status        string         `json:"status"`
 
 	CurrentSong   *Song  `json:"currentSong,omitempty"`
 	LyricsContent string `json:"lyricsContent,omitempty"`
@@ -1028,4 +1028,7 @@ func SetupDuelRoutes(r *mux.Router) {
 
 	r.HandleFunc("/api/game-sessions/{id}/start-song", HandleStartSong).Methods("POST")
 	r.HandleFunc("/api/game-sessions/{id}/lyrics-visibility", HandleLyricsVisibility).Methods("POST")
+
+	http.HandleFunc("/api/audio-proxy", AudioProxyHandler)
+
 }

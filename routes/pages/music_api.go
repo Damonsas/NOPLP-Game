@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -106,6 +107,37 @@ func SearchMusicHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)
+}
+
+func AudioProxyHandler(w http.ResponseWriter, r *http.Request) {
+	audioURL := r.URL.Query().Get("url")
+	if audioURL == "" {
+		http.Error(w, "URL audio manquante", http.StatusBadRequest)
+		return
+	}
+
+	// Autoriser les requêtes cross-origin (CORS si front distant)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// Télécharger le flux depuis l'URL (streaming)
+	resp, err := http.Get(audioURL)
+	if err != nil {
+		http.Error(w, "Erreur lors du chargement de l'audio", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copier les headers (type MIME, taille...)
+	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
+	w.Header().Set("Content-Length", resp.Header.Get("Content-Length"))
+
+	// Écrire le contenu audio directement dans la réponse
+	_, err = io.Copy(w, resp.Body)
+	if err != nil {
+		http.Error(w, "Erreur lors de la transmission", http.StatusInternalServerError)
+	}
 }
 
 func searchYouTube(title, artist string, instrumental bool) (*MusicSearchResult, error) {
@@ -307,7 +339,6 @@ func searchSpotify(title, artist string) (*MusicSearchResult, error) {
 	}, nil
 }
 
-// getSpotifyToken obtient un token d'accès Spotify
 func getSpotifyToken(clientID, clientSecret string) (string, error) {
 	tokenURL := "https://accounts.spotify.com/api/token"
 
@@ -396,30 +427,6 @@ func GetInstrumentalHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
-}
-
-func AudioProxyHandler(w http.ResponseWriter, r *http.Request) {
-	audioURL := r.URL.Query().Get("url")
-	if audioURL == "" {
-		http.Error(w, "URL audio manquante", http.StatusBadRequest)
-		return
-	}
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-	resp, err := http.Get(audioURL)
-	if err != nil {
-		http.Error(w, "Erreur lors du chargement de l'audio", http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
-	w.Header().Set("Content-Length", resp.Header.Get("Content-Length"))
-
-	w.WriteHeader(resp.StatusCode)
 }
 
 func RegisterMusicRoutes() {

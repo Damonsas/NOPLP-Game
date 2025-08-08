@@ -1,4 +1,14 @@
 @charset "UTF-8";
+.button_prep_grille {
+  display: flex;
+  justify-content: center;
+}
+
+.duel-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
 body .duelContainer {
   display: flex;
   flex-direction: column;

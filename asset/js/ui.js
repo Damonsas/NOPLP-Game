@@ -51,10 +51,13 @@ function generateDuelCard(duel, index) {
                 </div>
             </div>
             <div class="duel-actions">
-                <button class="edit-btn">Modifier</button>
-                <button class="delete-btn">Supprimer</button>
-                <a href="/duel-game?duelId=${duel.id}" class="start-btn" style="text-decoration: none; display: inline-block; padding: 10px 20px; background-color: #19206bff; color: white; border-radius: 5px;">Commencer le duel</a>                <button class="export-server-btn">Exporter vers serveur</button>
-                <button class="export-file-btn">Exporter JSON local</button>
+                <a href="/duel-game?duelId=${duel.id}" class="start-btn" style="text-decoration: none; display: inline-block; padding: 10px 20px; background-color: #19206bff; color: white; border-radius: 5px;">Commencer le duel</a>
+                <div class="duel-buttons">
+                    <button class="edit-btn">Modifier</button>
+                    <button class="delete-btn">Supprimer</button>
+                    <button class="export-server-btn">Exporter vers serveur</button>
+                    <button class="export-file-btn">Exporter JSON local</button>
+                </div>
             </div>
         </div>
     `;
