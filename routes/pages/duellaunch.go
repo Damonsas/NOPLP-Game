@@ -533,28 +533,22 @@ func splitLyricsBySections(lyrics string) map[string]string {
 	return sections
 }
 
-// Applique le masquage à une section de texte
 func MaskedSectionContent(sectionName string, lines []string, points int) string {
-	// Définir les sections visibles selon les points
 	showSection := false
 
 	switch points {
 	case 50, 40:
-		// Montrer seulement couplet1
 		showSection = strings.ToLower(sectionName) == "couplet1"
 	case 30, 20, 10:
-		// Montrer tous sauf les refrains
 		showSection = !strings.Contains(strings.ToLower(sectionName), "refrain")
 	default:
 		showSection = true
 	}
 
-	// Si section visible, retourner normalement
 	if showSection {
 		return strings.Join(lines, "<br>")
 	}
 
-	// Sinon, appliquer le masquage
 	var maskedLines []string
 	for _, line := range lines {
 		words := strings.Fields(line)
@@ -568,7 +562,6 @@ func MaskedSectionContent(sectionName string, lines []string, points int) string
 	return strings.Join(maskedLines, "<br>")
 }
 
-// StartSong démarre une chanson avec ses paroles
 func StartSong(sessionID string, level string, songIndex int) (*GameSession, error) {
 	session, ok := gameSessions[sessionID]
 	if !ok {

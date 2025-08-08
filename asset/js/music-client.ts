@@ -20,6 +20,8 @@ interface GameState {
     isPlaying: boolean;
     lyricsVisible: boolean;
     maskedLyrics: string;
+    lyrics: { [section: string]: string[] };
+    currentPoints: number;
 }
 
 class MusicGameClient {
@@ -35,7 +37,9 @@ class MusicGameClient {
             currentLevel: 0,
             isPlaying: false,
             lyricsVisible: false,
-            maskedLyrics: ''
+            maskedLyrics: '',
+            lyrics: {},
+            currentPoints: 0
         };
 
         this.initializeEventListeners();
@@ -157,24 +161,45 @@ class MusicGameClient {
         this.gameState.lyricsVisible = true;
     }
 
+    
+
     // Charger les paroles depuis l'API
     private async loadLyrics(level: string, songIndex: number): Promise<void> {
-        try {
-            const response = await fetch(`/api/get-lyrics/${level}/${songIndex}`);
-            if (response.ok) {
-                const lyricsData: LyricsData = await response.json();
-                this.gameState.currentLyrics = lyricsData.parole || "Paroles non disponibles";
-                this.displayMaskedLyrics(this.gameState.currentLyrics, this.gameState.currentLevel);
-            } else {
-                this.gameState.currentLyrics = "Paroles non disponibles";
-                this.displayLyrics(this.gameState.currentLyrics);
-            }
-        } catch (error) {
-            console.error('Erreur lors du chargement des paroles:', error);
-            this.gameState.currentLyrics = "Erreur de chargement des paroles";
+    try {
+        const response = await fetch(`/api/get-lyrics/${level}/${songIndex}`);
+        if (response.ok) {
+            const lyricsData: LyricsData = await response.json();
+            this.gameState.currentLyrics = lyricsData.parole || "Paroles non disponibles";
+            this.gameState.lyrics = this.splitLyricsBySections(this.gameState.currentLyrics);
+            this.displayMaskedLyrics(this.gameState.lyrics, this.gameState.currentPoints);
+        } else {
+            this.gameState.currentLyrics = "Paroles non disponibles";
             this.displayLyrics(this.gameState.currentLyrics);
         }
+    } catch (error) {
+        console.error('Erreur lors du chargement des paroles:', error);
+        this.gameState.currentLyrics = "Erreur de chargement des paroles";
+        this.displayLyrics(this.gameState.currentLyrics);
     }
+}
+
+// Ajoute cette méthode dans ta classe :
+private splitLyricsBySections(lyrics: string): { [section: string]: string[] } {
+    const sections: { [section: string]: string[] } = {};
+    let currentSection = "default";
+    const lines = lyrics.split('\n');
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+            currentSection = trimmed.slice(1, -1);
+            sections[currentSection] = [];
+        } else if (trimmed) {
+            if (!sections[currentSection]) sections[currentSection] = [];
+            sections[currentSection].push(trimmed);
+        }
+    }
+    return sections;
+}
 
     // Charger la version instrumentale
     private async loadInstrumental(title: string, artist: string): Promise<void> {
@@ -203,40 +228,37 @@ class MusicGameClient {
         }
     }
 
-    private displayMaskedLyrics(lyrics: string, points: number): void {
-        if (!lyrics) return;
+    private displayMaskedLyrics(structuredLyrics: {[section: string]: string[]}, points: number): void {
+    const maskedLines: string[] = [];
 
-        let maskPercentage: number;
-        switch(points) {
-            case 50: maskPercentage = 0.8; break;  // 80% masqué pour 50 points
-            case 40: maskPercentage = 0.6; break;  // 60% masqué pour 40 points
-            case 30: maskPercentage = 0.4; break;  // 40% masqué pour 30 points
-            case 20: maskPercentage = 0.2; break;  // 20% masqué pour 20 points
-            case 10: maskPercentage = 0.1; break;  // 10% masqué pour 10 points
-            default: maskPercentage = 0.3; break;
-        }
+    const isSectionVisible = (section: string): boolean => {
+        const lower = section.toLowerCase();
+        if (points >= 40) return lower === "couplet1"; // 40/50 : juste couplet1 visible
+        if (points <= 30) return !lower.includes("refrain"); // 30/20/10 : pas les refrains
+        return true;
+    };
 
-        const words = lyrics.split(' ');
-        const wordsToMask = Math.floor(words.length * maskPercentage);
-
-        const indicesToMask: number[] = [];
-        while (indicesToMask.length < wordsToMask) {
-            const randomIndex = Math.floor(Math.random() * words.length);
-            if (!indicesToMask.includes(randomIndex)) {
-                indicesToMask.push(randomIndex);
+    for (const section in structuredLyrics) {
+        const lines = structuredLyrics[section];
+        for (const line of lines) {
+            if (isSectionVisible(section)) {
+                maskedLines.push(line); // afficher normalement
+            } else {
+                const words = line.split(" ");
+                const masked = words.map(word =>
+                    `<span class="masked-text">${'█'.repeat(word.length)}</span>`
+                ).join(" ");
+                maskedLines.push(masked);
             }
         }
 
-        const maskedWords = words.map((word, index) => {
-            if (indicesToMask.includes(index)) {
-                return `<span class="masked-text">${'█'.repeat(word.length)}</span>`;
-            }
-            return word;
-        });
-
-        this.gameState.maskedLyrics = maskedWords.join(' ');
-        this.displayLyrics(this.gameState.maskedLyrics);
+        maskedLines.push(""); // saut de ligne entre les sections
     }
+
+    this.gameState.maskedLyrics = maskedLines.join("<br>");
+    this.displayLyrics(this.gameState.maskedLyrics);
+}
+
 
     private displayLyrics(lyrics: string): void {
         const lyricsText = document.getElementById('lyrics-text');
@@ -328,6 +350,8 @@ class MusicGameClient {
         return { ...this.gameState };
     }
 }
+
+
 
 // Initialiser le client quand le DOM est chargé
 document.addEventListener('DOMContentLoaded', () => {
