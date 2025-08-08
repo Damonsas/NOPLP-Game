@@ -77,3 +77,40 @@ console.log('Visibility functions loaded:', {
         window.toggleLevelSongs = toggleLevelSongs;
         window.toggleElement = toggleElement;
   
+async function selectSong(level, songIndex, title, artist) {
+    console.log("Chanson sélectionnée:", title, "par", artist, "niveau:", level, "index:", songIndex);
+    
+    currentLevel = level;
+    
+    // Afficher le lecteur
+    document.getElementById('music-player').style.display = 'block';
+    document.getElementById('current-song-info').textContent = title + " par " + artist + " (" + level + " points)";
+    
+    // Charger les paroles
+    try {
+        const response = await fetch('/api/get-lyrics/' + level + '/' + songIndex);
+        if (response.ok) {
+            const lyricsData = await response.json();
+            currentLyrics = lyricsData.parole || lyricsData.lyrics || "Paroles non disponibles";
+            displayMaskedLyrics(currentLyrics, parseInt(level));
+        } else {
+            currentLyrics = "Paroles non disponibles";
+            document.getElementById('lyrics-text').textContent = currentLyrics;
+        }
+    } catch (error) {
+        console.error("Erreur lors du chargement des paroles:", error);
+        currentLyrics = "Erreur de chargement des paroles";
+        document.getElementById('lyrics-text').textContent = currentLyrics;
+    }
+    
+    // Charger l'audio (instrumental si possible)
+    const audioPlayer = document.getElementById('audio-player');
+    // Ici vous pourrez intégrer l'API de votre choix pour l'audio instrumental
+    audioPlayer.src = "/demo-instrumental.mp3"; // Fichier de démonstration
+    
+    // Afficher les paroles
+    document.getElementById('lyrics-container').style.display = 'block';
+    
+    // ✨ **ACTION : Rendre les boutons visibles**
+    document.getElementById('action-buttons').style.visibility = 'visible';
+}

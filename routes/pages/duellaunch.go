@@ -213,16 +213,11 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 				<h4>Paroles</h4>
 				<div id="lyrics-text" class="lyrics-text"></div>
 			</div>
-			<div class="actions">
-            <form method="POST"  style="display: none;">
-                <input type="hidden" name="action" value="start_session">
-                <button type="submit" class="btn btn-success">Démarrer une partie</button>
-            </form>
-            
-            <button id="startLyricsBtn" class="start-lyrics-button">Commencer les paroles</button>
+			<div class="actions" id="action-buttons">
+				<button class="startLyricsBtn" class="start-lyrics-button">Demarrer</button>
 
-            <a href="/duel" class="btn btn-secondary">Retour aux duels</a>
-        </div>
+				<a class="startLyricsBtn" href="/duel" class="btn btn-secondary">Retour aux duels</a>
+			</div>
 		</section>
 
         
@@ -325,44 +320,6 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
             document.getElementById('lyrics-container').style.display = 'block';
         }
 
-        // Fonction pour masquer les paroles selon le niveau de points
-        function displayMaskedLyrics(lyrics, points) {
-            if (!lyrics) return;
-            
-            // Calculer le pourcentage de masquage selon les points
-            let maskPercentage;
-            switch(points) {
-                case 50: maskPercentage = 0.8; break;  // 80% masqué pour 50 points
-                case 40: maskPercentage = 0.6; break;  // 60% masqué pour 40 points
-                case 30: maskPercentage = 0.4; break;  // 40% masqué pour 30 points
-                case 20: maskPercentage = 0.2; break;  // 20% masqué pour 20 points
-                case 10: maskPercentage = 0.1; break;  // 10% masqué pour 10 points
-                default: maskPercentage = 0.3; break;
-            }
-            
-            const words = lyrics.split(' ');
-            const wordsToMask = Math.floor(words.length * maskPercentage);
-            
-            // Créer un array d'indices à masquer de manière aléatoire
-            const indicesToMask = [];
-            while (indicesToMask.length < wordsToMask) {
-                const randomIndex = Math.floor(Math.random() * words.length);
-                if (!indicesToMask.includes(randomIndex)) {
-                    indicesToMask.push(randomIndex);
-                }
-            }
-            
-            // Appliquer le masquage
-            const maskedWords = words.map((word, index) => {
-                if (indicesToMask.includes(index)) {
-					return '<span class="masked" data-word="' + word + '">█'.repeat(word.length) + '</span>';
-                }
-                return word;
-            });
-            
-            document.getElementById('lyrics-text').innerHTML = maskedWords.join(' ');
-        }
-
         // Fonction pour basculer l'affichage des paroles
         function toggleLyrics() {
             const lyricsContainer = document.getElementById('lyrics-container');
@@ -372,7 +329,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
                 lyricsContainer.style.display = 'none';
             }
         }
-    </script>
+    	</script>
 		</body>
 		</html>`
 
