@@ -123,9 +123,8 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
         </div>
 
         <section class="duel-form">
-            <!-- Section "La Même Chanson" tout en haut -->
             <div class="same-song-section">
-                <button class="same-song-button" onclick="toggleElement('same-song-details')">
+                <button class="same-song-button" onclick="toggleElement('same-song-details') launchMeme('{{$song.Title}}', '{{$song.Artist}}')" >
                     🎵 La Même Chanson
                 </button>
                 <div id="same-song-details" class="hidden-element song-card" style="max-width: 500px; margin: 0 auto;">
@@ -152,7 +151,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
                 {{range .LevelsOrder}}
                 {{$level := .}}
                 {{$pointLevel := index $.Duel.Points $level}}
-                <button class="point-button" onclick="toggleLevelSongs('level-{{$level}}')">
+                <button class="point-button fade-in-left-normal" onclick="toggleLevelSongs('level-{{$level}}')">
                     <div>{{$level}} Points</div>
                     <div style="font-size: 14px; margin-top: 5px;">{{$pointLevel.Theme}}</div>
                 </button>

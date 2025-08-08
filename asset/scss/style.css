@@ -58,6 +58,10 @@ body .point-button.active {
 }
 body .same-song-section {
   margin-bottom: 30px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
 }
 body .same-song-button {
   background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
@@ -106,7 +110,7 @@ body .songSelect {
 .lyrics-container {
   margin: 15px 0;
   padding: 15px;
-  background: #2629bd;
+  background: linear-gradient(#6536ff, #354bf3, #162d94 70%);
   border: 1px solid #ddd;
   border-radius: 5px;
   max-height: 300px;
@@ -177,6 +181,20 @@ body .songSelect {
 .actions a {
   text-decoration: none;
   color: #fff;
+}
+
+@keyframes fade-in-left-normal {
+  0% {
+    transform: translateX(-50px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.fade-in-left-normal {
+  animation: fade-in-left-normal 1s ease 0s 1 normal none;
 }
 
 html {
