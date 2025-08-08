@@ -8,10 +8,7 @@ html {
 }
 
 body {
-    min-height: auto;
-    width: 100%;
     margin: 0; 
-    position: relative; 
     --c: #09f;
     background-color: #000;
     background-image: radial-gradient(4px 100px at 0px 235px, var(--c), #0000),
