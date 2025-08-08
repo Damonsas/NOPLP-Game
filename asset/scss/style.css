@@ -77,7 +77,8 @@ body .level-songs-container {
 body .songSelect {
   position: absolute;
   top: 50%;
-  left: 50%;
+  width: 70vw;
+  height: 70vh;
 }
 
 .music-player {
@@ -144,18 +145,23 @@ body .songSelect {
   margin: 10px 0;
 }
 
-a {
-  text-decoration: none;
-  color: #fff;
-  background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
+.actions {
+  visibility: hidden;
+}
+.actions .startLyricsBtn {
+  background: radial-gradient(#c8bdea, #22309b, #0b184f 70%);
   padding: 12px 25px;
-  border-radius: 25px;
+  border-radius: 20px;
   border-color: #f0f0f0;
   cursor: pointer;
   font-size: 16px;
   margin: 10px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+.actions a {
+  text-decoration: none;
+  color: #fff;
 }
 
 :root {
@@ -180,7 +186,7 @@ body #présentation {
   align-items: center;
   justify-content: center;
 }
-body #présentation h1 {
+body h1 {
   font-size: 4rem;
   color: #fff;
   text-shadow: 0 0 5px #ff005e, 0 0 10px #ff005e, 0 0 20px #ff005e, 0 0 40px #ff005e, 0 0 80px #ff005e;
