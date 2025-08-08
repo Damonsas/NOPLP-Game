@@ -105,6 +105,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<title>Duel: {{.Duel.Name}}</title>
 			<link rel="stylesheet" href="/asset/scss/style.css">
+			<script defer src="/asset/js/script.js"></script>
 			<script src="/asset/js/vocal.js"></script>
     		<script type="module" src="/asset/js/duel.js"></script>
     		<script type="module" src="/asset/js/ui.js"></script>
