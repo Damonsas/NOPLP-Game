@@ -2,17 +2,16 @@
 @import "duel.scss";
 @import "game.scss";
 
-// Style de base pour que la page prenne toute la hauteur
 html {
     height: 100vh;
     width: 100vw;
 }
 
-// 1. On ouvre le sélecteur body UNE SEULE FOIS
 body {
-    // 2. Styles d'animation (anciennement dans .container)
-    margin: 0; // Supprime la marge par défaut
-    position: relative; // Contexte de positionnement pour le ::after
+    min-height: auto;
+    width: 100%;
+    margin: 0; 
+    position: relative; 
     --c: #09f;
     background-color: #000;
     background-image: radial-gradient(4px 100px at 0px 235px, var(--c), #0000),

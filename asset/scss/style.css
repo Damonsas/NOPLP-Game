@@ -170,6 +170,8 @@ html {
 }
 
 body {
+  min-height: auto;
+  width: 100%;
   margin: 0;
   position: relative;
   --c: #09f;
