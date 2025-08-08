@@ -8,6 +8,7 @@ html {
 }
 
 body {
+    position: relative;
     margin: 0; 
     --c: #09f;
     background-color: #000;
@@ -59,7 +60,7 @@ body {
    
     &::after {
         content: "";
-        position: absolute;
+        position: fixed;
         inset: 0;
         z-index: -1; 
         background-image: radial-gradient(

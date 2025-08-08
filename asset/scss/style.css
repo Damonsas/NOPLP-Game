@@ -170,6 +170,7 @@ html {
 }
 
 body {
+  position: relative;
   margin: 0;
   --c: #09f;
   background-color: #000;
@@ -181,7 +182,7 @@ body {
 }
 body::after {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: -1;
   background-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 2px, hsl(0, 0%, 4%) 2px);
