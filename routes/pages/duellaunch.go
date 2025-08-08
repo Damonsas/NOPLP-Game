@@ -124,7 +124,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 
         <section class="duel-form">
             <div class="same-song-section">
-                <button class="same-song-button" onclick="toggleElement('same-song-details') launchMeme('{{$song.Title}}', '{{$song.Artist}}')" >
+                <button class="same-song-button" onclick="toggleElement('same-song-details')" >
                     🎵 La Même Chanson
                 </button>
                 <div id="same-song-details" class="hidden-element song-card" style="max-width: 500px; margin: 0 auto;">
