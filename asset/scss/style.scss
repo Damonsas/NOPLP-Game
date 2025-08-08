@@ -4,7 +4,8 @@
 
 // Style de base pour que la page prenne toute la hauteur
 html {
-    height: 100%;
+    height: 100vh;
+    width: 100vw;
 }
 
 // 1. On ouvre le sélecteur body UNE SEULE FOIS
