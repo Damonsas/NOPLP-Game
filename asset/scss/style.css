@@ -110,7 +110,7 @@ body .songSelect {
 .lyrics-container {
   margin: 15px 0;
   padding: 15px;
-  background: linear-gradient(#6536ff, #354bf3, #162d94 70%);
+  background: linear-gradient(45deg, #6536ff, #354bf3, #162d94 70%);
   border: 1px solid #ddd;
   border-radius: 5px;
   max-height: 300px;
