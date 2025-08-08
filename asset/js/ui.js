@@ -51,7 +51,7 @@ function generateDuelCard(duel, index) {
                 </div>
             </div>
             <div class="duel-actions">
-                <a href="/duel-game?duelId=${duel.id}" class="start-btn" style="text-decoration: none; display: inline-block; padding: 10px 20px; background-color: #19206bff; color: white; border-radius: 5px;">Commencer le duel</a>
+                <a href="/duel-game?duelId=${duel.id}" class="start-btn" style="text-decoration: none; padding: 10px 20px; background-color: #19206bff; color: white; border-radius: 5px;">Commencer le duel</a>
                 <div class="duel-buttons">
                     <button class="edit-btn">Modifier</button>
                     <button class="delete-btn">Supprimer</button>

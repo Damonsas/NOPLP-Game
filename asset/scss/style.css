@@ -9,6 +9,10 @@
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
+.start-btn {
+  text-align: center;
+}
+
 body .duelContainer {
   display: flex;
   flex-direction: column;
