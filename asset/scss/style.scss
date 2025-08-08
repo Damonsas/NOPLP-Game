@@ -11,8 +11,6 @@ html {
 // 1. On ouvre le sélecteur body UNE SEULE FOIS
 body {
     // 2. Styles d'animation (anciennement dans .container)
-    width: 100%;
-    height: 100%;
     margin: 0; // Supprime la marge par défaut
     position: relative; // Contexte de positionnement pour le ::after
     --c: #09f;
