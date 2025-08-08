@@ -61,8 +61,6 @@ body {
         300px 158px, 300px 158px, 300px 158px, 300px 210px, 300px 210px, 300px 210px;
         
     animation: hi 150s linear infinite;
-    background-repeat: repeat;
-
    
     &::after {
         content: "";
@@ -128,9 +126,7 @@ body {
             }
         }
     }
-} // 5. On ferme le sélecteur body ici !
-
-// Le reste de votre code reste en dehors du sélecteur body
+} 
 ol {
     list-style: none;
     display: grid;
