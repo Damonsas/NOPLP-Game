@@ -1,0 +1,44 @@
+{
+    "song": "Désenchantée",
+    "artist": "Mylene Farmer",
+    "paroles":{
+        "couplet1": [
+            "Nager dans les eaux troubles",
+            "Des lendemains",
+            "Attendre ici la fin",
+            "Flotter dans l'air trop lourd",
+            "Du presque rien",
+            "A qui tendre la main",
+            "Si je dois tomber de haut",
+            "Que ma chute soit lente",
+            "Je n'ai trouvé de repos",
+            "Que dans l'indifférence",
+            "Pourtant, je voudrais retrouver l'innocence",
+            "Mais rien n'a de sens, et rien ne va"
+        ],
+        "refrain": [
+            "Tout est chaos",
+            "A côté",
+            "Tous mes idéaux : des mots Abimés...",
+            "Je cherche une âme, qui",
+            "Pourra m'aider",
+            "Je suis",
+            "D'une génération désenchantée, désenchantée"
+        ],
+        "couplet2": [
+            "Qui pourrait m'empêcher",
+            "De tout entendre",
+            "Quand la raison s'effondre",
+            "A quel saint se vouer",
+            "Qui peut prétendre",
+            "Nous bercer dans son ventre",
+            "Si la mort est un mystère",
+            "La vie n'a rien de tendre",
+            "Si le ciel a un enfer",
+            "Le ciel peut bien m'attendre",
+            "Dis moi,",
+            "Dans ces vents contraires comment s'y prendre",
+            "Plus rien n'a de sens, plus rien ne va."
+        ]}
+    
+}
