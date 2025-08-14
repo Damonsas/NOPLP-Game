@@ -1,0 +1,30 @@
+{
+    "titre": "La Bohème",
+    "artiste": "Charles Aznavour",
+    "parole": {
+        "couplet1": [
+            "Je vous parle d'un temps\nQue les moins de vingt ans\nNe peuvent pas connaître\nMontmartre en ce temps-là\nAccrochait ses lilas\nJusque sous nos fenêtres\nEt si l'humble garni\nQui nous servait de nid\nNe payait pas de mine\nC’est là qu'on s'est connu\nMoi qui criais famine\nEt toi qui posais nue\n"
+        ],
+        "refrain1": [
+            "La bohème, la bohème\nÇa voulait dire\nOn est heureux\nLa bohème, la bohème\nNous ne mangions qu'un jour sur deux.\n"
+        ],
+        "couplet2": [
+            "Dans les cafés voisins\nNous étions quelques-uns\nQui attendions la gloire\nEt bien que miséreux\nAvec le ventre creux\nNous ne cessions d'y croire\nEt quand quelques bistrots\nContre un bon repas chaud\nNous prenaient une toile\nNous récitions des vers\nGroupés autour du poële\nEn oubliant l'hiver\n"
+        ],
+        "refrain2": [
+            "La bohème, la bohème\nÇa voulait dire\nTu es jolie\nLa bohème, la bohème\nEt nous avions tous du génie.\n"
+        ],
+        "couplet3": [
+            "Souvent il m'arrivait\nDevant mon chevalet\nDe passer des nuits blanches\nRetouchant le dessin\nDe la ligne d'un sein\nDu galbe d'une hanche\nEt ce n'est qu'au matin\nQu'on s'asseyait enfin\nDevant un café crème\nÉpuisés mais ravis\nFallait-il que l'on s'aime\nEt qu'on aime la vie\n"
+        ],
+        "refrain3": [
+            "La bohème, la bohème\nÇa voulait dire\nOn a vingt ans\nLa bohème, la bohème\nEt nous vivions de l'air du temps.\n"
+        ],
+        "couplet4": [
+            "Quand au hasard des jours\nJe m'en vais faire un tour\nA mon ancienne adresse\nJe ne reconnais plus\nNi les murs ni les rues\nQui ont vu ma jeunesse\nEn haut d'un escalier\nJe cherche l'atelier\nDont plus rien ne subsiste\nDans son nouveau décor\nMontmartre semble triste\nEt les lilas sont morts\n"
+        ],
+        "refrain4": [
+            "La bohème, la bohème\nOn était jeunes\nOn était fous\nLa bohème, la bohème\nÇa ne veut plus rien dire du tout.\n"
+        ]
+    }
+}

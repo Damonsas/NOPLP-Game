@@ -105,6 +105,9 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<title>Duel: {{.Duel.Name}}</title>
 			<link rel="stylesheet" href="/asset/scss/style.css">
+			<link rel="apple-touch-icon" sizes="180x180" href="../asset/ressource/img/favicon/apple-touch-icon.png">
+    		<link rel="icon" type="image/png" sizes="32x32" href="../asset/ressource/img/favicon/favicon-32x32.png">
+    		<link rel="icon" type="image/png" sizes="16x16" href="../asset/ressource/img/favicon/favicon-16x16.png">
 			<script defer src="/asset/js/script.js"></script>
 			<script src="/asset/js/vocal.js"></script>
     		<script type="module" src="/asset/js/duel.js"></script>
