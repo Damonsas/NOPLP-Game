@@ -1016,7 +1016,7 @@ func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/api/temp-duel", SaveTemporaryDuel).Methods("POST")
 	r.HandleFunc("/api/temp-duel", LoadTemporaryDuel).Methods("GET")
 
-	r.HandleFunc("/api/get-lyrics/{level}/{songIndex:[0-9]+}", GetLyrics).Methods("GET")
+	r.HandleFunc("/api/get-lyrics/{level}/{songIndex:[0-9]+}", GetLyricsdata).Methods("GET")
 	r.HandleFunc("/api/check-lyrics", CheckLyricsFile).Methods("GET")
 	r.HandleFunc("/api/lyrics-list", GetLyricsFilesList).Methods("GET")
 
@@ -1028,7 +1028,5 @@ func SetupDuelRoutes(r *mux.Router) {
 
 	r.HandleFunc("/api/game-sessions/{id}/start-song", HandleStartSong).Methods("POST")
 	r.HandleFunc("/api/game-sessions/{id}/lyrics-visibility", HandleLyricsVisibility).Methods("POST")
-
-	http.HandleFunc("/api/audio-proxy", AudioProxyHandler)
 
 }

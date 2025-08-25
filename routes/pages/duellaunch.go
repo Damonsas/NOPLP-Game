@@ -2,8 +2,10 @@ package game
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -353,7 +355,34 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetLyrics(w http.ResponseWriter, r *http.Request) {
+// GetLyricsFromAPI récupère les paroles depuis Musixmatch
+func GetLyricsFromAPI(trackID string) (string, error) {
+	endpoint := fmt.Sprintf("track.lyrics.get?track_id=%s&apikey=%s", trackID, musixmatchAPIKey)
+	resp, err := http.Get(musixmatchBaseURL + endpoint)
+	if err != nil {
+		return "", fmt.Errorf("erreur HTTP: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	var result struct {
+		Message struct {
+			Body struct {
+				Lyrics struct {
+					LyricsBody string `json:"lyrics_body"`
+				} `json:"lyrics"`
+			} `json:"body"`
+		} `json:"message"`
+	}
+	json.Unmarshal(body, &result)
+	if result.Message.Body.Lyrics.LyricsBody == "" {
+		return "", errors.New("paroles non trouvées")
+	}
+	return result.Message.Body.Lyrics.LyricsBody, nil
+}
+
+// GetLyricsdata récupère les paroles pour une chanson donnée
+func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	level := vars["level"]
 	songIndexStr := vars["songIndex"]
@@ -362,11 +391,10 @@ func GetLyrics(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Index de chanson invalide", http.StatusBadRequest)
 		return
 	}
-	// Récupérer le duelId depuis les paramètres de query ou la session
-	// Pour l'instant, utilisons le premier duel ou trouvons une autre logique
+
+	// Récupère le duel
 	duelIDStr := r.URL.Query().Get("duelId")
 	var selectedDuel *Duel
-
 	if duelIDStr != "" {
 		duelID, err := strconv.Atoi(duelIDStr)
 		if err == nil {
@@ -378,65 +406,103 @@ func GetLyrics(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
-	// Fallback : utiliser le premier duel si aucun ID spécifié
 	if selectedDuel == nil && len(duels) > 0 {
 		selectedDuel = &duels[0]
 	}
-
 	if selectedDuel == nil {
 		http.Error(w, "Aucun duel disponible", http.StatusNotFound)
 		return
 	}
 
+	// Récupère la chanson
 	pointLevel, ok := selectedDuel.Points[level]
 	if !ok {
 		http.Error(w, "Niveau de points invalide", http.StatusBadRequest)
 		return
 	}
-
 	if songIndex < 0 || songIndex >= len(pointLevel.Songs) {
 		http.Error(w, "Index de chanson invalide", http.StatusBadRequest)
 		return
 	}
-
 	song := pointLevel.Songs[songIndex]
 
-	// Debug : afficher les informations
+	// Logs de debug
 	fmt.Printf("DEBUG - Recherche paroles pour: %s - %s\n", song.Title, song.Artist)
 	fmt.Printf("DEBUG - LyricsFile: %v\n", song.LyricsFile)
 
-	// Charger les paroles depuis le fichier JSON
-	var lyricsData map[string]interface{}
+	// 1. Vérifie si un fichier local est spécifié
 	if song.LyricsFile != nil && *song.LyricsFile != "" {
 		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
 		fmt.Printf("DEBUG - Chemin du fichier: %s\n", filePath)
 
-		// Vérifier si le fichier existe
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			fmt.Printf("DEBUG - Fichier n'existe pas: %s\n", filePath)
-		} else {
+		// 2. Vérifie si le fichier existe
+		if _, err := os.Stat(filePath); err == nil {
 			content, err := os.ReadFile(filePath)
 			if err != nil {
 				fmt.Printf("DEBUG - Erreur lecture fichier: %v\n", err)
 			} else {
 				fmt.Printf("DEBUG - Contenu fichier lu, taille: %d bytes\n", len(content))
+				var lyricsData map[string]interface{}
 				if err := json.Unmarshal(content, &lyricsData); err != nil {
 					fmt.Printf("DEBUG - Erreur parsing JSON: %v\n", err)
-				} else {
-					fmt.Printf("DEBUG - JSON parsé avec succès\n")
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(lyricsData)
-					return
+					// Si le JSON est invalide, tente de lire le contenu brut
+					lyricsData = map[string]interface{}{
+						"titre":   song.Title,
+						"artiste": song.Artist,
+						"parole":  string(content),
+					}
 				}
+				w.Header().Set("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(lyricsData)
+				return
 			}
+		} else {
+			fmt.Printf("DEBUG - Fichier n'existe pas: %s\n", filePath)
 		}
 	}
-	// Si pas de paroles trouvées
-	lyricsData = map[string]interface{}{
+
+	fmt.Printf("DEBUG - Tentative de récupération via API externe...\n")
+	trackID, err := SearchTrack(song.Title, song.Artist)
+	if err != nil {
+		fmt.Printf("DEBUG - Erreur recherche track: %v\n", err)
+		lyricsData := map[string]interface{}{
+			"titre":   song.Title,
+			"artiste": song.Artist,
+			"parole":  "Paroles non disponibles",
+			"erreur":  err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(lyricsData)
+		return
+	}
+
+	lyrics, err := GetLyricsFromAPI(trackID)
+	if err != nil {
+		fmt.Printf("DEBUG - Erreur API externe: %v\n", err)
+		lyricsData := map[string]interface{}{
+			"titre":   song.Title,
+			"artiste": song.Artist,
+			"parole":  "Paroles non disponibles",
+			"erreur":  err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(lyricsData)
+		return
+	}
+
+	if song.LyricsFile != nil && *song.LyricsFile != "" {
+		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
+		os.WriteFile(filePath, []byte(lyrics), 0644)
+		fmt.Printf("DEBUG - Paroles sauvegardées dans %s\n", filePath)
+	}
+
+	// 5. Retourne les paroles
+	lyricsData := map[string]interface{}{
 		"titre":   song.Title,
 		"artiste": song.Artist,
-		"parole":  "Paroles non disponibles",
+		"parole":  lyrics,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(lyricsData)
@@ -459,13 +525,11 @@ func MaskLyrics(lyrics string, points int) string {
 		targetSection = ""
 	}
 
-	// Si la section existe, appliquer le masquage uniquement sur elle
 	if content, ok := sections[targetSection]; ok {
 		lines := strings.Split(strings.TrimSpace(content), "\n")
 		sections[targetSection] = MaskedSectionContent(targetSection, lines, points)
 	}
 
-	// Reconstruire les paroles avec sections masquées
 	var rebuiltLyrics strings.Builder
 	for section, content := range sections {
 		rebuiltLyrics.WriteString("[" + section + "]\n")
@@ -475,7 +539,6 @@ func MaskLyrics(lyrics string, points int) string {
 	return strings.TrimSpace(rebuiltLyrics.String())
 }
 
-// Découpe les paroles par section
 func splitLyricsBySections(lyrics string) map[string]string {
 	lines := strings.Split(lyrics, "\n")
 	currentSection := "Intro"
