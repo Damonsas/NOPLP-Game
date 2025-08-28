@@ -295,7 +295,7 @@ ol .btn a {
 }
 
 duel-points {
-  visibility: none !important;
+  display: none !important;
 }
 duel-points .point-section {
   visibility: hidden;
