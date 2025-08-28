@@ -299,7 +299,7 @@ ol .btn a {
 }
 
 .point-section {
-  visibility: hidden;
+  visibility: none;
 }
 
 button {

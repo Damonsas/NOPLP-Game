@@ -145,7 +145,7 @@ ol {
 }
 
 .point-section {
-    visibility: hidden;
+    visibility: none;
 }
 
 button {
@@ -179,7 +179,6 @@ button {
     }
 }
 
-// Les keyframes doivent être au niveau racine (pas dans un sélecteur)
 @keyframes hii {
   0% {
     backdrop-filter: var(--f) hue-rotate(0deg);
