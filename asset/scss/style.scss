@@ -140,14 +140,16 @@ ol {
     }
 }
 
-.song-option {
+duel-section {
+    visibility: none !important;
+
+    .point-section {
+        visibility: hidden;
+    }
+    .song-option {
     visibility: hidden;
+    }
 }
-
-.point-section {
-    visibility: none;
-}
-
 button {
     @include button-style();
     color: #fff;

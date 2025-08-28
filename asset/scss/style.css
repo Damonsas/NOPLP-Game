@@ -294,12 +294,14 @@ ol .btn a {
   color: #fff;
 }
 
-.song-option {
+duel-section {
+  visibility: none !important;
+}
+duel-section .point-section {
   visibility: hidden;
 }
-
-.point-section {
-  visibility: none;
+duel-section .song-option {
+  visibility: hidden;
 }
 
 button {

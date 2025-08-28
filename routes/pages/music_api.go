@@ -10,7 +10,7 @@ import (
 )
 
 const musixmatchAPIKey = "num api"
-const musixmatchBaseURL = "https://api.musixmatch.com/ws/1.1/"
+const musixmatchBaseURL = "lyrics.ovh"
 
 type LyricsResponse struct {
 	Message struct {
