@@ -294,13 +294,11 @@ ol .btn a {
   color: #fff;
 }
 
-.duel-points {
-  display: none !important;
-}
-.duel-points .point-section {
+.point-section {
   visibility: hidden;
 }
-.duel-points .song-option {
+
+.song-option {
   visibility: hidden;
 }
 

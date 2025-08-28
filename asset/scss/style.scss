@@ -140,16 +140,13 @@ ol {
     }
 }
 
-.duel-points {
-    display: none !important;
-
     .point-section {
         visibility: hidden;
     }
     .song-option {
     visibility: hidden;
     }
-}
+
 button {
     @include button-style();
     color: #fff;

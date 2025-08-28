@@ -43,7 +43,7 @@ function generateDuelCard(duel, index) {
     return `
         <div class="duel-card" data-index="${index}">
             <h3>${duel.name}</h3>
-            <div class="duel-points">
+            <div class="duel-points" style="display: none;">
                 ${pointsSections}
                 <div class="point-section same-song">
                     <span class="points">Même chanson</span>
