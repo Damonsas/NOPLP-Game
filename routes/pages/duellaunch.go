@@ -16,12 +16,17 @@ import (
 )
 
 type LyricsData struct {
-	Titre   string `json:"titre"`
-	Artiste string `json:"artiste"`
-	Parole  string `json:"parole"`
+	Titre   string              `json:"titre"`
+	Artiste string              `json:"artiste"`
+	Parole  map[string][]string `json:"parole"`
 }
 
-// DisplayDuel affiche le contenu d'un duel préparé
+type LyricsStructure struct {
+	Titre   string              `json:"titre"`
+	Artiste string              `json:"artiste"`
+	Parole  map[string][]string `json:"parole"`
+}
+
 func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(">>> Requête reçue pour /duel-game, traitement par DisplayDuel...")
 
@@ -31,14 +36,12 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Convertir l'ID en entier
 	id, err := strconv.Atoi(duelID)
 	if err != nil {
 		http.Error(w, "ID de duel invalide", http.StatusBadRequest)
 		return
 	}
 
-	// Trouver le duel correspondant
 	var selectedDuel *Duel
 	for i := range duels {
 		if duels[i].ID == id {
@@ -52,7 +55,6 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Vérifier l'existence des paroles pour "La Même Chanson"
 	sameSongLyricsExists := false
 	if selectedDuel.SameSong.LyricsFile != nil && *selectedDuel.SameSong.LyricsFile != "" {
 		filePath := filepath.Join(paroleDataPath, *selectedDuel.SameSong.LyricsFile)
@@ -130,7 +132,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
         <section class="duel-form">
             <div class="same-song-section">
                 <button class="same-song-button" onclick="toggleElement('same-song-details')" >
-                    🎵 La Même Chanson
+                    🎵C'est La Même Chanson
                 </button>
                 <div id="same-song-details" class="hidden-element song-card" style="max-width: 500px; margin: 0 auto;">
                     <div class="song-info">
@@ -269,26 +271,22 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
             }
         }
 
-        // Fonction pour prévisualiser une chanson
         async function previewSong(title, artist) {
             console.log("Aperçu de la chanson:", title, "par", artist);
             
-            // Afficher le lecteur
             document.getElementById('music-player').style.display = 'block';
             document.getElementById('current-song-info').textContent = "Aperçu: " + title + " par " + artist;
             
-            // Arrêter l'audio précédent s'il y en a un
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio.currentTime = 0;
             }
             
-            // Pour l'instant, utilisons un fichier audio de démonstration
-            // En production, vous pourrez intégrer l'API YouTube ou Spotify
+            
             const audioPlayer = document.getElementById('audio-player');
             audioPlayer.src = "/demo-audio.mp3"; // Fichier de démonstration
             
-            // Cacher les paroles pendant l'aperçu
+            
             document.getElementById('lyrics-container').style.display = 'none';
         }
 
@@ -355,7 +353,41 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// GetLyricsFromAPI récupère les paroles depuis Musixmatch
+func convertStructuredLyricsToText(paroleMap map[string][]string) string {
+	var result strings.Builder
+
+	sectionOrder := []string{"couplet1", "refrain1", "couplet2", "refrain2", "outro"}
+
+	for _, sectionName := range sectionOrder {
+		if lines, exists := paroleMap[sectionName]; exists {
+			result.WriteString("[" + strings.Title(sectionName) + "]\n")
+			for _, line := range lines {
+				result.WriteString(line + "\n")
+			}
+			result.WriteString("\n")
+		}
+	}
+
+	for sectionName, lines := range paroleMap {
+		found := false
+		for _, orderedSection := range sectionOrder {
+			if orderedSection == sectionName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			result.WriteString("[" + strings.Title(sectionName) + "]\n")
+			for _, line := range lines {
+				result.WriteString(line + "\n")
+			}
+			result.WriteString("\n")
+		}
+	}
+
+	return strings.TrimSpace(result.String())
+}
+
 func GetLyricsFromAPI(trackID string) (string, error) {
 	endpoint := fmt.Sprintf("track.lyrics.get?track_id=%s&apikey=%s", trackID, musixmatchAPIKey)
 	resp, err := http.Get(musixmatchBaseURL + endpoint)
@@ -381,7 +413,6 @@ func GetLyricsFromAPI(trackID string) (string, error) {
 	return result.Message.Body.Lyrics.LyricsBody, nil
 }
 
-// GetLyricsdata récupère les paroles pour une chanson donnée
 func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	level := vars["level"]
@@ -392,7 +423,6 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Récupère le duel
 	duelIDStr := r.URL.Query().Get("duelId")
 	var selectedDuel *Duel
 	if duelIDStr != "" {
@@ -414,7 +444,6 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Récupère la chanson
 	pointLevel, ok := selectedDuel.Points[level]
 	if !ok {
 		http.Error(w, "Niveau de points invalide", http.StatusBadRequest)
@@ -426,30 +455,49 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 	}
 	song := pointLevel.Songs[songIndex]
 
-	// Logs de debug
 	fmt.Printf("DEBUG - Recherche paroles pour: %s - %s\n", song.Title, song.Artist)
 	fmt.Printf("DEBUG - LyricsFile: %v\n", song.LyricsFile)
 
-	// 1. Vérifie si un fichier local est spécifié
 	if song.LyricsFile != nil && *song.LyricsFile != "" {
 		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
 		fmt.Printf("DEBUG - Chemin du fichier: %s\n", filePath)
 
-		// 2. Vérifie si le fichier existe
 		if _, err := os.Stat(filePath); err == nil {
 			content, err := os.ReadFile(filePath)
 			if err != nil {
 				fmt.Printf("DEBUG - Erreur lecture fichier: %v\n", err)
 			} else {
 				fmt.Printf("DEBUG - Contenu fichier lu, taille: %d bytes\n", len(content))
+
+				var structuredLyrics LyricsStructure
+				if err := json.Unmarshal(content, &structuredLyrics); err == nil {
+					lyricsText := convertStructuredLyricsToText(structuredLyrics.Parole)
+					lyricsData := map[string]interface{}{
+						"titre":   structuredLyrics.Titre,
+						"artiste": structuredLyrics.Artiste,
+						"parole":  lyricsText,
+					}
+					w.Header().Set("Content-Type", "application/json")
+					json.NewEncoder(w).Encode(lyricsData)
+					return
+				}
+
 				var lyricsData map[string]interface{}
 				if err := json.Unmarshal(content, &lyricsData); err != nil {
 					fmt.Printf("DEBUG - Erreur parsing JSON: %v\n", err)
-					// Si le JSON est invalide, tente de lire le contenu brut
 					lyricsData = map[string]interface{}{
 						"titre":   song.Title,
 						"artiste": song.Artist,
 						"parole":  string(content),
+					}
+				} else {
+					if parole, exists := lyricsData["parole"]; exists {
+						if paroleStr, ok := parole.(string); ok && paroleStr != "" {
+						} else {
+							lyricsData["parole"] = "Format de paroles non reconnu"
+						}
+					} else {
+						lyricsData["parole"] = "Clé 'parole' manquante dans le JSON"
 					}
 				}
 				w.Header().Set("Content-Type", "application/json")
@@ -461,7 +509,6 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fmt.Printf("DEBUG - Tentative de récupération via API externe...\n")
 	trackID, err := SearchTrack(song.Title, song.Artist)
 	if err != nil {
 		fmt.Printf("DEBUG - Erreur recherche track: %v\n", err)
@@ -498,12 +545,35 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("DEBUG - Paroles sauvegardées dans %s\n", filePath)
 	}
 
-	// 5. Retourne les paroles
 	lyricsData := map[string]interface{}{
 		"titre":   song.Title,
 		"artiste": song.Artist,
 		"parole":  lyrics,
 	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(lyricsData)
+
+	lyrics, err = GetLyricsFromAPI(trackID)
+	if err != nil {
+		fmt.Printf("DEBUG - Erreur API externe: %v\n", err)
+		lyricsData := map[string]interface{}{
+			"titre":   song.Title,
+			"artiste": song.Artist,
+			"parole":  "Paroles non disponibles",
+			"erreur":  err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(lyricsData)
+		return
+	}
+
+	if song.LyricsFile != nil && *song.LyricsFile != "" {
+		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
+		os.WriteFile(filePath, []byte(lyrics), 0644)
+		fmt.Printf("DEBUG - Paroles sauvegardées dans %s\n", filePath)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(lyricsData)
 }
