@@ -140,12 +140,12 @@ ol {
     }
 }
 
-    .point-section {
-        visibility: hidden;
-    }
-    .song-option {
+.point-section {
     visibility: hidden;
-    }
+}
+.song-option {
+visibility: hidden;
+}
 
 button {
     @include button-style();
