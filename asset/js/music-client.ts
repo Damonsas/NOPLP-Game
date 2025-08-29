@@ -1,4 +1,3 @@
-// Types TypeScript pour la gestion de la musique
 interface MusicSearchResult {
     title: string;
     artist: string;
@@ -233,8 +232,8 @@ private splitLyricsBySections(lyrics: string): { [section: string]: string[] } {
 
     const isSectionVisible = (section: string): boolean => {
         const lower = section.toLowerCase();
-        if (points >= 40) return lower === "couplet1"; // 40/50 : juste couplet1 visible
-        if (points <= 30) return !lower.includes("refrain"); // 30/20/10 : pas les refrains
+        if (points >= 40) return lower === "couplet1"; 
+        if (points <= 30) return !lower.includes("refrain"); 
         return true;
     };
 
@@ -242,7 +241,7 @@ private splitLyricsBySections(lyrics: string): { [section: string]: string[] } {
         const lines = structuredLyrics[section];
         for (const line of lines) {
             if (isSectionVisible(section)) {
-                maskedLines.push(line); // afficher normalement
+                maskedLines.push(line); 
             } else {
                 const words = line.split(" ");
                 const masked = words.map(word =>
@@ -252,7 +251,7 @@ private splitLyricsBySections(lyrics: string): { [section: string]: string[] } {
             }
         }
 
-        maskedLines.push(""); // saut de ligne entre les sections
+        maskedLines.push(""); 
     }
 
     this.gameState.maskedLyrics = maskedLines.join("<br>");

@@ -6,15 +6,435 @@
     <link rel="apple-touch-icon" sizes="180x180" href="../asset/ressource/img/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../asset/ressource/img/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="../asset/ressource/img/favicon/favicon-16x16.png">
-    <link rel="stylesheet" href="asset/scss/style.css">
-    <script src="asset/js/script.js"></script>
+    <link rel="stylesheet" href="/asset/scss/style.css">
+    <script defer src="asset/js/script.js"></script>
+    <script type="module" src="/asset/js/music-client.js"></script>
+		<script type="module" src="/asset/js/game-client.js"></script>
 
     <title>Let's play</title>
 </head>
 <body>
-  <section class="entrainement">
-    <p style="font-family: Arial, Helvetica, sans-serif; color: azure;"> Ici sera <strong>Mode entrainement</strong> <br>
-    Prévu en 1.5. Va plutôt voir les duels.</p>
-  </section>
+    <style>
+        .solo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .difficulty-control {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .difficulty-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .difficulty-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+        
+        .lyrics-section {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 300px;
+        }
+        
+        .masked-text {
+            background: #333;
+            color: #333;
+            border-radius: 3px;
+            padding: 0 2px;
+        }
+        
+        .revealed-text {
+            background: transparent;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+        
+        .song-info {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .section-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .section-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .section-btn.active {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="solo-container">
+        <h1>Mode Solo - {{.Duel.Name}}</h1>
+        
+        <div class="difficulty-control">
+            <h3>Réglage de la difficulté</h3>
+            <p>Pourcentage de masquage des paroles :</p>
+            <input type="range" id="difficultySlider" class="difficulty-slider" 
+                   min="30" max="70" value="70" step="5">
+            <div class="difficulty-value">
+                <span id="difficultyValue">70</span>% masqué
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn" class="btn btn-primary">Commencer le jeu</button>
+            <button id="nextSongBtn" class="btn btn-success" style="display: none;">Chanson suivante</button>
+            <button id="revealBtn" class="btn btn-warning" style="display: none;">Révéler paroles</button>
+            <button id="sectionModeBtn" class="btn btn-secondary">Mode par section</button>
+            <a href="/duel-game?duelId={{.Duel.ID}}" class="btn">Retour au duel</a>
+        </div>
+        
+        <div class="score-display">
+            Score: <span id="scoreValue">0</span> points
+        </div>
+        
+        <div class="song-info" id="songInfo" style="display: none;">
+            <h3 id="currentSongTitle">Titre de la chanson</h3>
+            <p id="currentSongArtist">Artiste</p>
+            <p id="currentLevel">Niveau: 50 points</p>
+        </div>
+        
+        <div class="section-controls" id="sectionControls" style="display: none;">
+            <button class="section-btn" data-section="couplet1">Couplet 1</button>
+            <button class="section-btn" data-section="refrain">Refrain</button>
+            <button class="section-btn" data-section="couplet2">Couplet 2</button>
+            <button class="section-btn" data-section="pont">Pont</button>
+        </div>
+        
+        <div class="lyrics-section" id="lyricsSection">
+            <p id="lyricsPlaceholder">Cliquez sur "Commencer le jeu" pour débuter...</p>
+            <div id="lyricsContent" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+    let currentSession = null;
+    let sectionMode = false;
+    let currentSongData = null;
+    
+    const difficultySlider = document.getElementById('difficultySlider');
+    const difficultyValue = document.getElementById('difficultyValue');
+    const startBtn = document.getElementById('startBtn');
+    const nextSongBtn = document.getElementById('nextSongBtn');
+    const revealBtn = document.getElementById('revealBtn');
+    const sectionModeBtn = document.getElementById('sectionModeBtn');
+    const scoreValue = document.getElementById('scoreValue');
+    const songInfo = document.getElementById('songInfo');
+    const sectionControls = document.getElementById('sectionControls');
+    const lyricsContent = document.getElementById('lyricsContent');
+    const lyricsPlaceholder = document.getElementById('lyricsPlaceholder');
+    
+    const duelId = `{{.Duel.ID}}`;
+    const availableSongs = JSON.parse(`{{.SongsJSON}}`);
+    
+    difficultySlider.addEventListener('input', function() {
+        difficultyValue.textContent = this.value;
+    });
+
+    
+    sectionModeBtn.addEventListener('click', function() {
+        sectionMode = !sectionMode;
+        this.textContent = sectionMode ? 'Mode normal' : 'Mode par section';
+        this.classList.toggle('btn-primary', sectionMode);
+        
+        if (currentSession && currentSession.status === 'playing') {
+            sectionControls.style.display = sectionMode ? 'flex' : 'none';
+        }
+    });
+
+    startBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/solo-sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    duelId: duelId,
+                    difficultyLevel: parseInt(difficultySlider.value),
+                    sectionMode: sectionMode
+                })
+            });
+            
+            if (response.ok) {
+                currentSession = await response.json();
+                startBtn.style.display = 'none';
+                revealBtn.style.display = 'inline-block';
+                // Le bouton "chanson suivante" n'apparaît qu'après avoir validé la première
+                nextSongBtn.style.display = 'none'; 
+                
+                // On renomme le bouton pour plus de clarté
+                revealBtn.textContent = "J'ai la réponse !";
+                loadRandomSong();
+            } else {
+                alert("Erreur lors de la création de la session.");
+            }
+        } catch (error) {
+            console.error('Erreur lors du démarrage:', error);
+        }
+    });
+
+    revealBtn.addEventListener('click', async () => {
+        if (!currentSession) return;
+
+        lyricsContent.innerHTML = currentSession.lyricsContent.replace(/\n/g, '<br>');
+
+        await updateScoreOnServer(currentSongData.points, 'complete');
+
+        revealBtn.style.display = 'none';
+        nextSongBtn.style.display = 'inline-block';
+    });
+
+    nextSongBtn.addEventListener('click', async () => {
+        if (availableSongs.length > 0) {
+            loadRandomSong();
+        } else {
+            await finishSession();
+        }
+    });
+
+    sectionControls.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('section-btn')) {
+            const sectionName = e.target.dataset.section;
+            if (!e.target.disabled) {
+                await revealSection(sectionName);
+                e.target.disabled = true; 
+                e.target.classList.add('active');
+            }
+        }
+    });
+
+
+    
+    async function loadRandomSong() {
+        if (availableSongs.length === 0) {
+            await finishSession();
+            return;
+        }
+        
+        const randomIndex = Math.floor(Math.random() * availableSongs.length);
+        currentSongData = availableSongs.splice(randomIndex, 1)[0];
+        
+        try {
+            const response = await fetch(`/api/solo-sessions/${currentSession.id}/start-song`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    level: currentSongData.level,
+                    songIndex: currentSongData.index,
+                    difficultyLevel: parseInt(difficultySlider.value),
+                    sectionMode: sectionMode
+                })
+            });
+            
+            if (response.ok) {
+                currentSession = await response.json();
+                displaySong(currentSession);
+            } else {
+                 console.error('La chanson a déjà été jouée ou une erreur est survenue.');
+                 loadRandomSong(); 
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement de la chanson:', error);
+        }
+    }
+
+   
+    function displaySong(sessionData) {
+        document.getElementById('currentSongTitle').textContent = sessionData.currentSong.Title;
+        document.getElementById('currentSongArtist').textContent = 'par ' + sessionData.currentSong.Artist;
+        document.getElementById('currentLevel').textContent = 'Niveau: ' + sessionData.currentLevel + ' points';
+        
+        songInfo.style.display = 'block';
+        lyricsPlaceholder.style.display = 'none';
+        lyricsContent.style.display = 'block';
+        lyricsContent.innerHTML = sessionData.maskedLyrics;
+
+        revealBtn.style.display = 'inline-block';
+        revealBtn.textContent = "J'ai la réponse !";
+        nextSongBtn.style.display = 'none';
+        sectionControls.style.display = sectionMode ? 'flex' : 'none';
+        
+        document.querySelectorAll('.section-btn').forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('active');
+        });
+    }
+    
+    
+   async function revealSection(sectionName) {
+        if (!currentSession) return;
+        try {
+            const response = await fetch(`/api/solo-sessions/${currentSession.id}/reveal-section`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ section: sectionName })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                
+               
+                scoreValue.textContent = data.score; 
+                
+                currentSession.score = data.score;
+
+                const sectionDiv = document.querySelector(`div[data-section="${sectionName}"]`);
+                if (sectionDiv) {
+                    const originalSection = extractOriginalSection(currentSession.lyricsContent, sectionName);
+                    sectionDiv.innerHTML = `<strong>[${capitalizeFirstLetter(sectionName)}]</strong><br>${originalSection.replace(/\n/g, '<br>')}`;
+                }
+            }
+        } catch (error) {
+            console.error('Erreur lors de la révélation de la section:', error);
+        }
+    }
+
+   
+    async function updateScoreOnServer(points, action) {
+        if (!currentSession) return;
+        try {
+            const response = await fetch(`/api/solo-sessions/${currentSession.id}/update-score`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ points, action })
+            });
+            
+            if (response.ok) {
+                const updatedSession = await response.json();
+                currentSession.score = updatedSession.score;
+                scoreValue.textContent = currentSession.score; 
+            }
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour du score:", error);
+        }
+    }
+
+    
+    async function finishSession() {
+        if (!currentSession) return;
+        try {
+            const response = await fetch(`/api/solo-sessions/${currentSession.id}/finish`, {
+                method: 'POST',
+            });
+            
+            if (response.ok) {
+                const finalSession = await response.json();
+                alert(`Jeu terminé ! Score final : ${finalSession.score} points (bonus de complétion inclus)`);
+                location.reload();
+            }
+        } catch (error) {
+            console.error("Erreur lors de la finalisation de la session:", error);
+        }
+    }
+    
+   
+    function extractOriginalSection(fullLyrics, sectionName) {
+        const lines = fullLyrics.split('\n');
+        let inSection = false;
+        const sectionLines = [];
+        const sectionHeader = `[${capitalizeFirstLetter(sectionName)}]`;
+        
+        for (const line of lines) {
+            if (line.trim().toLowerCase().includes(`[${sectionName.toLowerCase()}]`)) {
+                inSection = true;
+                continue;
+            }
+            if (line.trim().startsWith('[')) {
+                inSection = false;
+            }
+            if (inSection && line.trim() !== '') {
+                sectionLines.push(line);
+            }
+        }
+        return sectionLines.join('\n');
+    }
+
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+</script>
 </body>
 </html>

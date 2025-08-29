@@ -17,7 +17,9 @@ class MusicGameClient {
             currentLevel: 0,
             isPlaying: false,
             lyricsVisible: false,
-            maskedLyrics: ''
+            maskedLyrics: '',
+            lyrics: {},
+            currentPoints: 0
         };
         this.initializeEventListeners();
     }
@@ -138,7 +140,8 @@ class MusicGameClient {
                 if (response.ok) {
                     const lyricsData = yield response.json();
                     this.gameState.currentLyrics = lyricsData.parole || "Paroles non disponibles";
-                    this.displayMaskedLyrics(this.gameState.currentLyrics, this.gameState.currentLevel);
+                    this.gameState.lyrics = this.splitLyricsBySections(this.gameState.currentLyrics);
+                    this.displayMaskedLyrics(this.gameState.lyrics, this.gameState.currentPoints);
                 }
                 else {
                     this.gameState.currentLyrics = "Paroles non disponibles";
@@ -151,6 +154,25 @@ class MusicGameClient {
                 this.displayLyrics(this.gameState.currentLyrics);
             }
         });
+    }
+    // Ajoute cette méthode dans ta classe :
+    splitLyricsBySections(lyrics) {
+        const sections = {};
+        let currentSection = "default";
+        const lines = lyrics.split('\n');
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+                currentSection = trimmed.slice(1, -1);
+                sections[currentSection] = [];
+            }
+            else if (trimmed) {
+                if (!sections[currentSection])
+                    sections[currentSection] = [];
+                sections[currentSection].push(trimmed);
+            }
+        }
+        return sections;
     }
     // Charger la version instrumentale
     loadInstrumental(title, artist) {
@@ -181,46 +203,31 @@ class MusicGameClient {
             }
         });
     }
-    displayMaskedLyrics(lyrics, points) {
-        if (!lyrics)
-            return;
-        let maskPercentage;
-        switch (points) {
-            case 50:
-                maskPercentage = 0.8;
-                break; // 80% masqué pour 50 points
-            case 40:
-                maskPercentage = 0.6;
-                break; // 60% masqué pour 40 points
-            case 30:
-                maskPercentage = 0.4;
-                break; // 40% masqué pour 30 points
-            case 20:
-                maskPercentage = 0.2;
-                break; // 20% masqué pour 20 points
-            case 10:
-                maskPercentage = 0.1;
-                break; // 10% masqué pour 10 points
-            default:
-                maskPercentage = 0.3;
-                break;
-        }
-        const words = lyrics.split(' ');
-        const wordsToMask = Math.floor(words.length * maskPercentage);
-        const indicesToMask = [];
-        while (indicesToMask.length < wordsToMask) {
-            const randomIndex = Math.floor(Math.random() * words.length);
-            if (!indicesToMask.includes(randomIndex)) {
-                indicesToMask.push(randomIndex);
+    displayMaskedLyrics(structuredLyrics, points) {
+        const maskedLines = [];
+        const isSectionVisible = (section) => {
+            const lower = section.toLowerCase();
+            if (points >= 40)
+                return lower === "couplet1";
+            if (points <= 30)
+                return !lower.includes("refrain");
+            return true;
+        };
+        for (const section in structuredLyrics) {
+            const lines = structuredLyrics[section];
+            for (const line of lines) {
+                if (isSectionVisible(section)) {
+                    maskedLines.push(line);
+                }
+                else {
+                    const words = line.split(" ");
+                    const masked = words.map(word => `<span class="masked-text">${'█'.repeat(word.length)}</span>`).join(" ");
+                    maskedLines.push(masked);
+                }
             }
+            maskedLines.push("");
         }
-        const maskedWords = words.map((word, index) => {
-            if (indicesToMask.includes(index)) {
-                return `<span class="masked-text">${'█'.repeat(word.length)}</span>`;
-            }
-            return word;
-        });
-        this.gameState.maskedLyrics = maskedWords.join(' ');
+        this.gameState.maskedLyrics = maskedLines.join("<br>");
         this.displayLyrics(this.gameState.maskedLyrics);
     }
     displayLyrics(lyrics) {
@@ -272,22 +279,14 @@ class MusicGameClient {
                 indicesToMask.push(randomIndex);
             }
         }
-        const visibleSections = ["intro", "couplet1"];
-        const maskedSections = ["refrain", "couplet2"]; // selon points
-        const displayedLyrics = Object.entries(lyrics.sections)
-            .map(([section, lines]) => {
-            if (visibleSections.includes(section)) {
-                return lines.join('<br>');
+        const maskedWords = words.map((word, index) => {
+            if (indicesToMask.includes(index)) {
+                const safeWord = word.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<span class="masked" data-word="${safeWord}">${'█'.repeat(word.length)}</span>`;
             }
-            return lines
-                .map(line => line
-                .split(" ")
-                .map(word => `<span class="masked" data-word="${word}">${'█'.repeat(word.length)}</span>`)
-                .join(" "))
-                .join('<br>');
-        })
-            .join("<br><br>");
-        document.getElementById("lyricsDisplay").innerHTML = displayedLyrics;
+            return word;
+        });
+        this.displayLyrics(maskedWords.join(' '));
     }
     stopCurrentAudio() {
         if (this.currentAudio) {

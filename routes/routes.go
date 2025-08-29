@@ -15,6 +15,8 @@ func Init(r *mux.Router) {
 
 	game.SetupDuelRoutes(r)
 
+	game.SetupSoloRoutes(r)
+
 	r.PathPrefix("/asset/").Handler(http.StripPrefix("/asset/", http.FileServer(http.Dir("asset"))))
 
 }

@@ -116,6 +116,9 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 			<script src="/asset/js/vocal.js"></script>
     		<script type="module" src="/asset/js/duel.js"></script>
     		<script type="module" src="/asset/js/ui.js"></script>
+			<script type="module" src="/asset/js/music-client.js"></script>
+			<script type="module" src="/asset/js/game-client.js"></script>
+
 		</head>
 		<body>
     <div class="duelContainer">
@@ -458,9 +461,11 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("DEBUG - Recherche paroles pour: %s - %s\n", song.Title, song.Artist)
 	fmt.Printf("DEBUG - LyricsFile: %v\n", song.LyricsFile)
 
+	// Essayer de lire le fichier local d'abord
 	if song.LyricsFile != nil && *song.LyricsFile != "" {
 		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
 		fmt.Printf("DEBUG - Chemin du fichier: %s\n", filePath)
+		fmt.Printf("DEBUG - paroleDataPath: %s\n", paroleDataPath)
 
 		if _, err := os.Stat(filePath); err == nil {
 			content, err := os.ReadFile(filePath)
@@ -468,9 +473,11 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 				fmt.Printf("DEBUG - Erreur lecture fichier: %v\n", err)
 			} else {
 				fmt.Printf("DEBUG - Contenu fichier lu, taille: %d bytes\n", len(content))
+				fmt.Printf("DEBUG - Contenu brut: %s\n", string(content)[:min(200, len(content))])
 
 				var structuredLyrics LyricsStructure
 				if err := json.Unmarshal(content, &structuredLyrics); err == nil {
+					fmt.Printf("DEBUG - Structure imbriquée détectée\n")
 					lyricsText := convertStructuredLyricsToText(structuredLyrics.Parole)
 					lyricsData := map[string]interface{}{
 						"titre":   structuredLyrics.Titre,
@@ -493,6 +500,7 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 				} else {
 					if parole, exists := lyricsData["parole"]; exists {
 						if paroleStr, ok := parole.(string); ok && paroleStr != "" {
+							fmt.Printf("DEBUG - Paroles trouvées dans structure simple\n")
 						} else {
 							lyricsData["parole"] = "Format de paroles non reconnu"
 						}
@@ -505,10 +513,13 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		} else {
-			fmt.Printf("DEBUG - Fichier n'existe pas: %s\n", filePath)
+			fmt.Printf("DEBUG - Fichier n'existe pas: %s (erreur: %v)\n", filePath, err)
 		}
+	} else {
+		fmt.Printf("DEBUG - Pas de fichier de paroles configuré\n")
 	}
 
+	fmt.Printf("DEBUG - Tentative de récupération via API externe...\n")
 	trackID, err := SearchTrack(song.Title, song.Artist)
 	if err != nil {
 		fmt.Printf("DEBUG - Erreur recherche track: %v\n", err)
@@ -552,30 +563,13 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(lyricsData)
+}
 
-	lyrics, err = GetLyricsFromAPI(trackID)
-	if err != nil {
-		fmt.Printf("DEBUG - Erreur API externe: %v\n", err)
-		lyricsData := map[string]interface{}{
-			"titre":   song.Title,
-			"artiste": song.Artist,
-			"parole":  "Paroles non disponibles",
-			"erreur":  err.Error(),
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(lyricsData)
-		return
+func min(a, b int) int {
+	if a < b {
+		return a
 	}
-
-	if song.LyricsFile != nil && *song.LyricsFile != "" {
-		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
-		os.WriteFile(filePath, []byte(lyrics), 0644)
-		fmt.Printf("DEBUG - Paroles sauvegardées dans %s\n", filePath)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(lyricsData)
+	return b
 }
 
 func MaskLyrics(lyrics string, points int) string {
