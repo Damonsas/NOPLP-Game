@@ -40,6 +40,36 @@ type LyricsStructureSolo struct {
 	Parole  map[string][]string `json:"parole"`
 }
 
+type SoloduelData struct {
+	DuelName   string
+	Titre      string
+	Artiste    string
+	Value      int
+	ValuePoint int
+	Points     int
+}
+
+func (data *SoloduelData) Process() {
+	if data.Titre != "" {
+		if strings.ToLower(data.Titre) == `json:"titre"` {
+			println(data.Titre)
+		}
+	}
+
+	if data.Artiste != "" {
+		if strings.ToLower(data.Artiste) == `json:"artiste"` {
+			println(data.Artiste)
+		}
+	}
+
+	if data.DuelName != "" {
+		if strings.ToLower(data.DuelName) == `json: "DuelID"` {
+			println(data.DuelName)
+		}
+	}
+
+}
+
 var soloSessions map[string]*SoloSession
 
 func init() {

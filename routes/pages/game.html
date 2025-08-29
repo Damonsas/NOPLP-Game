@@ -11,184 +11,50 @@
     <script type="module" src="/asset/js/music-client.js"></script>
 		<script type="module" src="/asset/js/game-client.js"></script>
 
-    <title>Let's play</title>
+    <title>Mode solo</title>
 </head>
 <body>
-    <style>
-        .solo-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+    <section id="duelform">
         
-        .difficulty-control {
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        
-        .difficulty-slider {
-            width: 100%;
-            margin: 10px 0;
-        }
-        
-        .difficulty-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-        }
-        
-        .lyrics-section {
-            background: #fff;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            min-height: 300px;
-        }
-        
-        .masked-text {
-            background: #333;
-            color: #333;
-            border-radius: 3px;
-            padding: 0 2px;
-        }
-        
-        .revealed-text {
-            background: transparent;
-            color: #333;
-            transition: all 0.3s ease;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 20px 0;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #0056b3;
-        }
-        
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #1e7e34;
-        }
-        
-        .btn-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-        
-        .btn-warning:hover {
-            background: #e0a800;
-        }
-        
-        .score-display {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-            padding: 15px;
-            background: #e9ecef;
-            border-radius: 10px;
-        }
-        
-        .song-info {
-            text-align: center;
-            margin: 20px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        
-        .section-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .section-btn {
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            background: #f8f9fa;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .section-btn.active {
-            background: #007bff;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <div class="solo-container">
-        <h1>Mode Solo - {{.Duel.Name}}</h1>
-        
-        <div class="difficulty-control">
-            <h3>Réglage de la difficulté</h3>
-            <p>Pourcentage de masquage des paroles :</p>
-            <input type="range" id="difficultySlider" class="difficulty-slider" 
-                   min="30" max="70" value="70" step="5">
-            <div class="difficulty-value">
-                <span id="difficultyValue">70</span>% masqué
+    </section>
+
+    <section id="soloDuel">
+        <div class="solo-container">
+            <h1>Mode Solo - {{.DuelName}}</h1>
+            
+            <div class="difficulty-control">
+                <h3>Réglage de la difficulté</h3>
+                <p>Pourcentage de masquage des paroles :</p>
+                <input type="range" id="difficultySlider" class="difficulty-slider" 
+                    min="30" max="70" value="70" step="5">
+                <div class="difficulty-value">
+                    <span id="difficultyValue">{{.Value}}</span>% masqué
+                </div>
             </div>
+            
+            <div class="controls">
+                <button id="startBtn" class="btn btn-primary">Commencer le jeu</button>
+                <button id="nextSongBtn" class="btn btn-success" style="display: none;">Chanson suivante</button>
+                <button id="revealBtn" class="btn btn-warning" style="display: none;">Révéler paroles</button>
+                <button id="sectionModeBtn" class="btn btn-secondary">Mode par section</button>
+            </div>
+            
+            <div class="score-display">
+                Score: <span id="scoreValue">{{.ValuePoint}}</span> points
+            </div>
+            
+            <div class="song-info" id="songInfo" style="display: none;">
+                <h3 id="currentSongTitle">{{.Titre}}</h3>
+                <p id="currentSongArtist">{{.Artiste}}</p>
+                <p id="currentLevel">{{.Points}}</p>
+            </div>
+            
+            <div class="section-controls" id="sectionControls">
+            
+            </div>
+            
         </div>
-        
-        <div class="controls">
-            <button id="startBtn" class="btn btn-primary">Commencer le jeu</button>
-            <button id="nextSongBtn" class="btn btn-success" style="display: none;">Chanson suivante</button>
-            <button id="revealBtn" class="btn btn-warning" style="display: none;">Révéler paroles</button>
-            <button id="sectionModeBtn" class="btn btn-secondary">Mode par section</button>
-            <a href="/duel-game?duelId={{.Duel.ID}}" class="btn">Retour au duel</a>
-        </div>
-        
-        <div class="score-display">
-            Score: <span id="scoreValue">0</span> points
-        </div>
-        
-        <div class="song-info" id="songInfo" style="display: none;">
-            <h3 id="currentSongTitle">Titre de la chanson</h3>
-            <p id="currentSongArtist">Artiste</p>
-            <p id="currentLevel">Niveau: 50 points</p>
-        </div>
-        
-        <div class="section-controls" id="sectionControls" style="display: none;">
-            <button class="section-btn" data-section="couplet1">Couplet 1</button>
-            <button class="section-btn" data-section="refrain">Refrain</button>
-            <button class="section-btn" data-section="couplet2">Couplet 2</button>
-            <button class="section-btn" data-section="pont">Pont</button>
-        </div>
-        
-        <div class="lyrics-section" id="lyricsSection">
-            <p id="lyricsPlaceholder">Cliquez sur "Commencer le jeu" pour débuter...</p>
-            <div id="lyricsContent" style="display: none;"></div>
-        </div>
-    </div>
+    </section>
 
     <script>
     let currentSession = null;
@@ -241,10 +107,8 @@
                 currentSession = await response.json();
                 startBtn.style.display = 'none';
                 revealBtn.style.display = 'inline-block';
-                // Le bouton "chanson suivante" n'apparaît qu'après avoir validé la première
                 nextSongBtn.style.display = 'none'; 
                 
-                // On renomme le bouton pour plus de clarté
                 revealBtn.textContent = "J'ai la réponse !";
                 loadRandomSong();
             } else {

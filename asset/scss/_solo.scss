@@ -1,0 +1,113 @@
+
+        .solo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .difficulty-control {
+            background: #4c64ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .difficulty-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .difficulty-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+        
+        .lyrics-section {
+            background: #13007f;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 300px;
+        }
+        
+        .masked-text {
+            background: #333;
+            color: #333;
+            border-radius: 3px;
+            padding: 0 2px;
+        }
+        
+        .revealed-text {
+            background: transparent;
+            color: #0f0f0f;
+            transition: all 0.3s ease;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+        
+        .song-info {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .section-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .section-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .section-btn.active {
+            background: #007bff;
+            color: white;
+        }
+    
