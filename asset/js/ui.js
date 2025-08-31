@@ -103,8 +103,6 @@ function openDuelForm(duel = null, index = -1) {
                     <div class="song-inputs">
                         <input type="text" id="same-song-title" placeholder="Titre de la chanson" value="${duel?.sameSong.title || ''}" required>
                         <input type="text" id="same-song-artist" placeholder="Artiste" value="${duel?.sameSong.artist || ''}" required>
-                        <input type="url" id="same-song-audio" placeholder="Lien audio (optionnel)" value="${duel?.sameSong.audioUrl || ''}">
-                        <input type="text" class="lyrics-input" id="same-song-lyrics" placeholder="Fichier paroles (optionnel)" value="${duel?.sameSong.lyricsFile || ''}">
                         <button type="button" class="check-lyrics-btn">Vérifier paroles</button>
                     </div>
                 </div>
