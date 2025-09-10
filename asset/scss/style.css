@@ -252,13 +252,13 @@ body .songSelect {
   margin: 20px 0;
 }
 
-.btn-success {
-  background: #28a745;
+.btn-sucess {
+  background: #283fa7;
   color: white;
 }
 
-.btn-success:hover {
-  background: #1e7e34;
+.btn-sucess:hover {
+  background: #1e1e7e;
 }
 
 .btn-warning {

@@ -51,6 +51,13 @@ type SoloduelData struct {
 	SongsJSON  template.JS
 }
 
+type PageData struct {
+	View        string // "lobby", "creation", ou "game"
+	AllDuels    []Duel
+	CurrentDuel *Duel
+	SongsJSON   template.JS
+}
+
 // Amélioration de la fonction Process
 func (data *SoloduelData) Process() {
 	// Valeurs par défaut si vides
@@ -83,90 +90,96 @@ func (data *SoloduelData) Process() {
 	}
 }
 
-// Version corrigée de DisplaySoloMode utilisant Process()
-func DisplaySoloMode(w http.ResponseWriter, r *http.Request) {
-	duelID := r.URL.Query().Get("duelId")
-	if duelID == "" {
-		http.Error(w, "ID de duel manquant", http.StatusBadRequest)
-		return
-	}
+// solo.go
 
-	id, err := strconv.Atoi(duelID)
-	if err != nil {
-		http.Error(w, "ID de duel invalide", http.StatusBadRequest)
-		return
-	}
+// DisplayViews est notre gestionnaire principal pour toutes les vues GET.
+func DisplayViews(w http.ResponseWriter, r *http.Request) {
+	// Structure de données unique pour toutes les vues
 
-	var selectedDuel *Duel
-	for i := range duels {
-		if duels[i].ID == id {
-			selectedDuel = &duels[i]
-			break
-		}
-	}
+	action := r.URL.Query().Get("action")
+	duelIDStr := r.URL.Query().Get("duelId")
 
-	if selectedDuel == nil {
-		http.Error(w, "Duel non trouvé", http.StatusNotFound)
-		return
-	}
-
-	type songJS struct {
-		Level  string `json:"level"`
-		Index  int    `json:"index"`
-		Title  string `json:"title"`
-		Artist string `json:"artist"`
-		Points int    `json:"points"`
-	}
-
-	levelsOrder := []string{"50", "40", "30", "20", "10"}
-	var songsForJS []songJS
-
-	for _, levelStr := range levelsOrder {
-		if pointLevel, ok := selectedDuel.Points[levelStr]; ok {
-			levelInt, _ := strconv.Atoi(levelStr)
-			for i, song := range pointLevel.Songs {
-				songsForJS = append(songsForJS, songJS{
-					Level:  levelStr,
-					Index:  i,
-					Title:  song.Title,
-					Artist: song.Artist,
-					Points: levelInt,
-				})
-			}
-		}
-	}
-
-	songsJSON, err := json.Marshal(songsForJS)
-	if err != nil {
-		http.Error(w, "Erreur lors de la sérialisation JSON", http.StatusInternalServerError)
-		return
-	}
-
-	// Créer la structure de données et utiliser Process()
-	data := &SoloduelData{
-		Duel:      selectedDuel,
-		SongsJSON: template.JS(songsJSON),
-		// Les autres champs seront remplis par Process()
-	}
-
-	// Appliquer le traitement
-	data.Process()
-
+	// On prépare le template une seule fois
 	tmpl, err := template.ParseFiles("routes/pages/game.html")
 	if err != nil {
-		http.Error(w, "Erreur lors du chargement du template: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Erreur chargement template: "+err.Error(), 500)
+		return
+	}
+	if duelIDStr != "" {
+		id, _ := strconv.Atoi(duelIDStr)
+		var selectedDuel *Duel
+		for i := range duels {
+			if duels[i].ID == id {
+				selectedDuel = &duels[i]
+				break
+			}
+		}
+		if selectedDuel == nil {
+			http.Error(w, "Duel non trouvé", 404)
+			return
+		}
+
+		// Ajoute ce bloc :
+		type songJS struct {
+			Level  string `json:"level"`
+			Index  int    `json:"index"`
+			Title  string `json:"title"`
+			Artist string `json:"artist"`
+			Points int    `json:"points"`
+		}
+		levelsOrder := []string{"50", "40", "30", "20", "10"}
+		var songsForJS []songJS
+		for _, levelStr := range levelsOrder {
+			if pointLevel, ok := selectedDuel.Points[levelStr]; ok {
+				levelInt, _ := strconv.Atoi(levelStr)
+				for i, song := range pointLevel.Songs {
+					songsForJS = append(songsForJS, songJS{
+						Level:  levelStr,
+						Index:  i,
+						Title:  song.Title,
+						Artist: song.Artist,
+						Points: levelInt,
+					})
+				}
+			}
+		}
+		songsJSONBytes, err := json.Marshal(songsForJS)
+		if err != nil {
+			http.Error(w, "Erreur lors de la sérialisation JSON", http.StatusInternalServerError)
+			return
+		}
+		songsJSON := string(songsJSONBytes)
+
+		// Maintenant, tu peux utiliser songsJSON ici :
+		data := PageData{
+			View:        "game",
+			CurrentDuel: selectedDuel,
+			SongsJSON:   template.JS(songsJSON),
+		}
+		tmpl.Execute(w, data)
 		return
 	}
 
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		http.Error(w, "Erreur lors de l'exécution du template: "+err.Error(), http.StatusInternalServerError)
+	// --- CAS 2: On veut afficher le FORMULAIRE DE CRÉATION (action=create) ---
+	if action == "create" {
+		data := PageData{View: "creation"}
+		tmpl.Execute(w, data)
 		return
 	}
+
+	// --- CAS 3: Par défaut, on affiche le LOBBY ---
+	data := PageData{
+		View:     "lobby",
+		AllDuels: duels,
+	}
+	tmpl.Execute(w, data)
 }
 
+// NOTE: Les fonctions HandleCreateDuel (POST) et saveDuelsToFile restent les mêmes !
+// Nous n'avons pas besoin de les modifier.
+
 // Version alternative si vous préférez garder l'ancienne structure
-func DisplaySoloModeAlternative(w http.ResponseWriter, r *http.Request) {
+func DisplaySoloMode(w http.ResponseWriter, r *http.Request) {
 	duelID := r.URL.Query().Get("duelId")
 	if duelID == "" {
 		http.Error(w, "ID de duel manquant", http.StatusBadRequest)

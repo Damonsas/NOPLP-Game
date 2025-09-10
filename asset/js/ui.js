@@ -64,7 +64,7 @@ function generateDuelCard(duel, index) {
 }
 
 function generatePointSection(points, pointData) {
-    const lyricsIndicator = (song) => song.lyricsFile ? '<span class="lyrics-indicator">📝</span>' : '';
+    const lyricsIndicator = (song) => song.lyricsFile ? '<span class="lyrics-indicator">fichier</span>' : '';
     return `
         <div class="point-section">
             <span class="points">${points} pts</span>
@@ -136,9 +136,7 @@ function generateSongInputFields(points, num, songData) {
         <h5>Chanson ${num}</h5>
         <input type="text" id="song${num}-title-${points}" placeholder="Titre" value="${songData?.title || ''}" required>
         <input type="text" id="song${num}-artist-${points}" placeholder="Artiste" value="${songData?.artist || ''}" required>
-        <input type="url" id="song${num}-audio-${points}" placeholder="Lien audio (optionnel)" value="${songData?.audioUrl || ''}">
-        <input type="text" class="lyrics-input" id="song${num}-lyrics-${points}" placeholder="Fichier paroles (optionnel)" value="${songData?.lyricsFile || ''}">
-        <button type="button" class="check-lyrics-btn">Vérifier paroles</button>
+        
     `;
 }
 
@@ -175,8 +173,8 @@ function collectFormData() {
         sameSong: {
             title: document.getElementById('same-song-title').value,
             artist: document.getElementById('same-song-artist').value,
-            audioUrl: document.getElementById('same-song-audio').value || null,
-            lyricsFile: document.getElementById('same-song-lyrics').value || null
+            // audioUrl: document.getElementById('same-song-audio').value || null,
+            // lyricsFile: document.getElementById('same-song-lyrics').value || null
         },
         createdAt: new Date().toISOString()
     };
@@ -188,14 +186,14 @@ function collectFormData() {
                 {
                     title: document.getElementById(`song1-title-${points}`).value,
                     artist: document.getElementById(`song1-artist-${points}`).value,
-                    audioUrl: document.getElementById(`song1-audio-${points}`).value || null,
-                    lyricsFile: document.getElementById(`song1-lyrics-${points}`).value || null
+                    // audioUrl: document.getElementById(`song1-audio-${points}`).value || null,
+                    // lyricsFile: document.getElementById(`song1-lyrics-${points}`).value || null
                 },
                 {
                     title: document.getElementById(`song2-title-${points}`).value,
                     artist: document.getElementById(`song2-artist-${points}`).value,
-                    audioUrl: document.getElementById(`song2-audio-${points}`).value || null,
-                    lyricsFile: document.getElementById(`song2-lyrics-${points}`).value || null
+                    // audioUrl: document.getElementById(`song2-audio-${points}`).value || null,
+                    // lyricsFile: document.getElementById(`song2-lyrics-${points}`).value || null
                 }
             ]
         };
@@ -205,24 +203,23 @@ function collectFormData() {
 
 function fillFormWithData(data) {
     if (!data) return;
-    openDuelForm(data, -1); // Simplement re-render le form avec les données
+    openDuelForm(data, -1); 
     document.getElementById('duelName').value = data.name;
     for (const points of DUEL_POINTS_CATEGORIES) {
         document.getElementById(`theme-${points}`).value = data.points[points].theme;
         for (let i = 0; i < 2; i++) {
             document.getElementById(`song${i+1}-title-${points}`).value = data.points[points].songs[i].title;
             document.getElementById(`song${i+1}-artist-${points}`).value = data.points[points].songs[i].artist;
-            document.getElementById(`song${i+1}-audio-${points}`).value = data.points[points].songs[i].audioUrl || '';
-            document.getElementById(`song${i+1}-lyrics-${points}`).value = data.points[points].songs[i].lyricsFile || '';
+            // document.getElementById(`song${i+1}-audio-${points}`).value = data.points[points].songs[i].audioUrl || '';
+            // document.getElementById(`song${i+1}-lyrics-${points}`).value = data.points[points].songs[i].lyricsFile || '';
         }
     }
     document.getElementById('same-song-title').value = data.sameSong.title;
     document.getElementById('same-song-artist').value = data.sameSong.artist;
-    document.getElementById('same-song-audio').value = data.sameSong.audioUrl || '';
-    document.getElementById('same-song-lyrics').value = data.sameSong.lyricsFile || '';
+    // document.getElementById('same-song-audio').value = data.sameSong.audioUrl || '';
+    // document.getElementById('same-song-lyrics').value = data.sameSong.lyricsFile || '';
 }
 
-// --- Notifications ---
 
 function showNotification(message, type = 'success') {
     const notif = document.createElement('div');
@@ -240,7 +237,6 @@ function showNotification(message, type = 'success') {
     setTimeout(() => notif.remove(), 4000);
 }
 
-//Gestionnaires d'événements
 
 document.addEventListener('click', async (event) => {
     const target = event.target;

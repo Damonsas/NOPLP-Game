@@ -196,10 +196,10 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
                                 {{end}}
                             </div>
                             <div class="song-actions">
-                                <button class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Title}}', '{{$song.Artist}}')">
+                                <button type"button" class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Title}}', '{{$song.Artist}}')">
                                     🎵 Aperçu
                                 </button>
-                                <button class="btn-select" onclick="event.stopPropagation(); selectSong('{{$level}}', {{$index}}, '{{$song.Title}}', '{{$song.Artist}}')">
+                                <button type="button" class="btn-select" onclick="event.stopPropagation(); selectSong('{{$level}}', {{$index}}, '{{$song.Title}}', '{{$song.Artist}}')">
                                     Sélectionner
                                 </button>
                             </div>
@@ -257,22 +257,6 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
             toggleElement(levelId);
         }
 
-        // Fonction pour obtenir l'URL d'aperçu de YouTube
-        async function getYouTubePreview(title, artist) {
-            try {
-                // Utilisation de l'API YouTube Search (nécessite une clé API)
-                const query = encodeURIComponent(title + " " + artist + " instrumental");
-                const searchUrl = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + query + "&type=video&key=YOUR_YOUTUBE_API_KEY";
-                
-                // Pour le moment, utilisons une URL de démonstration
-                // En production, vous devrez remplacer par votre clé API YouTube
-                console.log("Recherche YouTube pour:", title, artist);
-                return null; // Retourner null pour utiliser un fichier audio local ou une autre source
-            } catch (error) {
-                console.error("Erreur lors de la recherche YouTube:", error);
-                return null;
-            }
-        }
 
         async function previewSong(title, artist) {
             console.log("Aperçu de la chanson:", title, "par", artist);

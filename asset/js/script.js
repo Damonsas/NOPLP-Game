@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Démarrage du jeu avec:', gameState);
                     alert('Jeu démarré avec la chanson sélectionnée !');
                 } else {
-                    alert('Veuillez d\'abord sélectionner une chanson');
+                    alert(`Veuillez d'abord sélectionner une chanson`);
                 }
             }
         });
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.toggleElement = toggleElement;
 window.toggleLevelSongs = toggleLevelSongs;
 
-console.log('Script.js (interface) loaded:', {
-    toggleElement: typeof toggleElement,
-    toggleLevelSongs: typeof toggleLevelSongs
-});
+// console.log('Script.js (interface) loaded:', {
+//     toggleElement: typeof toggleElement,
+//     toggleLevelSongs: typeof toggleLevelSongs
+// });
