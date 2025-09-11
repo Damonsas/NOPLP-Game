@@ -63,9 +63,9 @@ var gameSessions map[string]*GameSession
 var nextDuelID int = 1
 
 const (
-	duelSaveDataPath = "data/serverdata/duelsavedata"
-	prepDuelDataPath = "data/serverdata/prepdueldata"
-	paroleDataPath   = "data/serverdata/paroledata"
+	duelSaveDataPath = "/data/serverdata/duelsavedata"
+	prepDuelDataPath = "/data/serverdata/prepdueldata"
+	paroleDataPath   = "/data/serverdata/paroledata"
 )
 
 func init() {
@@ -1015,6 +1015,8 @@ func SetupDuelRoutes(r *mux.Router) {
 
 	r.HandleFunc("/api/temp-duel", SaveTemporaryDuel).Methods("POST")
 	r.HandleFunc("/api/temp-duel", LoadTemporaryDuel).Methods("GET")
+
+	r.HandleFunc("/api/get-lyrics-by-song", GetLyricsBySongHandler).Methods("GET")
 
 	r.HandleFunc("/api/get-lyrics/{level}/{songIndex:[0-9]+}", GetLyricsdata).Methods("GET")
 	r.HandleFunc("/api/check-lyrics", CheckLyricsFile).Methods("GET")

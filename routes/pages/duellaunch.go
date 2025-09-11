@@ -196,7 +196,7 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
                                 {{end}}
                             </div>
                             <div class="song-actions">
-                                <button type"button" class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Title}}', '{{$song.Artist}}')">
+                                <button type="button" class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Title}}', '{{$song.Artist}}')">
                                     🎵 Aperçu
                                 </button>
                                 <button type="button" class="btn-select" onclick="event.stopPropagation(); selectSong('{{$level}}', {{$index}}, '{{$song.Title}}', '{{$song.Artist}}')">
@@ -338,6 +338,41 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+func GetLyricsByTitleAndArtist(title, artist string) (string, error) {
+	// Normaliser : enlever majuscules/minuscules, espaces → fichiers
+	safeTitle := strings.ReplaceAll(strings.ToLower(title), " ", "_")
+	safeArtist := strings.ReplaceAll(strings.ToLower(artist), " ", "_")
+
+	// Exemple : angele - balance_ton_quoi.json
+	fileName := fmt.Sprintf("%s - %s.json", safeArtist, safeTitle)
+
+	filePath := filepath.Join(paroleDataPath, fileName)
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+	return string(content), nil
+}
+
+func GetLyricsBySongHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Query().Get("title")
+	artist := r.URL.Query().Get("artist")
+
+	if title == "" || artist == "" {
+		http.Error(w, "Titre ou artiste manquant", http.StatusBadRequest)
+		return
+	}
+
+	content, err := GetLyricsByTitleAndArtist(title, artist)
+	if err != nil {
+		http.Error(w, "Paroles non trouvées", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(content))
 }
 
 func convertStructuredLyricsToText(paroleMap map[string][]string) string {
