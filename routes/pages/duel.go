@@ -42,7 +42,7 @@ type GameSession struct {
 
 var duels []Duel
 
-// var gameSessions map[string]*GameSession
+var gameSessions map[string]*GameSession
 var nextDuelID int = 1
 
 const (
@@ -58,7 +58,7 @@ type ChallengernameData struct {
 
 func init() {
 	duels = make([]Duel, 0)
-	// gameSessions = make(map[string]*GameSession)
+	gameSessions = make(map[string]*GameSession)
 
 	createDirectories()
 	if err := loadDuelsFromServer(); err != nil {
@@ -73,15 +73,17 @@ func Challengername(w http.ResponseWriter, r *http.Request) {
 	data := ChallengernameData{}
 	log.Printf("Welcome challenger called")
 	cname := r.URL.Query().Get("cname")
-	tmpl := template.Must(template.ParseFiles("routes/page/duel.html"))
 	if cname == "" {
 		data.Cname = "Challenger"
+	} else {
+		data.Cname = cname
 	}
 	name := r.URL.Query().Get("name")
-	data.Maestro = name
 	if name == "" {
 		data.Maestro = "Visiteur"
+	} else {
+		data.Maestro = name
 	}
-
+	tmpl := template.Must(template.ParseFiles("routes/pages/duel.html"))
 	tmpl.Execute(w, data)
 }

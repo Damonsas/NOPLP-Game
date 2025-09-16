@@ -5,12 +5,13 @@ import (
 )
 
 func SetupSoloRoutes(r *mux.Router) {
-	// r.HandleFunc("/duel-solo", DisplaySoloMode).Methods("GET")
-	// r.HandleFunc("/api/duel-solo-info", GetDuelForSolo).Methods("GET")
-	// r.HandleFunc("/api/solo-sessions", CreateSoloSession).Methods("POST")
-	// r.HandleFunc("/api/solo-sessions/{id}", GetSoloSession).Methods("GET")
-	// r.HandleFunc("/api/solo-sessions/{id}/start-song", StartSoloSong).Methods("POST")
-	// r.HandleFunc("/api/solo-sessions/{id}/reveal-section", RevealSoloSection).Methods("POST")
-	// r.HandleFunc("/api/solo-sessions/{id}/update-score", UpdateSoloScore).Methods("POST")
-	// r.HandleFunc("/api/solo-sessions/{id}/finish", FinishSoloSession).Methods("POST")
+	r.HandleFunc("/api/duels", GetSolo).Methods("GET")
+	r.HandleFunc("/api/duels", CreateSolo).Methods("POST")
+	r.HandleFunc("/api/duels/{id:[0-9]+}", GetSoloByID).Methods("GET")
+	r.HandleFunc("/api/duels/{id:[0-9]+}", UpdateSolo).Methods("PUT")
+	r.HandleFunc("/api/duels/{id:[0-9]+}", DeleteSolo).Methods("DELETE")
+	r.HandleFunc("/api/upload-duel", LoadSoloFromJSON).Methods("POST")
+
+	r.HandleFunc("/api/download-duel/{id:[0-9]+}", DownloadSolo).Methods("GET")
+
 }

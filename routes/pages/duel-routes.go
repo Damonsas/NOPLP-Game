@@ -5,7 +5,7 @@ import (
 )
 
 func SetupDuelRoutes(r *mux.Router) {
-	// r.HandleFunc("/duel", DuelMaestroChallenger).Methods("GET")
+	r.HandleFunc("/duel", DuelMaestroChallenger).Methods("GET")
 	// r.HandleFunc("/duel-game", DisplayDuel).Methods("GET", "POST")
 
 	// r.HandleFunc("/duel-display", DisplayDuel).Methods("GET", "POST")
@@ -32,13 +32,13 @@ func SetupDuelRoutes(r *mux.Router) {
 	// r.HandleFunc("/api/check-lyrics", CheckLyricsFile).Methods("GET")
 	// r.HandleFunc("/api/lyrics-list", GetLyricsFilesList).Methods("GET")
 
-	// r.HandleFunc("/api/game-sessions", StartGameSession).Methods("POST")
-	// r.HandleFunc("/api/game-sessions/{id}", GetGameSession).Methods("GET")
+	r.HandleFunc("/api/game-sessions", StartGameSession).Methods("POST")
+	r.HandleFunc("/api/game-sessions/{id}", GetGameSession).Methods("GET")
 	// r.HandleFunc("/api/game-sessions/{id}/select-song", SelectSongForLevel).Methods("POST")
 	// r.HandleFunc("/api/game-sessions/{id}/update-score", UpdateGameScore).Methods("POST")
 	// r.HandleFunc("/api/game-sessions/{id}/finish", FinishGameSession).Methods("POST")
 
 	// r.HandleFunc("/api/game-sessions/{id}/start-song", HandleStartSong).Methods("POST")
-	// r.HandleFunc("/api/game-sessions/{id}/lyrics-visibility", HandleLyricsVisibility).Methods("POST")
+	r.HandleFunc("/api/game-sessions/{id}/lyrics-visibility", HandleLyricsVisibility).Methods("POST")
 
 }
