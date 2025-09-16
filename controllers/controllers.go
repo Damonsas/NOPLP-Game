@@ -14,16 +14,18 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Welcome handler called")
 	name := r.URL.Query().Get("name")
-	tmpl := template.Must(template.ParseFiles("routes/pages/welcome.html"))
 	if name == "" {
 		name = "Visiteur"
 	}
+	tmpl := template.Must(template.ParseFiles("routes/pages/welcome.html"))
 	tmpl.Execute(w, name)
 
 }
 func DuelpageHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Duel page called")
+	name := r.URL.Query().Get("name")
 	tmpl := template.Must(template.ParseFiles("routes/pages/duel.html"))
-	tmpl.Execute(w, nil)
+	tmpl.Execute(w, name)
 }
 
 func LevelSelectionHandler(w http.ResponseWriter, r *http.Request) {

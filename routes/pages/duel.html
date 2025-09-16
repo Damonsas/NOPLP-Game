@@ -10,11 +10,19 @@
     <link rel="stylesheet" href="/asset/scss/style.css">
     <script src="/asset/js/script.js"></script>
     <script src="/asset/js/vocal.js"></script>
-    <script type="module" src="/asset/js/duel.js"></script>
-    <script type="module" src="/asset/js/ui.js"></script>
+    <!-- <script type="module" src="/asset/js/duel.js"></script>
+    <script type="module" src="/asset/js/ui.js"></script> -->
     <title>Mode duel</title>
 </head>
 <body>
+    <li class="btn"><a href="../">Accueil</a></li>
+    <form method="GET" >
+        <input type="text" name="cname" placeholder="Votre nom">
+        <button type="submit">Connexion du challenger</button>
+    </form>
+    <h2 class="{{.Cname}}">Bienvenue à toi {{.Cname}} !</h2>
+    <h2 class="{{.Maestro}}">Tu vas affronter le Maestro du jour {{.Maestro}}</h2>
+
     <section class="Sectionduel">
         <div id="PrepGrille">
 

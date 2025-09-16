@@ -11,11 +11,11 @@ import (
 func Init(r *mux.Router) {
 	r.HandleFunc("/", controllers.Index).Methods("GET")
 	r.HandleFunc("/welcome", controllers.WelcomeHandler).Methods("GET")
-	r.HandleFunc("/game", game.CompleteParoleHandler).Methods("GET", "POST")
+	r.HandleFunc("/solo", game.CompleteParoleHandler).Methods("GET", "POST")
 
-	game.SetupDuelRoutes(r)
+	// game.SetupDuelRoutes(r)
 
-	game.SetupSoloRoutes(r)
+	// game.SetupSoloRoutes(r)
 
 	r.PathPrefix("/asset/").Handler(http.StripPrefix("/asset/", http.FileServer(http.Dir("asset"))))
 
