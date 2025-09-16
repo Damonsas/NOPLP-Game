@@ -925,7 +925,6 @@ func loadDuelsFromServer() error {
 
 	fileContent, err := os.ReadFile(filePath)
 	if err != nil {
-		// Si le fichier n'existe pas, ce n'est pas une erreur
 		if os.IsNotExist(err) {
 			return nil
 		}
@@ -961,7 +960,6 @@ func HandleStartSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Appel de la logique depuis duellaunch.go
 	session, err := StartSong(sessionID, request.Level, request.SongIndex)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)

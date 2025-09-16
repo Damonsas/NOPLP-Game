@@ -341,11 +341,9 @@ func DisplayDuel(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetLyricsByTitleAndArtist(title, artist string) (string, error) {
-	// Normaliser : enlever majuscules/minuscules, espaces → fichiers
 	safeTitle := strings.ReplaceAll(strings.ToLower(title), " ", "_")
 	safeArtist := strings.ReplaceAll(strings.ToLower(artist), " ", "_")
 
-	// Exemple : angele - balance_ton_quoi.json
 	fileName := fmt.Sprintf("%s - %s.json", safeArtist, safeTitle)
 
 	filePath := filepath.Join(paroleDataPath, fileName)
@@ -477,7 +475,7 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 	}
 	song := pointLevel.Songs[songIndex]
 
-	fmt.Printf("DEBUG - Recherche paroles pour: %s - %s\n", song.Title, song.Artist)
+	fmt.Printf("DEBUG - Recherche paroles pour: %s - %s\n", song.Artist, song.Title)
 	fmt.Printf("DEBUG - LyricsFile: %v\n", song.LyricsFile)
 
 	// Essayer de lire le fichier local d'abord
