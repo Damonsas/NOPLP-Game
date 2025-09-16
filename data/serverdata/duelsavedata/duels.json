@@ -150,5 +150,81 @@
       "artist": "a"
     },
     "createdAt": "2025-09-10T23:59:06.9272726+02:00"
+  },
+  {
+    "id": 1757579923321,
+    "name": "test",
+    "points": {
+      "10": {
+        "theme": "a",
+        "songs": [
+          {
+            "title": "a",
+            "artist": "a"
+          },
+          {
+            "title": "a",
+            "artist": "a"
+          }
+        ]
+      },
+      "20": {
+        "theme": "a",
+        "songs": [
+          {
+            "title": "a",
+            "artist": "a"
+          },
+          {
+            "title": "a",
+            "artist": "a"
+          }
+        ]
+      },
+      "30": {
+        "theme": "a",
+        "songs": [
+          {
+            "title": "a",
+            "artist": "a"
+          },
+          {
+            "title": "a",
+            "artist": "a"
+          }
+        ]
+      },
+      "40": {
+        "theme": "a",
+        "songs": [
+          {
+            "title": "a",
+            "artist": "a"
+          },
+          {
+            "title": "a",
+            "artist": "a"
+          }
+        ]
+      },
+      "50": {
+        "theme": "test1",
+        "songs": [
+          {
+            "title": "pomme c",
+            "artist": "Calogéro"
+          },
+          {
+            "title": "Balance ton quoi",
+            "artist": "Angèle"
+          }
+        ]
+      }
+    },
+    "sameSong": {
+      "title": "a",
+      "artist": "a"
+    },
+    "createdAt": "2025-09-11T10:38:43.3312464+02:00"
   }
 ]
