@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -143,6 +145,74 @@ func UpdateGameScore(w http.ResponseWriter, r *http.Request) {
 	session.Joueur1Score += request.Maestro
 	session.Joueur2Score += request.Challenger
 	session.Status = "score_updated"
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(session)
+}
+
+// session de musique
+
+func StartSong(sessionID string, level string, songIndex int) (*GameSession, error) {
+	session, ok := gameSessions[sessionID]
+	if !ok {
+		return nil, fmt.Errorf("session non trouvée : %s", sessionID)
+	}
+
+	var duel *Duel
+	for i := range duels {
+		if duels[i].ID == session.DuelID {
+			duel = &duels[i]
+			break
+		}
+	}
+	if duel == nil {
+		return nil, fmt.Errorf("duel non trouvé pour cette session")
+	}
+
+	pointLevel, ok := duel.Points[level]
+	if !ok {
+		return nil, fmt.Errorf("niveau de points invalide : %s", level)
+	}
+	if songIndex < 0 || songIndex >= len(pointLevel.Songs) {
+		return nil, fmt.Errorf("index de chanson invalide : %d", songIndex)
+	}
+	song := pointLevel.Songs[songIndex]
+	session.CurrentSong = &song
+
+	session.LyricsContent = "Paroles non disponibles."
+	if song.LyricsFile != nil && *song.LyricsFile != "" {
+		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
+		if !filepath.IsAbs(filePath) {
+			content, err := os.ReadFile(filePath)
+			if err == nil {
+				session.LyricsContent = string(content)
+			}
+		}
+	}
+
+	session.LyricsVisible = true
+
+	return session, nil
+}
+
+func HandleStartSong(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sessionID := vars["id"]
+
+	var request struct {
+		Level     string `json:"level"`
+		SongIndex int    `json:"songIndex"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Requête invalide", http.StatusBadRequest)
+		return
+	}
+
+	session, err := StartSong(sessionID, request.Level, request.SongIndex)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(session)

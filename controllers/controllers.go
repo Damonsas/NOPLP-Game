@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	game "NOPLP-Game/routes/pages"
 	"html/template"
 	"log"
 	"net/http"
@@ -23,9 +24,25 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 }
 func DuelpageHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Duel page called")
+
+	data := game.ChallengernameData{}
+
+	cname := r.URL.Query().Get("cname")
+	if cname == "" {
+		data.Cname = "Challenger"
+	} else {
+		data.Cname = cname
+	}
+
 	name := r.URL.Query().Get("name")
+	if name == "" {
+		data.Maestro = "Visiteur"
+	} else {
+		data.Maestro = name
+	}
+
 	tmpl := template.Must(template.ParseFiles("routes/pages/duel.html"))
-	tmpl.Execute(w, name)
+	tmpl.Execute(w, data)
 }
 
 func LevelSelectionHandler(w http.ResponseWriter, r *http.Request) {
