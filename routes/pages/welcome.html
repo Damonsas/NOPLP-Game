@@ -13,12 +13,12 @@
 <body>
     <section id="présentation">
         <h1>Bienvenue dans NOPLP <br> le jeu !</h1>
-        <h2>Bienvenue {{.}} !</h2>
+        <h2>Bienvenue Maestro {{.}} !</h2>
     </section>
     <ol>
         <li class="btn"><a href="../">Accueil</a></li>
-        <li class="btn"><a href="/solo">Mode solo</a></li>
-        <li class="btn"><a href="/duel">Mode Duel</a></li>
+        <li class="btn"><a href="/solo?name={{.}}">Mode solo</a></li>
+        <li class="btn"><a href="/duel?name={{.}}">Mode Duel</a></li>
     </ol>
 </body>
 </html>

@@ -11,6 +11,8 @@ import (
 func Init(r *mux.Router) {
 	r.HandleFunc("/", controllers.Index).Methods("GET")
 	r.HandleFunc("/welcome", controllers.WelcomeHandler).Methods("GET")
+	r.HandleFunc("/duel", controllers.DuelpageHandler).Methods("GET", "POST")
+	r.HandleFunc("/duel", game.Challengername).Methods("GET", "POST")
 
 	game.SetupDuelRoutes(r)
 

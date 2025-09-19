@@ -16,13 +16,13 @@
 </head>
 <body>
     <li class="btn"><a href="../">Accueil</a></li>
-    <form method="GET" >
-        <input type="text" name="cname" placeholder="Votre nom">
+    <form action="/duel" method="GET" >
+        <input type="text" name="cname" placeholder="Votre nom" value="{{.Cname}}">
         <input type="hidden" name="name" value="{{.Maestro}}">
         <button type="submit">Connexion du challenger</button>
     </form>
-    <h2>Bienvenue à toi {{.Cname}} !</h2>
-    <h2>Tu vas affronter le Maestro du jour {{.Maestro}}</h2>
+    <h2>Bienvenue à toi <span>{{.Message1}}</span> !</h2>
+    <h2>Tu vas affronter le Maestro du jour <span>{{.Message2}}</span></h2>
 
     <section class="Sectionduel">
         <div id="PrepGrille">

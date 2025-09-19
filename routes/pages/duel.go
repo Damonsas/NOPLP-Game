@@ -52,8 +52,10 @@ const (
 )
 
 type ChallengernameData struct {
-	Cname   string
-	Maestro string
+	Cname    string
+	Maestro  string
+	Message1 string
+	Message2 string
 }
 
 func init() {
@@ -72,17 +74,19 @@ func init() {
 func Challengername(w http.ResponseWriter, r *http.Request) {
 	data := ChallengernameData{}
 	log.Printf("Welcome challenger called")
-	cname := r.URL.Query().Get("cname")
-	if cname == "" {
-		data.Cname = "Challenger"
+	cname := r.FormValue("cname")
+	name := r.FormValue("name")
+	if cname != "" {
+		data.Message1 = data.Cname
+
 	} else {
-		data.Cname = cname
+		data.Message1 = "Challenger"
 	}
-	name := r.URL.Query().Get("name")
-	if name == "" {
-		data.Maestro = "Visiteur"
-	} else {
+	if name != "" {
+		data.Message2 = data.Maestro
 		data.Maestro = name
+	} else {
+		data.Message2 = "Visiteur"
 	}
 	tmpl := template.Must(template.ParseFiles("routes/pages/duel.html"))
 	tmpl.Execute(w, data)

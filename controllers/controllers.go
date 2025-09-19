@@ -27,20 +27,20 @@ func DuelpageHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := game.ChallengernameData{}
 
-	cname := r.URL.Query().Get("cname")
-	if cname == "" {
-		data.Cname = "Challenger"
-	} else {
-		data.Cname = cname
-	}
+	cname := r.FormValue("cname")
+	name := r.FormValue("name")
+	if cname != "" {
+		data.Message1 = data.Cname
 
-	name := r.URL.Query().Get("name")
-	if name == "" {
-		data.Maestro = "Visiteur"
 	} else {
+		data.Message1 = "Challenger"
+	}
+	if name != "" {
+		data.Message2 = data.Maestro
 		data.Maestro = name
+	} else {
+		data.Message2 = "Visiteur"
 	}
-
 	tmpl := template.Must(template.ParseFiles("routes/pages/duel.html"))
 	tmpl.Execute(w, data)
 }
