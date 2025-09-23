@@ -1,16 +1,36 @@
 @import 'mixins';
 
-.button_prep_grille{
+.point-section {
+    visibility: hidden;
+}
+.song-option {
+visibility: hidden;
+}
+
+
+
+.Sectionduel {
     display: flex;
-    justify-content: center;
-}
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
 
-.duel-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-}
+    .duel-card {
+        width: 100%;
+        max-width: 40vw;
+        background: rgba(0, 5, 153, 0.361);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
 
-.start-btn {
-    text-align: center;
-    margin: 20px;
+        h2 {
+            color: #f0f0f0;
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: #dcdcdc;
+            margin-bottom: 10px;
+        }
+    }
 }

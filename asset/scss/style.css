@@ -1,17 +1,33 @@
 @charset "UTF-8";
-.button_prep_grille {
+.point-section {
+  visibility: hidden;
+}
+
+.song-option {
+  visibility: hidden;
+}
+
+.Sectionduel {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
 }
-
-.duel-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+.Sectionduel .duel-card {
+  width: 100%;
+  max-width: 40vw;
+  background: rgba(0, 5, 153, 0.361);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-
-.start-btn {
-  text-align: center;
-  margin: 20px;
+.Sectionduel .duel-card h2 {
+  color: #f0f0f0;
+  margin-bottom: 15px;
+}
+.Sectionduel .duel-card p {
+  color: #dcdcdc;
+  margin-bottom: 10px;
 }
 
 body .duelContainer {
@@ -252,24 +268,6 @@ body .songSelect {
   margin: 20px 0;
 }
 
-.btn-sucess {
-  background: #283fa7;
-  color: white;
-}
-
-.btn-sucess:hover {
-  background: #1e1e7e;
-}
-
-.btn-warning {
-  background: #ffc107;
-  color: #212529;
-}
-
-.btn-warning:hover {
-  background: #e0a800;
-}
-
 .score-display {
   font-size: 24px;
   font-weight: bold;
@@ -313,26 +311,6 @@ body .songSelect {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-}
-
-.btn-primary {
-  background: #007bff;
-  color: white;
-}
-
-.btn-success {
-  background: #28a745;
-  color: white;
-}
-
-.btn-warning {
-  background: #ffc107;
-  color: black;
-}
-
-.btn-secondary {
-  background: #6c757d;
-  color: white;
 }
 
 .score-display {
@@ -398,6 +376,120 @@ body .songSelect {
   padding: 10px;
   border-left: 3px solid #007bff;
   background: #f8f9fa;
+}
+
+.btn {
+  background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
+  padding: 12px 25px;
+  border-radius: 25px;
+  border-color: #f0f0f0;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  text-align: center;
+}
+.btn a {
+  text-decoration: none;
+  color: #fff;
+}
+
+li {
+  list-style: none;
+  display: inline-block;
+  margin: 10px;
+}
+
+button {
+  background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
+  padding: 12px 25px;
+  border-radius: 25px;
+  border-color: #f0f0f0;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+
+ol {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+ol .btn {
+  background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
+  padding: 12px 25px;
+  border-radius: 25px;
+  border-color: #f0f0f0;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  text-align: center;
+}
+ol .btn a {
+  text-decoration: none;
+  color: #fff;
+}
+
+.button_prep_grille {
+  display: flex;
+  justify-content: center;
+}
+
+.duel-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.start-btn {
+  text-align: center;
+  margin: 20px;
+}
+
+.btn-sucess {
+  background: #283fa7;
+  color: white;
+}
+
+.btn-sucess:hover {
+  background: #1e1e7e;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background: #e0a800;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: black;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
 }
 
 html {
@@ -471,74 +563,6 @@ body #présentation h1 br {
   100% {
     text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff, 0 0 40px #00d4ff, 0 0 80px #00d4ff, 0 0 160px #00d4ff;
   }
-}
-
-ol {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-ol .btn {
-  background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
-  padding: 12px 25px;
-  border-radius: 25px;
-  border-color: #f0f0f0;
-  cursor: pointer;
-  font-size: 16px;
-  margin: 10px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  color: #fff;
-  text-align: center;
-}
-ol .btn a {
-  text-decoration: none;
-  color: #fff;
-}
-
-.point-section {
-  visibility: hidden;
-}
-
-.song-option {
-  visibility: hidden;
-}
-
-button {
-  background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
-  padding: 12px 25px;
-  border-radius: 25px;
-  border-color: #f0f0f0;
-  cursor: pointer;
-  font-size: 16px;
-  margin: 10px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  color: #fff;
-}
-
-.Sectionduel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-}
-.Sectionduel .duel-card {
-  width: 100%;
-  max-width: 40vw;
-  background: rgba(0, 5, 153, 0.361);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.Sectionduel .duel-card h2 {
-  color: #f0f0f0;
-  margin-bottom: 15px;
-}
-.Sectionduel .duel-card p {
-  color: #dcdcdc;
-  margin-bottom: 10px;
 }
 
 @keyframes hii {

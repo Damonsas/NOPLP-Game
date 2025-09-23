@@ -29,6 +29,9 @@ func DuelpageHandler(w http.ResponseWriter, r *http.Request) {
 
 	cname := r.FormValue("cname")
 	name := r.FormValue("name")
+	data.Cname = cname
+	data.Maestro = name
+
 	if cname != "" {
 		data.Message1 = data.Cname
 
@@ -45,12 +48,7 @@ func DuelpageHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-func LevelSelectionHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("routes/pages/level_selection.html"))
-	tmpl.Execute(w, nil)
-}
-
-func MemechansonHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("routes/pages/meme_chanson.html"))
-	tmpl.Execute(w, nil)
+func SoloHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s %s", r.Method, r.URL.Path)
+	http.ServeFile(w, r, "routes/pages/solo.html")
 }

@@ -1,0 +1,84 @@
+@import "mixins.scss";
+
+
+// bouton accueil
+.btn {
+        @include button-style();
+        color: #fff;
+        text-align: center;
+
+        a {
+            text-decoration: none;
+            color: #fff;
+        }
+    }
+
+    li {
+        list-style: none;
+        display: inline-block;
+        margin: 10px;
+    }
+
+button {
+    @include button-style();
+    color: #fff;
+}
+
+
+// les boutons de welcome
+ol {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    .btn {
+        @include button-style();
+        color: #fff;
+        text-align: center;
+
+        a {
+            text-decoration: none;
+            color: #fff;
+        }
+    }
+}
+
+// boutons de duel et solo
+
+.button_prep_grille{
+    display: flex;
+    justify-content: center;
+}
+
+.duel-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.start-btn {
+    text-align: center;
+    margin: 20px;
+}
+
+.btn-sucess {
+            background: #283fa7;
+            color: white;
+        }
+        
+        .btn-sucess:hover {
+            background: #1e1e7e;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+.btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .btn-secondary { background: #6c757d; color: white; }
