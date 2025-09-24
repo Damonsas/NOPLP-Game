@@ -7,17 +7,18 @@ import (
 )
 
 func AssetHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
+	fs := http.StripPrefix("/asset/", http.FileServer(http.Dir("asset")))
 
-		switch ext := strings.ToLower(filepath.Ext(path)); ext {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ext := strings.ToLower(filepath.Ext(r.URL.Path))
+
+		switch ext {
 		case ".css":
 			w.Header().Set("Content-Type", "text/css")
 		case ".js":
 			w.Header().Set("Content-Type", "application/javascript")
 		}
 
-		http.StripPrefix("/asset/", http.FileServer(http.Dir("asset"))).ServeHTTP(w, r)
-
+		fs.ServeHTTP(w, r)
 	})
 }
