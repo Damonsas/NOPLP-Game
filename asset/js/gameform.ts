@@ -1,50 +1,50 @@
 import { showNotification } from './gamenotification.js';
 import { addDuel, loadDuelsFromStorage, preparedDuels, Duel, getLyricsList } from './gamelogic.js';
 
-// === CONSTANTES ===
 const DUEL_POINTS_CATEGORIES = [50, 40, 30, 20, 10];
-const sameSong = "memechanson";
 
-// === FONCTIONS UTILITAIRES POUR LYRICS ===
 
 /**
  * Récupère la liste des fichiers de paroles locaux
  * @returns Promise avec la liste des noms de fichiers
  */
 async function getLyricsListLocal(): Promise<string[]> {
-    try {
-        console.log("Tentative de récupération des fichiers lyrics locaux...");
-        
-        // Essayer de lire le contenu du dossier data/serverdata/paroledata/
-        const response = await fetch('/data/serverdata/paroledata/index.json');
-        if (response.ok) {
-            const data = await response.json();
-            console.log("Fichiers lyrics trouvés via index.json:", data.files);
-            return data.files || [];
-        }
-    } catch (error) {
-        console.error("Erreur lors de la récupération via index.json:", error);
+  const indexPath = './data/serverdata/paroledata/index.json';
+  try {
+    console.log("Tentative de récupération des fichiers lyrics depuis", indexPath);
+
+    const response = await fetch(indexPath, { cache: 'no-store' });
+    if (!response.ok) {
+      console.warn(`index.json introuvable ou erreur (${response.status})`);
+      return [];
     }
-    
-    try {
-        console.log("Utilisation de la liste hardcodée temporaire");
-        return [
-            "Adele - Hello.json",
-            "Ed Sheeran - Shape of You.json",
-            "Billie Eilish - Bad Guy.json",
-            "The Weeknd - Blinding Lights.json",
-            "Dua Lipa - Levitating.json",
-            "Post Malone - Circles.json",
-            "Taylor Swift - Anti-Hero.json",
-            "Harry Styles - As It Was.json",
-            "Olivia Rodrigo - drivers license.json",
-            "BTS - Dynamite.json"
-        ];
-    } catch (error) {
-        console.error("Erreur même avec la liste hardcodée:", error);
-        return [];
+
+    // index.json est un tableau d'objets
+    const arr = await response.json();
+    if (!Array.isArray(arr)) {
+      console.warn("Format inattendu pour index.json (pas un tableau)");
+      return [];
     }
+
+    // On transforme chaque entrée en nom de fichier utilisable.
+    // Priorité: si "ligne" existe on l'utilise, sinon on compose "Artiste - Titre".
+    const files = arr.map((item: any) => {
+      if (!item) return null;
+      // Nettoyage basique pour éviter slash etc.
+      const raw = item.ligne || (item.artiste && item.titre ? `${item.artiste} - ${item.titre}` : null);
+      if (!raw) return null;
+      // Ajout de l'extension .json si elle n'est pas déjà présente
+      return raw.endsWith('.json') ? raw : `${raw}.json`;
+    }).filter(Boolean) as string[];
+
+    console.log("Fichiers lyrics trouvés via index.json:", files);
+    return files;
+  } catch (err) {
+    console.error("Erreur lors de la récupération via index.json:", err);
+    return [];
+  }
 }
+
 
 /**
  * Charge un fichier de paroles spécifique
@@ -53,7 +53,7 @@ async function getLyricsListLocal(): Promise<string[]> {
  */
 async function loadLyricsFile(filename: string): Promise<any> {
     try {
-        const response = await fetch(`/data/serverdata/paroledata/${filename}`);
+        const response = await fetch(`./data/paroledata/${filename}`);
         if (!response.ok) {
             throw new Error(`Impossible de charger ${filename}: ${response.status}`);
         }
@@ -74,6 +74,7 @@ function isSoloMode(): boolean {
   return window.location.pathname.includes('solo');
 }
 
+// === FONCTIONS DE RENDU (UI) ===
 
 /**
  * Génère la carte HTML pour un duel donné.
@@ -86,7 +87,6 @@ function generateDuelCard(duel: Duel): string {
   return `
     <div class="duel-card" data-duel-id="${duel.id}">
       <h3>${duel.name}</h3>
-      <p>Thèmes : ${themes}</p>
       <button onclick="window.location.href='/${currentMode}?id=${duel.id}'">Jouer</button>
     </div>
   `;
@@ -139,48 +139,88 @@ function renderDuelList(): void {
  * @param lyricsFiles Liste des fichiers de paroles
  * @returns HTML des champs de sélection
  */
-
-function generateSameSongHtml(lyricsFiles: string[]): string {
-  const options = ['<option value="">Aucune</option>']
-    .concat(lyricsFiles.map(f => `<option value="${f}">${f}</option>`))
-    .join('');
-  return `
-    <div class="same-song-block" style="margin-bottom: 10px;">
-      <label for="samesong">Même chanson (optionnel) :</label>
-      <select id="samesong" name="samesong" style="display:block; margin:5px 0; padding:5px; width:320px;">
-        ${options}
-      </select>
-    </div>
-  `;
-}
-
 function generateSongSelectionHtml(points: number, lyricsFiles: string[]): string {
   const soloMode = isSoloMode();
   const songOptions = lyricsFiles.map(file => `<option value="${file}">${file}</option>`).join('');
-
+  
   if (soloMode) {
     return `
       <label>Chanson:</label>
-      <select name="song1-${points}" required style="display: block; margin: 5px 0; padding: 5px; width: 200px;">
+      <select name="song1-${points}" required>
         <option value="">Sélectionner une musique</option>
         ${songOptions}
+
       </select>
     `;
   } else {
     return `
       <label>Chanson 1:</label>
-      <select name="song1-${points}" required style="display: block; margin: 5px 0; padding: 5px; width: 200px;">
+      <select name="song1-${points}" required>
         <option value="">Sélectionner une musique</option>
         ${songOptions}
       </select>
       <label>Chanson 2:</label>
-      <select name="song2-${points}" required style="display: block; margin: 5px 0; padding: 5px; width: 200px;">
-        <option value="">Sélectionner une musique</option>
+      <select name="song2-${points}" required>
+        <option value="" >Sélectionner une musique</option>
         ${songOptions}
+
       </select>
     `;
   }
 }
+
+/**
+ * Ajoute des listeners sur les selects de chansons du formulaire pour :
+ *  - désactiver automatiquement les options déjà choisies dans les autres selects
+ *  - autoriser la réactivation si une sélection est modifiée / supprimée
+ *
+ * Appelle : attachUniqueSelectionHandlers(document.getElementById('newDuelForm'));
+ */
+function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): void {
+  if (!formOrContainer) return;
+
+  // Sélecteurs des selects de chansons (nom commençant par "song1-" ou "song2-")
+  const songSelects = Array.from(formOrContainer.querySelectorAll('select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
+
+  // Helper pour rafraîchir l'état disabled de toutes les options en fonction des valeurs sélectionnées
+  function refreshDisabledOptions() {
+    // valeurs actuellement sélectionnées (non vides)
+    const selectedValues = songSelects
+      .map(s => s.value)
+      .filter(v => v && v.length > 0);
+
+    // Pour chaque select, on active toutes les options puis on désactive celles qui sont sélectionnées ailleurs
+    songSelects.forEach(select => {
+      const ownValue = select.value;
+      Array.from(select.options).forEach(opt => {
+        // Toujours permettre la valeur courante du select (pour ne pas "bloquer" la sélection en cours)
+        if (opt.value === ownValue) {
+          opt.disabled = false;
+          return;
+        }
+        // Désactive l'option si elle est choisie dans une autre select
+        opt.disabled = selectedValues.includes(opt.value);
+      });
+    });
+  }
+
+  // Ajoute l'écoute "change" sur chaque select
+  songSelects.forEach(select => {
+    // Si l'utilisateur supprime la sélection (option vide), on gère aussi
+    select.addEventListener('change', () => {
+      refreshDisabledOptions();
+    });
+
+    // Add a keyboard-clear detection (optional) to re-enable options when cleared
+    select.addEventListener('input', () => {
+      refreshDisabledOptions();
+    });
+  });
+
+  // Initial refresh (si certains selects ont déjà une valeur)
+  refreshDisabledOptions();
+}
+
 
 /**
  * Génère et affiche le formulaire de création de duel avec les listes de musiques dynamiques.
@@ -198,12 +238,12 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
 
   let formHtml = `
     <div class="form-container">
-      <h2>FORMULAIRE DE TEST</h2>
-      <button id="back-to-list-btn" type="button" style="margin-bottom: 20px; background: blue; color: white; padding: 10px;">← Retour à la liste</button>
+      <h2 style="color: red;">Choisissez vos musiques</h2>
+      <button id="back-to-list-btn" type="button">← Retour à la liste</button>
       <form id="newDuelForm">
         <h3>Créer une nouvelle grille de ${modeText}</h3>
         <label for="duelName">Nom de la grille:</label>
-        <input type="text" id="duelName" name="duelName" required style="display: block; margin: 10px 0; padding: 5px;">
+        <input type="text" id="duelName" name="duelName" required >
   `;
 
   DUEL_POINTS_CATEGORIES.forEach(points => {
@@ -211,21 +251,23 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
       <div class="point-category">
         <h4>${points} Points</h4>
         <label>Thème:</label>
-        <input type="text" name="theme-${points}" required style="display: block; margin: 5px 0; padding: 5px;">
+        <input type="text" name="theme-${points}" required>
         ${generateSongSelectionHtml(points, lyricsFiles)}
       </div>
     `;
   });
 
   formHtml += `
-        <button type="submit" style="background: green; color: white; padding: 10px 20px; margin: 10px 0;">Créer</button>
+        <button type="submit">Créer</button>
       </form>
     </div>
   `;
   
   container.innerHTML = formHtml;
-  console.log("Formulaire généré avec styles de debug");
+  attachUniqueSelectionHandlers(document.getElementById('newDuelForm'));
+  console.log("Formulaire généré avec styles");
   console.log("Contenu HTML du formulaire:", formHtml.substring(0, 300) + "...");
+
 }
 
 // === GESTIONNAIRES D'ÉVÉNEMENTS ===
@@ -235,62 +277,61 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
  * @param event L'événement de soumission.
  */
 async function handleNewDuelFormSubmit(event: Event): Promise<void> {
-  event.preventDefault();
-  const form = event.target as HTMLFormElement;
-  const formData = new FormData(form);
+    event.preventDefault();
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
 
-  const duelData: Partial<Duel> = {};
-  const soloMode = isSoloMode();
+    const duelData: Partial<Duel> = {};
+    const soloMode = isSoloMode();
 
-  // initialise la structure points
-  duelData.points = {} as any;
+    for (const [key, value] of formData as any) {
+        const parts = key.split('-');
+        const fieldName = parts[0];
+        const points = parts.length > 1 ? parts[1] : null;
 
-  // lire chaque champ proprement
-  formData.forEach((value, key) => {
-    if (!value) return;
-    // clé "samesong" est globale
-    if (key === 'samesong') {
-      const v = value.toString();
-      if (v) {
-        duelData.sameSong = {
-          titre: v.replace(/\.[^.]*$/, ''), // retirer extension pour titre
-          artiste: 'Inconnu',
-          lyricsFile: v
-        } as any;
-      }
-      return;
+        if (fieldName === 'duelName') {
+            duelData.name = value as string;
+        } else if (points) {
+            if (!duelData.points) {
+                duelData.points = {} as any;
+            }
+            if (!duelData.points[points]) {
+                duelData.points[points] = {} as any;
+            }
+            if (fieldName === 'theme') {
+                (duelData.points[points] as any).theme = value as string;
+            } else if (fieldName.startsWith('song')) {
+                const songIndex = fieldName === 'song1' ? 0 : 1;
+                if (!(duelData.points[points] as any).songs) {
+                    // En mode solo, on ne crée qu'une chanson
+                    (duelData.points[points] as any).songs = soloMode ? [{}] : [{}, {}];
+                }
+                if (soloMode && songIndex === 0) {
+                    // En mode solo, on ne stocke qu'une chanson
+                    (duelData.points[points] as any).songs[0] = { lyricsFile: value as string } as any;
+                } else if (!soloMode) {
+                    // En mode duel, on stocke les deux chansons
+                    (duelData.points[points] as any).songs[songIndex] = { lyricsFile: value as string } as any;
+                }
+            }
+        }
     }
 
-    // clé standard : theme-50, song1-30, song2-30, duelName, ...
-    const parts = key.split('-');
-    const fieldName = parts[0];
-    const points = parts.length > 1 ? parts[1] : null;
+    const allSongSelects = Array.from((form as HTMLFormElement).querySelectorAll('select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
+    const selectedValues = allSongSelects.map(s => s.value).filter(v => v && v.length > 0);
 
-    if (fieldName === 'duelName') {
-      duelData.name = value.toString();
-      return;
+    const duplicates = selectedValues.reduce((acc: Record<string, number>, val) => {
+    acc[val] = (acc[val] || 0) + 1;
+    return acc;
+     }, {});
+
+    const dupKeys = Object.keys(duplicates).filter(k => duplicates[k] > 1);
+    if (dupKeys.length > 0) {
+    // Message lisible : afficher les 1 ou 2 premières chansons en doublon
+    const example = dupKeys.slice(0, 3).join(', ');
+    showNotification(`Erreur : la/les chanson(s) suivante(s) est/sont sélectionnée(s) plusieurs fois : ${example}`, 'error');
+    return; // stop la soumission
     }
-
-    if (!points) return; 
-
-    if (!duelData.points) duelData.points = {} as any;
-    if (!duelData.points[points]) duelData.points[points] = {} as any;
-
-    if (fieldName === 'theme') {
-      (duelData.points[points] as any).theme = value.toString();
-    } else if (fieldName === 'song1' || fieldName === 'song2') {
-      if (!(duelData.points[points] as any).songs) {
-        (duelData.points[points] as any).songs = soloMode ? [{}] : [{}, {}];
-      }
-      const index = fieldName === 'song1' ? 0 : 1;
-      if (soloMode) {
-        // en solo, on ne considère que song1 (index 0)
-        (duelData.points[points] as any).songs[0] = { lyricsFile: value.toString() } as any;
-      } else {
-        (duelData.points[points] as any).songs[index] = { lyricsFile: value.toString() } as any;
-      }
-    }
-  })
 
     const newDuel: Duel = {
       id: new Date().getTime().toString(),
@@ -395,30 +436,30 @@ function renderCreateDuelFormWithError(fallbackFiles: string[]): void {
 
     let formHtml = `
         <div class="form-container">
-            <h2>FORMULAIRE DE TEST (MODE DÉBOGAGE)</h2>
+            <h2 style="color: red;">FORMULAIRE DE TEST (MODE DÉBOGAGE)</h2>
             <div style="background: yellow; padding: 10px; margin: 10px 0; border: 1px solid orange;">
                 ⚠️ Erreur : Impossible de charger la liste des musiques. Utilisation d'exemples.
             </div>
-            <button id="back-to-list-btn" type="button" style="margin-bottom: 20px; background: blue; color: white; padding: 10px;">← Retour à la liste</button>
-            <form id="newDuelForm" style="border: 1px solid green; padding: 15px;">
+            <button id="back-to-list-btn" type="button" >← Retour à la liste</button>
+            <form id="newDuelForm" >
                 <h3>Créer une nouvelle grille de ${modeText}</h3>
                 <label for="duelName">Nom de la grille:</label>
-                <input type="text" id="duelName" name="duelName" required style="display: block; margin: 10px 0; padding: 5px;">
+                <input type="text" id="duelName" name="duelName" required >
     `;
 
     DUEL_POINTS_CATEGORIES.forEach(points => {
         formHtml += `
-            <div class="point-category" style="border: 1px solid blue; margin: 10px 0; padding: 10px;">
+            <div class="point-category" >
                 <h4>${points} Points</h4>
                 <label>Thème:</label>
-                <input type="text" name="theme-${points}" required style="display: block; margin: 5px 0; padding: 5px;">
+                <input type="text" name="theme-${points}" required >
                 ${generateSongSelectionHtmlFallback(points, fallbackFiles)}
             </div>
         `;
     });
 
     formHtml += `
-            <button type="submit" style="background: green; color: white; padding: 10px 20px; margin: 10px 0;">Créer (Mode Test)</button>
+            <button type="submit">Créer (Mode Test)</button>
         </form>
         </div>
     `;
@@ -431,31 +472,31 @@ function renderCreateDuelFormWithError(fallbackFiles: string[]): void {
  * Version fallback pour la génération des sélections de chansons
  */
 function generateSongSelectionHtmlFallback(points: number, fallbackFiles: string[]): string {
-  const soloMode = isSoloMode();
-  const songOptions = fallbackFiles.map(file => `<option value="${file}">${file} (exemple)</option>`).join('');
-
-  if (soloMode) {
-    return `
-      <label>Chanson:</label>
-      <select name="song1-${points}" required style="display: block; margin: 5px 0; padding: 5px; width: 200px;">
-        <option value="">Sélectionner une musique</option>
-        ${songOptions}
-      </select>
-    `;
-  } else {
-    return `
-      <label>Chanson 1:</label>
-      <select name="song1-${points}" required style="display: block; margin: 5px 0; padding: 5px; width: 200px;">
-        <option value="">Sélectionner une musique</option>
-        ${songOptions}
-      </select>
-      <label>Chanson 2:</label>
-      <select name="song2-${points}" required style="display: block; margin: 5px 0; padding: 5px; width: 200px;">
-        <option value="">Sélectionner une musique</option>
-        ${songOptions}
-      </select>
-    `;
-  }
+    const soloMode = isSoloMode();
+    const songOptions = fallbackFiles.map(file => `<option value="${file}">${file} (exemple)</option>`).join('');
+    
+    if (soloMode) {
+        return `
+            <label>Chanson:</label>
+            <select name="song1-${points}" required >
+                <option value="">Sélectionner une musique</option>
+                ${songOptions}
+            </select>
+        `;
+    } else {
+        return `
+            <label>Chanson 1:</label>
+            <select name="song1-${points}" required >
+                <option value="">Sélectionner une musique</option>
+                ${songOptions}
+            </select>
+            <label>Chanson 2:</label>
+            <select name="song2-${points}" required >
+                <option value="">Sélectionner une musique</option>
+                ${songOptions}
+            </select>
+        `;
+    }
 }
 
 /**

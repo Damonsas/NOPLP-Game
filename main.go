@@ -21,8 +21,13 @@ type core struct {
 func (c *core) init() {
 	c.port = "8080"
 	c.router = mux.NewRouter()
+	r := c.router.PathPrefix("/").Subrouter()
 
 	routes.Init(c.router)
+
+	fileServer := http.StripPrefix("/data/", http.FileServer(http.Dir("./data")))
+	r.PathPrefix("/data/").Handler(fileServer)
+	println("./data served")
 
 	c.router.PathPrefix("/asset/").Handler(myhandlers.AssetHandler())
 }
@@ -31,7 +36,6 @@ func main() {
 	if err := game.UpdateIndex(); err != nil {
 		fmt.Println("Erreur initiale index.json:", err)
 	}
-
 	game.WatchIndex()
 	server := new(core)
 	server.init()
