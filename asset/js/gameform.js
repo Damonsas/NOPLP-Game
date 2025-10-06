@@ -22,20 +22,6 @@ function getLyricsListLocal() {
         try {
             console.log("Tentative de récupération des fichiers lyrics locaux...");
             // Essayer de lire le contenu du dossier data/serverdata/paroledata/
-            // Cette approche dépend de votre serveur - voici plusieurs méthodes :
-            // Méthode 1 : Si vous avez un endpoint API qui liste les fichiers
-            const response = yield fetch('/api/lyrics-list');
-            if (response.ok) {
-                const files = yield response.json();
-                console.log("Fichiers lyrics trouvés via API:", files);
-                return files;
-            }
-        }
-        catch (error) {
-            console.error("Erreur lors de la récupération via API:", error);
-        }
-        try {
-            // Méthode 2 : Si vous avez un fichier index.json qui liste tous les fichiers
             const response = yield fetch('/data/serverdata/paroledata/index.json');
             if (response.ok) {
                 const data = yield response.json();
@@ -47,7 +33,6 @@ function getLyricsListLocal() {
             console.error("Erreur lors de la récupération via index.json:", error);
         }
         try {
-            // Méthode 3 : Liste hardcodée temporaire (à remplacer par vos vrais fichiers)
             console.log("Utilisation de la liste hardcodée temporaire");
             return [
                 "Adele - Hello.json",
@@ -97,7 +82,6 @@ function loadLyricsFile(filename) {
 function isSoloMode() {
     return window.location.pathname.includes('solo');
 }
-// === FONCTIONS DE RENDU (UI) ===
 /**
  * Génère la carte HTML pour un duel donné.
  * @param duel Le duel à afficher.
@@ -259,8 +243,8 @@ function handleNewDuelFormSubmit(event) {
                 const v = value.toString();
                 if (v) {
                     duelData.sameSong = {
-                        title: v.replace(/\.[^.]*$/, ''), // retirer extension pour titre
-                        artist: 'Inconnu',
+                        titre: v.replace(/\.[^.]*$/, ''), // retirer extension pour titre
+                        artiste: 'Inconnu',
                         lyricsFile: v
                     };
                 }
