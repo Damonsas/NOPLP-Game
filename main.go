@@ -3,6 +3,8 @@ package main
 import (
 	myhandlers "NOPLP-Game/handlers"
 	"NOPLP-Game/routes"
+	game "NOPLP-Game/routes/pages"
+	"fmt"
 
 	"log"
 	"net/http"
@@ -26,6 +28,11 @@ func (c *core) init() {
 }
 
 func main() {
+	if err := game.UpdateIndex(); err != nil {
+		fmt.Println("Erreur initiale index.json:", err)
+	}
+
+	game.WatchIndex()
 	server := new(core)
 	server.init()
 
