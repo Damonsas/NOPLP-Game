@@ -19,21 +19,17 @@ async function getLyricsListLocal(): Promise<string[]> {
       return [];
     }
 
-    // index.json est un tableau d'objets
     const arr = await response.json();
     if (!Array.isArray(arr)) {
       console.warn("Format inattendu pour index.json (pas un tableau)");
       return [];
     }
 
-    // On transforme chaque entrée en nom de fichier utilisable.
-    // Priorité: si "ligne" existe on l'utilise, sinon on compose "Artiste - Titre".
+   
     const files = arr.map((item: any) => {
       if (!item) return null;
-      // Nettoyage basique pour éviter slash etc.
       const raw = item.ligne || (item.artiste && item.titre ? `${item.artiste} - ${item.titre}` : null);
       if (!raw) return null;
-      // Ajout de l'extension .json si elle n'est pas déjà présente
       return raw.endsWith('.json') ? raw : `${raw}.json`;
     }).filter(Boolean) as string[];
 
@@ -74,7 +70,6 @@ function isSoloMode(): boolean {
   return window.location.pathname.includes('solo');
 }
 
-// === FONCTIONS DE RENDU (UI) ===
 
 /**
  * Génère la carte HTML pour un duel donné.
@@ -83,11 +78,17 @@ function isSoloMode(): boolean {
  */
 function generateDuelCard(duel: Duel): string {
   const themes = DUEL_POINTS_CATEGORIES.map(p => (duel.points[p.toString()]?.theme)).filter(t => t).join(', ');
-  const currentMode = isSoloMode() ? 'solo' : 'duel';
+  const currentMode = isSoloMode();
+  
+  
+  const playUrl = currentMode 
+    ? `/solo?id=${duel.id}` 
+    : `/duel-game?duelId=${duel.id}`;
+  
   return `
     <div class="duel-card" data-duel-id="${duel.id}">
       <h3>${duel.name}</h3>
-      <button onclick="window.location.href='/${currentMode}?id=${duel.id}'">Jouer</button>
+      <button onclick="window.location.href='${playUrl}'">Jouer</button>
     </div>
   `;
 }
@@ -107,7 +108,6 @@ function renderDuelList(): void {
   const container = document.querySelector(".Sectionduel") as HTMLElement;
   if (!container) return;
 
-  // Récupérer le contenu existant de PrepGrille pour le préserver
   const existingPrepGrille = document.getElementById("PrepGrille");
   const prepGrilleContent = existingPrepGrille ? existingPrepGrille.outerHTML : '<div id="PrepGrille" style="display: none;"></div>';
 
@@ -179,45 +179,35 @@ function generateSongSelectionHtml(points: number, lyricsFiles: string[]): strin
 function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): void {
   if (!formOrContainer) return;
 
-  // Sélecteurs des selects de chansons (nom commençant par "song1-" ou "song2-")
   const songSelects = Array.from(formOrContainer.querySelectorAll('select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
 
-  // Helper pour rafraîchir l'état disabled de toutes les options en fonction des valeurs sélectionnées
   function refreshDisabledOptions() {
-    // valeurs actuellement sélectionnées (non vides)
     const selectedValues = songSelects
       .map(s => s.value)
       .filter(v => v && v.length > 0);
 
-    // Pour chaque select, on active toutes les options puis on désactive celles qui sont sélectionnées ailleurs
     songSelects.forEach(select => {
       const ownValue = select.value;
       Array.from(select.options).forEach(opt => {
-        // Toujours permettre la valeur courante du select (pour ne pas "bloquer" la sélection en cours)
         if (opt.value === ownValue) {
           opt.disabled = false;
           return;
         }
-        // Désactive l'option si elle est choisie dans une autre select
         opt.disabled = selectedValues.includes(opt.value);
       });
     });
   }
 
-  // Ajoute l'écoute "change" sur chaque select
   songSelects.forEach(select => {
-    // Si l'utilisateur supprime la sélection (option vide), on gère aussi
     select.addEventListener('change', () => {
       refreshDisabledOptions();
     });
 
-    // Add a keyboard-clear detection (optional) to re-enable options when cleared
     select.addEventListener('input', () => {
       refreshDisabledOptions();
     });
   });
 
-  // Initial refresh (si certains selects ont déjà une valeur)
   refreshDisabledOptions();
 }
 
@@ -303,14 +293,11 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
             } else if (fieldName.startsWith('song')) {
                 const songIndex = fieldName === 'song1' ? 0 : 1;
                 if (!(duelData.points[points] as any).songs) {
-                    // En mode solo, on ne crée qu'une chanson
                     (duelData.points[points] as any).songs = soloMode ? [{}] : [{}, {}];
                 }
                 if (soloMode && songIndex === 0) {
-                    // En mode solo, on ne stocke qu'une chanson
                     (duelData.points[points] as any).songs[0] = { lyricsFile: value as string } as any;
                 } else if (!soloMode) {
-                    // En mode duel, on stocke les deux chansons
                     (duelData.points[points] as any).songs[songIndex] = { lyricsFile: value as string } as any;
                 }
             }
@@ -327,7 +314,6 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
 
     const dupKeys = Object.keys(duplicates).filter(k => duplicates[k] > 1);
     if (dupKeys.length > 0) {
-    // Message lisible : afficher les 1 ou 2 premières chansons en doublon
     const example = dupKeys.slice(0, 3).join(', ');
     showNotification(`Erreur : la/les chanson(s) suivante(s) est/sont sélectionnée(s) plusieurs fois : ${example}`, 'error');
     return; // stop la soumission
@@ -368,11 +354,9 @@ function showCreateForm(): void {
     console.log("Form container:", formContainer);
     console.log("Form container innerHTML:", formContainer?.innerHTML);
     
-    // Si le formulaire est vide, le régénérer
     if (formContainer && (!formContainer.innerHTML || formContainer.innerHTML.trim() === '')) {
         console.log("Le formulaire est vide, régénération...");
         
-        // Essayer de récupérer les fichiers locaux, sinon utiliser une liste par défaut
         getLyricsListLocal().then(lyricsFiles => {
             console.log("Fichiers récupérés avec succès:", lyricsFiles);
             if (lyricsFiles.length > 0) {
@@ -389,7 +373,6 @@ function showCreateForm(): void {
             console.error("Erreur lors de la récupération des fichiers:", error);
             console.log("Utilisation d'une liste par défaut pour le formulaire");
             
-            // Créer le formulaire avec une liste par défaut
             renderCreateDuelFormWithError([
                 "Artiste Exemple - Chanson 1.json",
                 "Artiste Test - Chanson 2.json",
@@ -398,11 +381,9 @@ function showCreateForm(): void {
             showFormWithStyles(formContainer);
         });
     } else {
-        // Le formulaire a déjà du contenu, juste l'afficher
         showFormWithStyles(formContainer);
     }
 
-    // Cacher les autres éléments
     if (listContent) listContent.style.display = 'none';
     if (alertContent) alertContent.style.display = 'none';
     if (menuButton) menuButton.style.display = 'none';

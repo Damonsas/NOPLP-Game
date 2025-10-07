@@ -88,8 +88,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 window.toggleElement = toggleElement;
 window.toggleLevelSongs = toggleLevelSongs;
-
-// console.log('Script.js (interface) loaded:', {
-//     toggleElement: typeof toggleElement,
-//     toggleLevelSongs: typeof toggleLevelSongs
-// });
