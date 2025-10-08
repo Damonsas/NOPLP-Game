@@ -127,8 +127,25 @@ body {
     }
 } 
 
+#footer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;    
+}
 
+i{
+    color : white;
+    margin-left: 5px;
+}
 
+input[type="text"] {
+    color: #fff;
+    background: linear-gradient( #3f6bfb, #26174a);      
+    padding: 10px;
+    border: #ededed 1px solid;
+    border-radius: 5px;         
+}
 
 @keyframes hii {
   0% {

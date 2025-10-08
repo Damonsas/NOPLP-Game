@@ -8,6 +8,8 @@
     <link rel="icon" type="image/png" sizes="16x16" href="../asset/ressource/img/favicon/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
     <link rel="stylesheet" href="/asset/scss/style.css">
+    <script src="https://kit.fontawesome.com/8b05597a3d.js" crossorigin="anonymous"></script>
+
     <script src="/asset/js/script.js"></script>
     <script defer type="module" src="/asset/js/gameform.js"></script>
     <script defer type="module" src="/asset/js/gamelogic.js"></script>
@@ -15,15 +17,19 @@
     <title>Mode duel</title>
 </head>
 <body>
-    <li class="btn"><a href="../">Accueil</a></li>
-
-    <form action="/duel" method="GET" >
-        <input type="text" name="cname" placeholder="Votre nom" value="{{.Cname}}">
-        <input type="hidden" name="name" value="{{.Maestro}}">
-        <button type="submit">Connexion du challenger</button>
+    
     </form>
-    <h2>Bienvenue à toi <span>{{.Message1}}</span> !</h2>
-    <h2>Tu vas affronter le Maestro du jour <span>{{.Message2}}</span></h2>
+    <section class="sectionaff">
+        <li class="btn"><a href="../">Accueil</a></li>
+        <form action="/duel" method="GET" >
+            <input type="text" name="cname" placeholder="Votre nom" value="{{.Cname}}">
+            <input type="hidden" name="name" value="{{.Maestro}}">
+            <button type="submit" class="Connexion">Connexion du challenger</button>
+        </form>    
+        <h2>Bienvenue à toi <span>{{.Message1}}</span> !</h2>
+        <h2>Tu vas affronter le Maestro du jour <span>{{.Message2}}</span></h2>
+    </section>
+    
 
     <section class="Sectionduel">
         <div id="PrepGrille">

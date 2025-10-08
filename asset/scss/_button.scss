@@ -3,9 +3,11 @@
 
 // bouton accueil
 .btn {
-        @include button-style();
+        background: radial-gradient(#ccc0f3 , #9d00ff, #350857 70%);
         color: #fff;
         text-align: center;
+        padding: 10px;
+        border-radius: 30px;
 
         a {
             text-decoration: none;
@@ -24,7 +26,10 @@ button {
     color: #fff;
 }
 
+.Connexion {
+    background: radial-gradient(#ccc0f3 , #6600ff, #200857 70%);
 
+}
 // les boutons de welcome
 ol {
     list-style: none;
@@ -33,6 +38,7 @@ ol {
     gap: 20px;
     .btn {
         @include button-style();
+                background: radial-gradient(#ccc0f3 , #9d00ff, #350857 70%);
         color: #fff;
         text-align: center;
 
