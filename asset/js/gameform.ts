@@ -84,11 +84,18 @@ function generateDuelCard(duel: Duel): string {
   const playUrl = currentMode 
     ? `/solo?id=${duel.id}` 
     : `/duel-game?duelId=${duel.id}`;
+
+
+  const supprform = `/duel-delete?id=${duel.id}`;
+  const modifform = `/duel-edit?id=${duel.id}`;
+
   
   return `
     <div class="duel-card" data-duel-id="${duel.id}">
       <h3>${duel.name}</h3>
       <button onclick="window.location.href='${playUrl}'">Jouer</button>
+      <button onclick="window.location.href='${supprform}'"> Supprimer <i class="fa-regular fa-trash-can"></i> </button>
+      <button onclick="window.location.href='${modifform}'"> Modifier </button>
     </div>
   `;
 }
@@ -631,3 +638,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         
     }, 200);
 });
+
+// Ajouter cette fonction globale pour gérer le clic sur "Jouer"
+(window as any).playDuel = async function(duelId: string, isSolo: boolean) {
+  try {
+    console.log('playDuel appelé avec:', duelId, isSolo);
+    
+    // Récupérer le duel depuis localStorage
+    const duelsJson = localStorage.getItem('duels');
+    if (!duelsJson) {
+      showNotification('Aucun duel trouvé dans le stockage local', 'error');
+      return;
+    }
+
+    const duels = JSON.parse(duelsJson);
+    const selectedDuel = duels.find((d: any) => d.id === duelId);
+    
+    if (!selectedDuel) {
+      showNotification('Duel non trouvé', 'error');
+      return;
+    }
+
+    console.log('Duel trouvé:', selectedDuel);
+    console.log('Envoi du duel au serveur...');
+
+    // Envoyer le duel au serveur
+    const response = await fetch('/api/duels', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(selectedDuel)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erreur serveur:', errorText);
+      throw new Error(`Erreur serveur: ${response.status} - ${errorText}`);
+    }
+
+    const serverDuel = await response.json();
+    console.log('Duel créé sur le serveur avec ID:', serverDuel.id);
+    
+    // Rediriger vers la page de jeu avec l'ID serveur
+    if (isSolo) {
+      window.location.href = `/solo?id=${serverDuel.id}`;
+    } else {
+      window.location.href = `/duel-game?duelId=${serverDuel.id}`;
+    }
+
+  } catch (error) {
+    console.error('Erreur complète:', error);
+    showNotification(`Erreur lors du démarrage du jeu: ${error}`, 'error');
+  }
+};
+

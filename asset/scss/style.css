@@ -13,6 +13,11 @@
   align-items: center;
   margin-top: 20px;
 }
+.Sectionduel .duels-list {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
 .Sectionduel .duel-card {
   width: 100%;
   max-width: 40vw;
@@ -30,11 +35,36 @@
   margin-bottom: 10px;
 }
 
-.sectionaff {
+#mainbody {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+}
+#mainbody .sectionaff {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: 20px;
+}
+#mainbody .nav_toggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  list-style: none;
+}
+#mainbody .nav_toggle :hover {
+  background: #3675ff;
+  color: white;
+}
+#mainbody .nav_toggle .side-bar {
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(-100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+}
+#mainbody .nav_toggle .side-bar .is-open {
+  transform: translateX(0);
 }
 
 body .duelContainer {

@@ -86,10 +86,14 @@ function generateDuelCard(duel) {
     const playUrl = currentMode
         ? `/solo?id=${duel.id}`
         : `/duel-game?duelId=${duel.id}`;
+    const supprform = `/duel-delete?id=${duel.id}`;
+    const modifform = `/duel-edit?id=${duel.id}`;
     return `
     <div class="duel-card" data-duel-id="${duel.id}">
       <h3>${duel.name}</h3>
       <button onclick="window.location.href='${playUrl}'">Jouer</button>
+      <button onclick="window.location.href='${supprform}'"> Supprimer <i class="fa-regular fa-trash-can"></i> </button>
+      <button onclick="window.location.href='${modifform}'"> Modifier </button>
     </div>
   `;
 }

@@ -14,77 +14,14 @@ function toggleElement(elementId) {
     }
 }
 
-function toggleLevelSongs(levelId) {
-    const element = document.getElementById(levelId);
-    if (!element) return;
-    
-    const isCurrentlyVisible = element.classList.contains('visible');
-    
-    const allLevels = document.querySelectorAll('.songs-for-level');
-    allLevels.forEach(function(level) {
-        level.classList.remove('visible');
-        level.style.display = 'none';
-        level.classList.add('hidden-element');
-    });
-    
-    const allButtons = document.querySelectorAll('.point-button');
-    allButtons.forEach(function(button) {
-        button.classList.remove('active');
-    });
-    
-    if (!isCurrentlyVisible) {
-        element.classList.add('visible');
-        element.style.display = 'block';
-        element.classList.remove('hidden-element');
-        const clickedButton = document.querySelector('[onclick*="' + levelId + '"]');
-        if (clickedButton) {
-            clickedButton.classList.add('active');
-        }
-    }
-}
+document.addEventListener('DOMContentLoaded',() => {
+    const menu = document.getElementById('sidebarmenu');
+    const button = document.getElementById('menutogglebtn');
+    button.addEventListener('click', () => {
+        menu.classList.toggle('is-open');
 
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-`;
-document.head.appendChild(style);
-
-document.addEventListener('DOMContentLoaded', function() {
-    const startBtn = document.querySelector('.startLyricsBtn');
-    if (startBtn) {
-        startBtn.addEventListener("click", () => {
-            if (window.musicClient) {
-                const gameState = window.musicClient.getGameState();
-                if (gameState.currentSong && gameState.currentLyrics) {
-                    console.log('Démarrage du jeu avec:', gameState);
-                    alert('Jeu démarré avec la chanson sélectionnée !');
-                } else {
-                    alert(`Veuillez d'abord sélectionner une chanson`);
-                }
-            }
-        });
-    }
+    });
 });
 
+
 window.toggleElement = toggleElement;
-window.toggleLevelSongs = toggleLevelSongs;

@@ -95,15 +95,45 @@ func GetDuels(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateDuel(w http.ResponseWriter, r *http.Request) {
-	var duelsToCreate []Duel
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Erreur lors de la lecture du corps de la requête", http.StatusBadRequest)
 		return
 	}
 
+	// Essayer de décoder comme un seul duel d'abord
+	var singleDuel Duel
+	if err := json.Unmarshal(body, &singleDuel); err == nil {
+		// C'est un seul duel - traiter directement
+		if err := validateDuelForClient(&singleDuel); err != nil {
+			http.Error(w, fmt.Sprintf("Données de duel invalides: %v", err), http.StatusBadRequest)
+			return
+		}
+
+		updateNextDuelID()
+		if (singleDuel.ID != 0 && isIDTaken(singleDuel.ID)) || singleDuel.ID == 0 {
+			singleDuel.ID = nextDuelID
+			nextDuelID++
+		}
+
+		duels = append(duels, singleDuel)
+		updateNextDuelID()
+
+		if err := saveDuelsToServer(); err != nil {
+			http.Error(w, "Erreur lors de la sauvegarde du fichier", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(singleDuel)
+		return
+	}
+
+	// Sinon essayer comme un tableau de duels
+	var duelsToCreate []Duel
 	if err := json.Unmarshal(body, &duelsToCreate); err != nil {
-		http.Error(w, "Erreur lors du décodage JSON : un tableau de duels est attendu.", http.StatusBadRequest)
+		http.Error(w, "Erreur lors du décodage JSON : un duel ou un tableau de duels est attendu.", http.StatusBadRequest)
 		return
 	}
 
@@ -331,6 +361,47 @@ func DeleteDuel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Error(w, "Duel non trouvé pour la suppression", http.StatusNotFound)
+}
+
+// validateDuelForClient : validation plus souple pour les duels venant du client
+// (n'exige pas 2 chansons, permet 1 chanson pour le mode solo)
+func validateDuelForClient(duel *Duel) error {
+	if duel.Name == "" {
+		return fmt.Errorf("le nom du duel est requis")
+	}
+
+	requiredLevels := []string{"50", "40", "30", "20", "10"}
+	if len(duel.Points) != len(requiredLevels) {
+		return fmt.Errorf("le nombre de niveaux de points est incorrect. Requis: %v", requiredLevels)
+	}
+
+	for _, level := range requiredLevels {
+		pointLevel, exists := duel.Points[level]
+		if !exists {
+			return fmt.Errorf("le niveau %s points est manquant", level)
+		}
+
+		if pointLevel.Theme == "" {
+			return fmt.Errorf("le thème pour %s points est requis", level)
+		}
+
+		// Accepter 1 ou 2 chansons (pour mode solo ou duel)
+		if len(pointLevel.Songs) < 1 || len(pointLevel.Songs) > 2 {
+			return fmt.Errorf("1 ou 2 chansons sont requises pour le niveau %s points", level)
+		}
+
+		for _, song := range pointLevel.Songs {
+			// Accepter des chansons même sans titre/artiste si c'est juste un placeholder
+			if song.LyricsFile != nil && *song.LyricsFile == "" {
+				continue
+			}
+		}
+	}
+
+	// SameSong peut être optionnel pour les duels créés côté client
+	// On ne valide pas strictement
+
+	return nil
 }
 
 func validateDuel(duel *Duel) error {
