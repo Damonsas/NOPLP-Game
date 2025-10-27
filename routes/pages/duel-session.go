@@ -44,7 +44,6 @@ func StartGameSession(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := fmt.Sprintf("session_%d_%d", request.DuelID, time.Now().UnixNano())
 	session := &GameSession{
-		ID:            sessionID,
 		DuelID:        request.DuelID,
 		CurrentLevel:  "50",
 		SelectedSongs: make(map[string]int),
@@ -78,7 +77,7 @@ func GetGameSession(w http.ResponseWriter, r *http.Request) {
 func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(">>> Requête reçue pour /duel-game, traitement par DisplayDuel...")
 
-	duelID := r.URL.Query().Get("duelId")
+	duelID := r.URL.Query().Get("id")
 	if duelID == "" {
 		http.Error(w, "ID de duel manquant dans les paramètres de la requête", http.StatusBadRequest)
 		return
