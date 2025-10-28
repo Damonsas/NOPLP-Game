@@ -407,8 +407,6 @@ function showFormWithStyles(formContainer: HTMLElement | null): void {
         formContainer.style.height = 'auto';
         formContainer.style.position = 'relative';
         formContainer.style.zIndex = '1000';
-        console.log("Formulaire affiché avec styles");
-        console.log("Contenu final:", formContainer.innerHTML.substring(0, 100) + "...");
     }
 }
 
@@ -453,7 +451,6 @@ function renderCreateDuelFormWithError(fallbackFiles: string[]): void {
     `;
     
     container.innerHTML = formHtml;
-    console.log("Formulaire de fallback créé");
 }
 
 /**
@@ -500,22 +497,18 @@ function showDuelList(): void {
 
     if (formContainer) {
         formContainer.style.display = 'none';
-        console.log("Formulaire caché");
     }
 
     if (listContent) {
         listContent.style.display = 'block';
-        console.log("Liste affichée");
     }
 
     if (alertContent) {
         alertContent.style.display = 'block';
-        console.log("Alert affichée");
     }
 
     if (menuButton) {
         menuButton.style.display = 'block';
-        console.log("Bouton menu affiché");
     }
 
     // Ne pas recharger la liste complètement pour éviter de perdre le PrepGrille
@@ -584,18 +577,13 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// === INITIALISATION ===
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("DOM chargé, initialisation...");
     
     loadDuelsFromStorage();
     
-    // D'abord rendre la liste pour créer/recréer PrepGrille
     renderDuelList();
     
-    // Attendre un peu que le DOM soit mis à jour
     setTimeout(async () => {
-        // Vérifier que PrepGrille existe maintenant
         let prepGrilleContainer = document.getElementById("PrepGrille");
         console.log("PrepGrille après renderDuelList:", prepGrilleContainer);
         
@@ -605,9 +593,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            // Utiliser notre nouvelle fonction locale
             const lyricsFiles = await getLyricsListLocal();
-            console.log("Fichiers lyrics chargés avec succès:", lyricsFiles);
             
             if (lyricsFiles.length > 0) {
                 renderCreateDuelForm(lyricsFiles);
