@@ -136,7 +136,7 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if r.Method == http.MethodPost {
+	if r.Method == http.MethodGet {
 		action := r.FormValue("action")
 		switch action {
 		case "start_session":
