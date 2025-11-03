@@ -21,7 +21,7 @@ func DuelMaestroChallenger(w http.ResponseWriter, r *http.Request) {
 
 func StartGameSession(w http.ResponseWriter, r *http.Request) {
 	var request struct {
-		DuelID int `json:"duelId"`
+		DuelID int `json:"duelId"` /// le potentiel pb
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -44,7 +44,6 @@ func StartGameSession(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := fmt.Sprintf("session_%d_%d", request.DuelID, time.Now().UnixNano())
 	session := &GameSession{
-		ID:            sessionID,
 		DuelID:        request.DuelID,
 		CurrentLevel:  "50",
 		SelectedSongs: make(map[string]int),
@@ -78,7 +77,7 @@ func GetGameSession(w http.ResponseWriter, r *http.Request) {
 func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(">>> Requête reçue pour /duel-game, traitement par DisplayDuel...")
 
-	duelID := r.URL.Query().Get("duelId")
+	duelID := r.URL.Query().Get("id")
 	if duelID == "" {
 		http.Error(w, "ID de duel manquant dans les paramètres de la requête", http.StatusBadRequest)
 		return
@@ -137,7 +136,7 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if r.Method == http.MethodPost {
+	if r.Method == http.MethodGet {
 		action := r.FormValue("action")
 		switch action {
 		case "start_session":

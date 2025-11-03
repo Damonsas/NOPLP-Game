@@ -44,35 +44,4 @@ visibility: hidden;
     
 }
 
-#mainbody{
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-  .sectionaff{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-top: 20px;
-    }
 
-    .nav_toggle{
-        display : flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        list-style: none;
-        :hover{
-            background: #3675ff;
-            color: white;
-        }
-        .side-bar{
-            @include transition;
-            transform: translateX(-100%);
-            position: fixed;
-            top:0;
-            left:0;
-            width: 250px;
-            .is-open {
-                transform: translateX(0);
-            }
-        }
-    }
-}   
