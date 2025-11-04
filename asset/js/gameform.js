@@ -379,8 +379,6 @@ function showFormWithStyles(formContainer) {
         formContainer.style.height = 'auto';
         formContainer.style.position = 'relative';
         formContainer.style.zIndex = '1000';
-        console.log("Formulaire affiché avec styles");
-        console.log("Contenu final:", formContainer.innerHTML.substring(0, 100) + "...");
     }
 }
 /**
@@ -420,7 +418,6 @@ function renderCreateDuelFormWithError(fallbackFiles) {
         </div>
     `;
     container.innerHTML = formHtml;
-    console.log("Formulaire de fallback créé");
 }
 /**
  * Version fallback pour la génération des sélections de chansons
@@ -463,19 +460,15 @@ function showDuelList() {
     const menuButton = document.querySelector('.button_prep_grille');
     if (formContainer) {
         formContainer.style.display = 'none';
-        console.log("Formulaire caché");
     }
     if (listContent) {
         listContent.style.display = 'block';
-        console.log("Liste affichée");
     }
     if (alertContent) {
         alertContent.style.display = 'block';
-        console.log("Alert affichée");
     }
     if (menuButton) {
         menuButton.style.display = 'block';
-        console.log("Bouton menu affiché");
     }
     // Ne pas recharger la liste complètement pour éviter de perdre le PrepGrille
     loadDuelsFromStorage();
@@ -545,15 +538,10 @@ document.addEventListener('click', (event) => {
         showDuelList();
     }
 });
-// === INITIALISATION ===
 document.addEventListener('DOMContentLoaded', () => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("DOM chargé, initialisation...");
     loadDuelsFromStorage();
-    // D'abord rendre la liste pour créer/recréer PrepGrille
     renderDuelList();
-    // Attendre un peu que le DOM soit mis à jour
     setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
-        // Vérifier que PrepGrille existe maintenant
         let prepGrilleContainer = document.getElementById("PrepGrille");
         console.log("PrepGrille après renderDuelList:", prepGrilleContainer);
         if (!prepGrilleContainer) {
@@ -561,9 +549,7 @@ document.addEventListener('DOMContentLoaded', () => __awaiter(void 0, void 0, vo
             return;
         }
         try {
-            // Utiliser notre nouvelle fonction locale
             const lyricsFiles = yield getLyricsListLocal();
-            console.log("Fichiers lyrics chargés avec succès:", lyricsFiles);
             if (lyricsFiles.length > 0) {
                 renderCreateDuelForm(lyricsFiles);
             }
@@ -591,3 +577,51 @@ document.addEventListener('DOMContentLoaded', () => __awaiter(void 0, void 0, vo
         console.log("Contenu du PrepGrille:", containerAfter === null || containerAfter === void 0 ? void 0 : containerAfter.innerHTML.substring(0, 200));
     }), 200);
 }));
+// Ajouter cette fonction globale pour gérer le clic sur "Jouer"
+window.playDuel = function (duelId, isSolo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            console.log('playDuel appelé avec:', duelId, isSolo);
+            // Récupérer le duel depuis localStorage
+            const duelsJson = localStorage.getItem('duels');
+            if (!duelsJson) {
+                showNotification('Aucun duel trouvé dans le stockage local', 'error');
+                return;
+            }
+            const duels = JSON.parse(duelsJson);
+            const selectedDuel = duels.find((d) => d.id === duelId);
+            if (!selectedDuel) {
+                showNotification('Duel non trouvé', 'error');
+                return;
+            }
+            console.log('Duel trouvé:', selectedDuel);
+            console.log('Envoi du duel au serveur...');
+            // Envoyer le duel au serveur
+            const response = yield fetch('/api/duels', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(selectedDuel)
+            });
+            if (!response.ok) {
+                const errorText = yield response.text();
+                console.error('Erreur serveur:', errorText);
+                throw new Error(`Erreur serveur: ${response.status} - ${errorText}`);
+            }
+            const serverDuel = yield response.json();
+            console.log('Duel créé sur le serveur avec ID:', serverDuel.id);
+            // Rediriger vers la page de jeu avec l'ID serveur
+            if (isSolo) {
+                window.location.href = `/solo?id=${serverDuel.id}`;
+            }
+            else {
+                window.location.href = `/duel-game?duelId=${serverDuel.id}`;
+            }
+        }
+        catch (error) {
+            console.error('Erreur complète:', error);
+            showNotification(`Erreur lors du démarrage du jeu: ${error}`, 'error');
+        }
+    });
+};
