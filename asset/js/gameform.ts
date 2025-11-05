@@ -93,12 +93,38 @@ function generateDuelCard(duel: Duel): string {
   return `
     <div class="duel-card" data-duel-id="${duel.id}">
       <h3>${duel.name}</h3>
-      <button onclick="window.location.href='${playUrl}'">Jouer</button>
+      <button id="playBtn" onclick="window.location.href='${playUrl}' ">Jouer</button>
       <button onclick="window.location.href='${supprform}'"> Supprimer <i class="fa-regular fa-trash-can"></i> </button>
       <button onclick="window.location.href='${modifform}'"> Modifier </button>
     </div>
   `;
 }
+
+const playBtn = document.getElementById("playBtn");
+
+playBtn?.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const duelId = parseInt((document.getElementById("duelId") as HTMLInputElement).value);
+
+    const res = await fetch("/api/start-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ duelId }),
+    });
+
+    if (!res.ok) {
+        alert("Erreur lors du démarrage de la session");
+        return;
+    }
+
+    const data = await res.json();
+    const sessionId = data.sessionID;
+
+    // ✅ Redirection vers ton template Go déjà existant
+    window.location.href = `/duel-game?id=${duelId}&sessionId=${sessionId}`;
+});
+
 
 /**
  * Génère le bouton "Préparer une grille".
@@ -176,13 +202,6 @@ function generateSongSelectionHtml(points: number, lyricsFiles: string[]): strin
   }
 }
 
-/**
- * Ajoute des listeners sur les selects de chansons du formulaire pour :
- *  - désactiver automatiquement les options déjà choisies dans les autres selects
- *  - autoriser la réactivation si une sélection est modifiée / supprimée
- *
- * Appelle : attachUniqueSelectionHandlers(document.getElementById('newDuelForm'));
- */
 function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): void {
   if (!formOrContainer) return;
 
@@ -369,7 +388,7 @@ function showCreateForm(): void {
             if (lyricsFiles.length > 0) {
                 renderCreateDuelForm(lyricsFiles);
             } else {
-                renderCreateDuelFormWithError([
+                ([
                     "Adele - Hello.json",
                     "Ed Sheeran - Shape of You.json",
                     "Billie Eilish - Bad Guy.json"
@@ -380,7 +399,7 @@ function showCreateForm(): void {
             console.error("Erreur lors de la récupération des fichiers:", error);
             console.log("Utilisation d'une liste par défaut pour le formulaire");
             
-            renderCreateDuelFormWithError([
+            ([
                 "Artiste Exemple - Chanson 1.json",
                 "Artiste Test - Chanson 2.json",
                 "Demo Artist - Test Song.json"
@@ -410,79 +429,6 @@ function showFormWithStyles(formContainer: HTMLElement | null): void {
     }
 }
 
-/**
- * Version de fallback pour créer le formulaire avec message d'erreur
- */
-function renderCreateDuelFormWithError(fallbackFiles: string[]): void {
-    const container = document.getElementById("PrepGrille");
-    if (!container) return;
-
-    const soloMode = isSoloMode();
-    const modeText = soloMode ? 'solo' : 'duel';
-
-    let formHtml = `
-        <div class="form-container">
-            <h2 style="color: red;">FORMULAIRE DE TEST (MODE DÉBOGAGE)</h2>
-            <div style="background: yellow; padding: 10px; margin: 10px 0; border: 1px solid orange;">
-                ⚠️ Erreur : Impossible de charger la liste des musiques. Utilisation d'exemples.
-            </div>
-            <button id="back-to-list-btn" type="button" >← Retour à la liste</button>
-            <form id="newDuelForm" >
-                <h3>Créer une nouvelle grille de ${modeText}</h3>
-                <label for="duelName">Nom de la grille:</label>
-                <input type="text" id="duelName" name="duelName" required >
-    `;
-
-    DUEL_POINTS_CATEGORIES.forEach(points => {
-        formHtml += `
-            <div class="point-category" >
-                <h4>${points} Points</h4>
-                <label>Thème:</label>
-                <input type="text" name="theme-${points}" required >
-                ${generateSongSelectionHtmlFallback(points, fallbackFiles)}
-            </div>
-        `;
-    });
-
-    formHtml += `
-            <button type="submit">Créer (Mode Test)</button>
-        </form>
-        </div>
-    `;
-    
-    container.innerHTML = formHtml;
-}
-
-/**
- * Version fallback pour la génération des sélections de chansons
- */
-function generateSongSelectionHtmlFallback(points: number, fallbackFiles: string[]): string {
-    const soloMode = isSoloMode();
-    const songOptions = fallbackFiles.map(file => `<option value="${file}">${file} (exemple)</option>`).join('');
-    
-    if (soloMode) {
-        return `
-            <label>Chanson:</label>
-            <select name="song1-${points}" required >
-                <option value="">Sélectionner une musique</option>
-                ${songOptions}
-            </select>
-        `;
-    } else {
-        return `
-            <label>Chanson 1:</label>
-            <select name="song1-${points}" required >
-                <option value="">Sélectionner une musique</option>
-                ${songOptions}
-            </select>
-            <label>Chanson 2:</label>
-            <select name="song2-${points}" required >
-                <option value="">Sélectionner une musique</option>
-                ${songOptions}
-            </select>
-        `;
-    }
-}
 
 /**
  * Affiche la liste des duels et cache le formulaire
@@ -613,8 +559,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 "The Weeknd - Blinding Lights.json",
                 "Dua Lipa - Levitating.json"
             ];
-            renderCreateDuelFormWithError(fallbackFiles);
-            showNotification('Impossible de charger la liste des musiques. Mode débogage activé.', 'warning');
         }
         
         // Vérifier que le contenu a bien été inséré

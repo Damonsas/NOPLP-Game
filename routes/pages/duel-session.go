@@ -57,7 +57,11 @@ func StartGameSession(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(session)
+	response := map[string]interface{}{
+		"sessionID": sessionID,
+		"session":   session,
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 func GetGameSession(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +75,11 @@ func GetGameSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(session)
+	response := map[string]interface{}{
+		"sessionID": sessionID,
+		"session":   session,
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 func CreateGameSession(w http.ResponseWriter, r *http.Request) {
@@ -340,7 +348,11 @@ func SelectSongForLevel(w http.ResponseWriter, r *http.Request) {
 	session.SelectedSongs[request.Level] = request.SongIndex
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(session)
+	response := map[string]interface{}{
+		"sessionID": sessionID,
+		"session":   session,
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 func UpdateGameScore(w http.ResponseWriter, r *http.Request) {
@@ -373,7 +385,11 @@ func UpdateGameScore(w http.ResponseWriter, r *http.Request) {
 	session.Status = "score_updated"
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(session)
+	response := map[string]interface{}{
+		"sessionID": sessionID,
+		"session":   session,
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 // session de musique
@@ -441,5 +457,9 @@ func HandleStartSong(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(session)
+	response := map[string]interface{}{
+		"sessionID": sessionID,
+		"session":   session,
+	}
+	json.NewEncoder(w).Encode(response)
 }
