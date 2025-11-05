@@ -21,7 +21,7 @@ func DuelMaestroChallenger(w http.ResponseWriter, r *http.Request) {
 
 func StartGameSession(w http.ResponseWriter, r *http.Request) {
 	var request struct {
-		DuelID int `json:"duelId"`
+		DuelID int `json:"duelId"` /// le potentiel pb
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -144,7 +144,7 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if r.Method == http.MethodPost {
+	if r.Method == http.MethodGet {
 		action := r.FormValue("action")
 		switch action {
 		case "start_session":
