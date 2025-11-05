@@ -311,7 +311,7 @@ function handleNewDuelFormSubmit(event) {
             return; // stop la soumission
         }
         const newDuel = {
-            id: new Date().getTime().toString(),
+            id: BigInt(Date.now()),
             name: duelData.name,
             points: duelData.points,
             sameSong: { title: 'N/A', artist: 'N/A', lyricsFile: '' },

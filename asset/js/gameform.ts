@@ -346,7 +346,7 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
     }
 
     const newDuel: Duel = {
-      id: new Date().getTime().toString(),
+      id: BigInt(Date.now()),
       name: duelData.name as string,
       points: duelData.points as any,
       sameSong: { title: 'N/A', artist: 'N/A', lyricsFile: '' },
