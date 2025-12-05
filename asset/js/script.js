@@ -14,14 +14,15 @@ function toggleElement(elementId) {
     }
 }
 
-document.addEventListener('DOMContentLoaded',() => {
-    const menu = document.getElementById('sidebarmenu');
-    const button = document.getElementById('menutogglebtn');
-    button.addEventListener('click', () => {
-        menu.classList.toggle('is-open');
+menutogglebtn.onclick = () => {
+    sidebarmenu.classList.toggle('is-open');
+};
 
-    });
-});
+document.onclick = (e) => {
+    if (!sidebarmenu.contains(e.target) && !menutogglebtn.contains(e.target)) {
+        sidebarmenu.classList.remove('is-open');
+    }
+};
 
 
 window.toggleElement = toggleElement;

@@ -1,32 +1,70 @@
-#mainbody{
+#mainbody {
     display: grid;
-    grid-template-columns: 1fr 3fr;
-  .sectionaff{
+    grid-template-columns: auto 1fr;
+    
+    .sectionaff {
         display: flex;
         flex-direction: column;
         align-items: center;
         margin-top: 20px;
     }
 
-    .nav_toggle{
-        display : flex;
+    .nav_toggle {
+        position: relative;
+        display: flex;
         flex-direction: column;
-        justify-content: flex-start;
-        list-style: none;
-        :hover{
+        align-items: center;
+        
+        .menu-toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
             background: #3675ff;
             color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            
+            &:hover {
+                background: #5d25eb;
+            }
         }
-        .side-bar{
-            @include transition;
+        
+        .side-bar {
+            transition: transform 0.3s ease-in-out;
             transform: translateX(-100%);
             position: fixed;
-            top:0;
-            left:0;
-            width: 250px;
-            .is-open {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            top: 0;
+            left: 0;
+            width: 150px;
+            height: 100vh;
+            background: #5d25eb;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            padding-top: 60px;
+            z-index: 1000;
+            
+            &.is-open {
                 transform: translateX(0);
+            }
+            
+            .btn {
+                margin: 30px;
+                a {
+                    display: block;
+                    padding: 15px 20px;
+                    text-decoration: none;
+                    color: #eaeaea;
+                    transition: all 0.3s ease;
+                    
+                    &:hover {
+                        color: white;
+                    }
+                }
             }
         }
     }
-}  
+}

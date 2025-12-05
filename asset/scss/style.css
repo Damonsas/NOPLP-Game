@@ -35,6 +35,38 @@
   margin-bottom: 10px;
 }
 
+#mainbody {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+}
+#mainbody .sectionaff {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+#mainbody .nav_toggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  list-style: none;
+}
+#mainbody .nav_toggle :hover {
+  background: #3675ff;
+  color: white;
+}
+#mainbody .nav_toggle .side-bar {
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(-100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+}
+#mainbody .nav_toggle .side-bar .is-open {
+  transform: translateX(0);
+}
+
 body .duelContainer {
   display: flex;
   flex-direction: column;
@@ -541,7 +573,7 @@ ol .btn a {
 }
 #newDuelForm select option, #newSoloForm select option {
   background: linear-gradient(#6609d7, #3804b2);
-  color: #fff;
+  color: rgba(0, 0, 0, 0);
 }
 #newDuelForm select option:hover, #newSoloForm select option:hover {
   background: #3675ff;
@@ -561,7 +593,7 @@ ol .btn a {
 
 #mainbody {
   display: grid;
-  grid-template-columns: 1fr 3fr;
+  grid-template-columns: auto 1fr;
 }
 #mainbody .sectionaff {
   display: flex;
@@ -570,25 +602,56 @@ ol .btn a {
   margin-top: 20px;
 }
 #mainbody .nav_toggle {
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  list-style: none;
+  align-items: center;
 }
-#mainbody .nav_toggle :hover {
+#mainbody .nav_toggle .menu-toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
   background: #3675ff;
   color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+#mainbody .nav_toggle .menu-toggle-btn:hover {
+  background: #5d25eb;
 }
 #mainbody .nav_toggle .side-bar {
   transition: transform 0.3s ease-in-out;
   transform: translateX(-100%);
   position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   top: 0;
   left: 0;
-  width: 250px;
+  width: 150px;
+  height: 100vh;
+  background: #5d25eb;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  padding-top: 60px;
+  z-index: 1000;
 }
-#mainbody .nav_toggle .side-bar .is-open {
+#mainbody .nav_toggle .side-bar.is-open {
   transform: translateX(0);
+}
+#mainbody .nav_toggle .side-bar .btn {
+  margin: 30px;
+}
+#mainbody .nav_toggle .side-bar .btn a {
+  display: block;
+  padding: 15px 20px;
+  text-decoration: none;
+  color: #eaeaea;
+  transition: all 0.3s ease;
+}
+#mainbody .nav_toggle .side-bar .btn a:hover {
+  color: white;
 }
 
 html {

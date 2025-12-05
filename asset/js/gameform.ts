@@ -281,9 +281,6 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
   
   container.innerHTML = formHtml;
   attachUniqueSelectionHandlers(document.getElementById('newDuelForm'));
-  console.log("Formulaire généré avec styles");
-  console.log("Contenu HTML du formulaire:", formHtml.substring(0, 300) + "...");
-
 }
 
 // === GESTIONNAIRES D'ÉVÉNEMENTS ===
@@ -370,21 +367,14 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
  * Affiche le formulaire de création et cache la liste
  */
 function showCreateForm(): void {
-    console.log("showCreateForm appelé");
     
     const formContainer = document.getElementById("PrepGrille");
     const listContent = document.querySelector('.duels-list') as HTMLElement;
     const alertContent = document.querySelector('.alert') as HTMLElement;
     const menuButton = document.querySelector('.button_prep_grille') as HTMLElement;
-
-    console.log("Form container:", formContainer);
-    console.log("Form container innerHTML:", formContainer?.innerHTML);
     
-    if (formContainer && (!formContainer.innerHTML || formContainer.innerHTML.trim() === '')) {
-        console.log("Le formulaire est vide, régénération...");
-        
+    if (formContainer && (!formContainer.innerHTML || formContainer.innerHTML.trim() === '')) {        
         getLyricsListLocal().then(lyricsFiles => {
-            console.log("Fichiers récupérés avec succès:", lyricsFiles);
             if (lyricsFiles.length > 0) {
                 renderCreateDuelForm(lyricsFiles);
             } else {
@@ -510,7 +500,6 @@ document.addEventListener('submit', (event) => {
 
 document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
-    console.log("Clic détecté sur:", target.id, target);
     
     if (target.id === 'create-duel-btn') {
         event.preventDefault();
@@ -548,8 +537,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
         } catch (error) {
-            console.error("Erreur lors du chargement des musiques:", error);
-            console.log("Création du formulaire avec des exemples...");
             
             // Créer le formulaire avec des exemples même si getLyricsList échoue
             const fallbackFiles = [
@@ -563,8 +550,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Vérifier que le contenu a bien été inséré
         const containerAfter = document.getElementById("PrepGrille");
-        console.log("PrepGrille après generation:", containerAfter);
-        console.log("Contenu du PrepGrille:", containerAfter?.innerHTML.substring(0, 200));
         
     }, 200);
 });
@@ -589,9 +574,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    console.log('Duel trouvé:', selectedDuel);
-    console.log('Envoi du duel au serveur...');
-
     // Envoyer le duel au serveur
     const response = await fetch('/api/duels', {
       method: 'POST',
@@ -608,7 +590,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const serverDuel = await response.json();
-    console.log('Duel créé sur le serveur avec ID:', serverDuel.id);
     
     // Rediriger vers la page de jeu avec l'ID serveur
     if (isSolo) {

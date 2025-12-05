@@ -252,8 +252,6 @@ function renderCreateDuelForm(lyricsFiles) {
   `;
     container.innerHTML = formHtml;
     attachUniqueSelectionHandlers(document.getElementById('newDuelForm'));
-    console.log("Formulaire généré avec styles");
-    console.log("Contenu HTML du formulaire:", formHtml.substring(0, 300) + "...");
 }
 // === GESTIONNAIRES D'ÉVÉNEMENTS ===
 /**
@@ -336,17 +334,12 @@ function handleNewDuelFormSubmit(event) {
  * Affiche le formulaire de création et cache la liste
  */
 function showCreateForm() {
-    console.log("showCreateForm appelé");
     const formContainer = document.getElementById("PrepGrille");
     const listContent = document.querySelector('.duels-list');
     const alertContent = document.querySelector('.alert');
     const menuButton = document.querySelector('.button_prep_grille');
-    console.log("Form container:", formContainer);
-    console.log("Form container innerHTML:", formContainer === null || formContainer === void 0 ? void 0 : formContainer.innerHTML);
     if (formContainer && (!formContainer.innerHTML || formContainer.innerHTML.trim() === '')) {
-        console.log("Le formulaire est vide, régénération...");
         getLyricsListLocal().then(lyricsFiles => {
-            console.log("Fichiers récupérés avec succès:", lyricsFiles);
             if (lyricsFiles.length > 0) {
                 renderCreateDuelForm(lyricsFiles);
             }
@@ -469,7 +462,6 @@ document.addEventListener('submit', (event) => {
 });
 document.addEventListener('click', (event) => {
     const target = event.target;
-    console.log("Clic détecté sur:", target.id, target);
     if (target.id === 'create-duel-btn') {
         event.preventDefault();
         console.log("Bouton create-duel-btn cliqué");
@@ -501,8 +493,6 @@ document.addEventListener('DOMContentLoaded', () => __awaiter(void 0, void 0, vo
             }
         }
         catch (error) {
-            console.error("Erreur lors du chargement des musiques:", error);
-            console.log("Création du formulaire avec des exemples...");
             // Créer le formulaire avec des exemples même si getLyricsList échoue
             const fallbackFiles = [
                 "Adele - Hello.json",
@@ -514,8 +504,6 @@ document.addEventListener('DOMContentLoaded', () => __awaiter(void 0, void 0, vo
         }
         // Vérifier que le contenu a bien été inséré
         const containerAfter = document.getElementById("PrepGrille");
-        console.log("PrepGrille après generation:", containerAfter);
-        console.log("Contenu du PrepGrille:", containerAfter === null || containerAfter === void 0 ? void 0 : containerAfter.innerHTML.substring(0, 200));
     }), 200);
 }));
 // Ajouter cette fonction globale pour gérer le clic sur "Jouer"
@@ -535,8 +523,6 @@ window.playDuel = function (duelId, isSolo) {
                 showNotification('Duel non trouvé', 'error');
                 return;
             }
-            console.log('Duel trouvé:', selectedDuel);
-            console.log('Envoi du duel au serveur...');
             // Envoyer le duel au serveur
             const response = yield fetch('/api/duels', {
                 method: 'POST',
@@ -551,7 +537,6 @@ window.playDuel = function (duelId, isSolo) {
                 throw new Error(`Erreur serveur: ${response.status} - ${errorText}`);
             }
             const serverDuel = yield response.json();
-            console.log('Duel créé sur le serveur avec ID:', serverDuel.id);
             // Rediriger vers la page de jeu avec l'ID serveur
             if (isSolo) {
                 window.location.href = `/solo?id=${serverDuel.id}`;
