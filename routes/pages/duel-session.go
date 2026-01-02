@@ -162,7 +162,7 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 		<head>
 			<meta charset="UTF-8">
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<title>Duel: {{.Duel.Name}}</title>
+			<title>Noplp-jeu</title>
 			<link rel="stylesheet" href="/asset/scss/style.css">
 			<link rel="apple-touch-icon" sizes="180x180" href="../asset/ressource/img/favicon/apple-touch-icon.png">
     		<link rel="icon" type="image/png" sizes="32x32" href="../asset/ressource/img/favicon/favicon-32x32.png">
@@ -179,12 +179,6 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
     <div class="duelContainer">
         <div class="duel-header">
             <h1>{{.Duel.Name}}</h1>
-            <div class="metadata">
-                <p>Créé le: {{.Duel.CreatedAt.Format "02/01/2006 à 15:04"}}</p>
-                {{with .Duel.UpdatedAt}}
-                    <p>Mis à jour le: {{.Format "02/01/2006 à 15:04"}}</p>
-                {{end}}
-            </div>
         </div>
 
         <section class="duel-form">

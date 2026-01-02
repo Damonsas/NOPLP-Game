@@ -101,11 +101,14 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Essayer de décoder comme un seul duel d'abord
+	fmt.Println("📥 Corps reçu:", string(body)) // ✅ LOG 1
+
 	var singleDuel Duel
 	if err := json.Unmarshal(body, &singleDuel); err == nil {
-		// C'est un seul duel - traiter directement
+		fmt.Println("✅ Duel décodé:", singleDuel) // ✅ LOG 2
+
 		if err := validateDuelForClient(&singleDuel); err != nil {
+			fmt.Println("❌ Validation échouée:", err) // ✅ LOG 3
 			http.Error(w, fmt.Sprintf("Données de duel invalides: %v", err), http.StatusBadRequest)
 			return
 		}

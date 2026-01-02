@@ -19,7 +19,7 @@ export interface PointCategory {
 }
 
 export interface Duel {
-  id: bigint;
+  id: number;
   name: string;
   points: {
     '10': PointCategory;
@@ -36,7 +36,7 @@ export interface Duel {
 }
 
 export interface GameSession {
-  id: bigint;
+  id: number;
   duelId: number;
   currentLevel: string;
   selectedSongs: { [key: string]: number };

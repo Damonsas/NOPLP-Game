@@ -16,7 +16,7 @@ func SetupDuelRoutes(r *mux.Router) {
 
 	r.HandleFunc("/api/download-duel/{id:[0-9]+}", DownloadDuel).Methods("GET")
 
-	r.HandleFunc("/duel-game", CreateGameSession).Methods("GET") // Ajouter cette ligne
+	r.HandleFunc("/duel-game", CreateGameSession).Methods("GET")
 
 	r.HandleFunc("/api/game-sessions", StartGameSession).Methods("POST")
 	r.HandleFunc("/api/game-sessions/{id}", GetGameSession).Methods("GET")

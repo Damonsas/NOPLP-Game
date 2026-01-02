@@ -83,48 +83,47 @@ function generateDuelCard(duel: Duel): string {
   
   const playUrl = currentMode 
     ? `/solo?id=${duel.id}` 
-    : `/duel-game?duelId=${duel.id}`;
-
+    : `/duel-game?id=${duel.id}`;  
 
   const supprform = `/duel-delete?id=${duel.id}`;
   const modifform = `/duel-edit?id=${duel.id}`;
 
-  
   return `
     <div class="duel-card" data-duel-id="${duel.id}">
       <h3>${duel.name}</h3>
-      <button id="playBtn" onclick="window.location.href='${playUrl}' ">Jouer</button>
+      <button class="play-duel-btn" data-duel-id="${duel.id}">Jouer</button>
       <button onclick="window.location.href='${supprform}'"> Supprimer <i class="fa-regular fa-trash-can"></i> </button>
       <button onclick="window.location.href='${modifform}'"> Modifier </button>
     </div>
   `;
+
 }
 
-const playBtn = document.getElementById("playBtn");
+async function handlePlayDuel(duelId: string) {
+  try {
+    const id = parseInt(duelId);
+    if (isNaN(id)) throw new Error('ID invalide');
 
-playBtn?.addEventListener("click", async (e) => {
-    e.preventDefault();
+    const duels = JSON.parse(localStorage.getItem('duels') || '[]');
+    const duel = duels.find((d: any) => d.id == id);
+    if (!duel) throw new Error('Duel non trouvé');
 
-    const duelId = parseInt((document.getElementById("duelId") as HTMLInputElement).value);
-
-    const res = await fetch("/api/start-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ duelId }),
+    const res = await fetch('/api/duels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(duel)
     });
 
-    if (!res.ok) {
-        alert("Erreur lors du démarrage de la session");
-        return;
-    }
-
-    const data = await res.json();
-    const sessionId = data.sessionID;
-
-    // ✅ Redirection vers ton template Go déjà existant
-    window.location.href = `/duel-game?id=${duelId}&sessionId=${sessionId}`;
-});
-
+    if (!res.ok) throw new Error(`Erreur serveur: ${res.status}`);
+    
+    const serverDuel = await res.json();
+    const url = isSoloMode() ? `/solo?id=${serverDuel.id}` : `/duel-game?id=${serverDuel.id}`;
+    
+    window.location.href = url;
+  } catch (error) {
+    showNotification(`Erreur: ${error}`, 'error');
+  }
+}
 
 /**
  * Génère le bouton "Préparer une grille".
@@ -343,7 +342,7 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
     }
 
     const newDuel: Duel = {
-      id: BigInt(Date.now()),
+      id: Date.now(),
       name: duelData.name as string,
       points: duelData.points as any,
       sameSong: { title: 'N/A', artist: 'N/A', lyricsFile: '' },
@@ -498,8 +497,22 @@ document.addEventListener('submit', (event) => {
     }
 });
 
+
+// a enlenver si tout fonctionnel
 document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
+
+    if (target.classList.contains('play-duel-btn')) {
+        event.preventDefault();
+        const id = target.getAttribute('data-duel-id');
+        if (id) {
+            console.log('🎯 Clic sur Jouer détecté, duelId:', id);
+            handlePlayDuel(id);
+        } else {
+            console.error('❌ Pas de duelId trouvé sur le bouton');
+        }
+        return;
+    }
     
     if (target.id === 'create-duel-btn') {
         event.preventDefault();
@@ -553,54 +566,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         
     }, 200);
 });
-
-// Ajouter cette fonction globale pour gérer le clic sur "Jouer"
-(window as any).playDuel = async function(duelId: string, isSolo: boolean) {
-  try {
-    console.log('playDuel appelé avec:', duelId, isSolo);
-    
-    // Récupérer le duel depuis localStorage
-    const duelsJson = localStorage.getItem('duels');
-    if (!duelsJson) {
-      showNotification('Aucun duel trouvé dans le stockage local', 'error');
-      return;
-    }
-
-    const duels = JSON.parse(duelsJson);
-    const selectedDuel = duels.find((d: any) => d.id === duelId);
-    
-    if (!selectedDuel) {
-      showNotification('Duel non trouvé', 'error');
-      return;
-    }
-
-    // Envoyer le duel au serveur
-    const response = await fetch('/api/duels', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(selectedDuel)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Erreur serveur:', errorText);
-      throw new Error(`Erreur serveur: ${response.status} - ${errorText}`);
-    }
-
-    const serverDuel = await response.json();
-    
-    // Rediriger vers la page de jeu avec l'ID serveur
-    if (isSolo) {
-      window.location.href = `/solo?id=${serverDuel.id}`;
-    } else {
-      window.location.href = `/duel-game?duelId=${serverDuel.id}`;
-    }
-
-  } catch (error) {
-    console.error('Erreur complète:', error);
-    showNotification(`Erreur lors du démarrage du jeu: ${error}`, 'error');
-  }
-};
-
