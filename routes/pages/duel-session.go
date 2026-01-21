@@ -55,7 +55,7 @@ func StartGameSession(w http.ResponseWriter, r *http.Request) {
 
 	gameSessions[sessionID] = session
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentType, jsonType)
 	w.WriteHeader(http.StatusCreated)
 	response := map[string]interface{}{
 		"sessionID": sessionID,
@@ -74,7 +74,7 @@ func GetGameSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentType, jsonType)
 	response := map[string]interface{}{
 		"sessionID": sessionID,
 		"session":   session,
@@ -341,7 +341,7 @@ func SelectSongForLevel(w http.ResponseWriter, r *http.Request) {
 
 	session.SelectedSongs[request.Level] = request.SongIndex
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentType, jsonType)
 	response := map[string]interface{}{
 		"sessionID": sessionID,
 		"session":   session,

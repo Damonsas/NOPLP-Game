@@ -49,6 +49,8 @@ const (
 	duelSaveDataPath = "/data/serverdata/duelsavedata"
 	prepDuelDataPath = "/data/serverdata/prepdueldata"
 	paroleDataPath   = "/data/serverdata/paroledata"
+	contentType      = "content-Type"
+	jsonType         = "application/json"
 )
 
 type ChallengernameData struct {
