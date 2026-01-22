@@ -1,7 +1,5 @@
-// gamelogic.ts
 import { showNotification } from './gamenotification.js';
 
-// === INTERFACES ET TYPES ===
 export interface GameFormData {
     [key: string]: FormDataEntryValue;
 }
@@ -49,7 +47,6 @@ export interface GameSession {
   lyricsVisible: boolean;
 }
 
-// === LOGIQUE GLOBALE ===
 export let preparedDuels: Duel[] = [];
 
 /**
@@ -75,7 +72,6 @@ export function loadDuelsFromStorage(): void {
  * @param duelData Les données du duel à ajouter.
  */
 export async function addDuel(duelData: Duel): Promise<void> {
-  // Simule une requête API (remplace par ton fetch Go)
   console.log("Ajout du duel", duelData);
   preparedDuels.push(duelData);
   if (typeof localStorage !== 'undefined') {
