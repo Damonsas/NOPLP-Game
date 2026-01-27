@@ -7,9 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// gamelogic.ts
 import { showNotification } from './gamenotification.js';
-// === LOGIQUE GLOBALE ===
 export let preparedDuels = [];
 /**
  * Charge les duels depuis le stockage local.
@@ -35,7 +33,6 @@ export function loadDuelsFromStorage() {
  */
 export function addDuel(duelData) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Simule une requête API (remplace par ton fetch Go)
         console.log("Ajout du duel", duelData);
         preparedDuels.push(duelData);
         if (typeof localStorage !== 'undefined') {

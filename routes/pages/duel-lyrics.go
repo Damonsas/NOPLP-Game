@@ -34,8 +34,6 @@ type LyricsCheckResponse struct {
 	Content string `json:"content,omitempty"`
 }
 
-// la gestion des paroles et des sessions de jeu
-
 func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	level := vars["level"]
@@ -81,7 +79,6 @@ func GetLyricsdata(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("DEBUG - Recherche paroles pour: %s - %s\n", song.Artist, song.Title)
 	fmt.Printf("DEBUG - LyricsFile: %v\n", song.LyricsFile)
 
-	// Essayer de lire le fichier local d'abord
 	if song.LyricsFile != nil && *song.LyricsFile != "" {
 		filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
 		fmt.Printf("DEBUG - Chemin du fichier: %s\n", filePath)

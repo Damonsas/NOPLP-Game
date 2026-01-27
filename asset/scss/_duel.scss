@@ -7,7 +7,8 @@
 visibility: hidden;
 }
 
-
+.optionMusique {
+color: black;}
 
 .Sectionduel {
     display: flex;
@@ -16,7 +17,9 @@ visibility: hidden;
     margin-top: 20px;
 
     .duels-list{
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        justify-content: center;
         gap: 30px;
         margin-top: 20px;
         
@@ -40,6 +43,7 @@ visibility: hidden;
             color: #dcdcdc;
             margin-bottom: 10px;
         }
+
     }
     
 }

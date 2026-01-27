@@ -101,14 +101,14 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("📥 Corps reçu:", string(body)) // ✅ LOG 1
+	fmt.Println("Corps reçu:", string(body)) //  LOG 1
 
 	var singleDuel Duel
 	if err := json.Unmarshal(body, &singleDuel); err == nil {
-		fmt.Println("✅ Duel décodé:", singleDuel) // ✅ LOG 2
+		fmt.Println(" Duel décodé:", singleDuel) //  LOG 2
 
 		if err := validateDuelForClient(&singleDuel); err != nil {
-			fmt.Println("❌ Validation échouée:", err) // ✅ LOG 3
+			fmt.Println(" Validation échouée:", err) //  LOG 3
 			http.Error(w, fmt.Sprintf("Données de duel invalides: %v", err), http.StatusBadRequest)
 			return
 		}
@@ -133,7 +133,6 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Sinon essayer comme un tableau de duels
 	var duelsToCreate []Duel
 	if err := json.Unmarshal(body, &duelsToCreate); err != nil {
 		http.Error(w, "Erreur lors du décodage JSON : un duel ou un tableau de duels est attendu.", http.StatusBadRequest)
@@ -366,8 +365,6 @@ func DeleteDuel(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Duel non trouvé pour la suppression", http.StatusNotFound)
 }
 
-// validateDuelForClient : validation plus souple pour les duels venant du client
-// (n'exige pas 2 chansons, permet 1 chanson pour le mode solo)
 func validateDuelForClient(duel *Duel) error {
 	if duel.Name == "" {
 		return fmt.Errorf("le nom du duel est requis")
@@ -388,21 +385,16 @@ func validateDuelForClient(duel *Duel) error {
 			return fmt.Errorf("le thème pour %s points est requis", level)
 		}
 
-		// Accepter 1 ou 2 chansons (pour mode solo ou duel)
 		if len(pointLevel.Songs) < 1 || len(pointLevel.Songs) > 2 {
 			return fmt.Errorf("1 ou 2 chansons sont requises pour le niveau %s points", level)
 		}
 
 		for _, song := range pointLevel.Songs {
-			// Accepter des chansons même sans titre/artiste si c'est juste un placeholder
 			if song.LyricsFile != nil && *song.LyricsFile == "" {
 				continue
 			}
 		}
 	}
-
-	// SameSong peut être optionnel pour les duels créés côté client
-	// On ne valide pas strictement
 
 	return nil
 }

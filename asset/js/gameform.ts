@@ -165,21 +165,16 @@ function renderDuelList(): void {
   container.innerHTML = duelsHtml;
 }
 
-/**
- * Génère les champs de sélection de chansons selon le mode
- * @param points Points de la catégorie
- * @param lyricsFiles Liste des fichiers de paroles
- * @returns HTML des champs de sélection
- */
+
 function generateSongSelectionHtml(points: number, lyricsFiles: string[]): string {
   const soloMode = isSoloMode();
-  const songOptions = lyricsFiles.map(file => `<option value="${file}">${file}</option>`).join('');
+  const songOptions = lyricsFiles.map(file => `<option style="color: black" value="${file}">${file}</option>`).join('');
   
   if (soloMode) {
     return `
       <label>Chanson:</label>
       <select name="song1-${points}" required>
-        <option value="">Sélectionner une musique</option>
+        <option style="color: black " value="">Sélectionner une musique</option>
         ${songOptions}
 
       </select>
@@ -188,12 +183,12 @@ function generateSongSelectionHtml(points: number, lyricsFiles: string[]): strin
     return `
       <label>Chanson 1:</label>
       <select name="song1-${points}" required>
-        <option value="">Sélectionner une musique</option>
+        <option style="color: black value="">Sélectionner une musique</option>
         ${songOptions}
       </select>
       <label>Chanson 2:</label>
       <select name="song2-${points}" required>
-        <option value="" >Sélectionner une musique</option>
+        <option style="color: black value="" >Sélectionner une musique</option>
         ${songOptions}
 
       </select>
@@ -237,10 +232,6 @@ function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): voi
 }
 
 
-/**
- * Génère et affiche le formulaire de création de duel avec les listes de musiques dynamiques.
- * @param lyricsFiles La liste des noms de fichiers de paroles.
- */
 function renderCreateDuelForm(lyricsFiles: string[]): void {
   const container = document.getElementById("PrepGrille");
   if (!container) {
@@ -282,12 +273,6 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
   attachUniqueSelectionHandlers(document.getElementById('newDuelForm'));
 }
 
-// === GESTIONNAIRES D'ÉVÉNEMENTS ===
-
-/**
- * Gère la soumission du formulaire de création de duel.
- * @param event L'événement de soumission.
- */
 async function handleNewDuelFormSubmit(event: Event): Promise<void> {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
@@ -418,10 +403,6 @@ function showFormWithStyles(formContainer: HTMLElement | null): void {
     }
 }
 
-
-/**
- * Affiche la liste des duels et cache le formulaire
- */
 function showDuelList(): void {
     console.log("showDuelList appelé");
     
@@ -434,10 +415,6 @@ function showDuelList(): void {
         formContainer.style.display = 'none';
     }
 
-    if (listContent) {
-        listContent.style.display = 'block';
-    }
-
     if (alertContent) {
         alertContent.style.display = 'block';
     }
@@ -446,14 +423,10 @@ function showDuelList(): void {
         menuButton.style.display = 'block';
     }
 
-    // Ne pas recharger la liste complètement pour éviter de perdre le PrepGrille
     loadDuelsFromStorage();
 }
 
-/**
- * Gère la soumission du formulaire d'importation de fichier.
- * @param event L'événement de soumission.
- */
+
 async function handleImportFormSubmit(event: Event): Promise<void> {
     event.preventDefault();
     const fileInput = document.getElementById('duelFile') as HTMLInputElement;
@@ -487,7 +460,6 @@ async function handleImportFormSubmit(event: Event): Promise<void> {
     reader.readAsText(file);
 }
 
-// === ÉCOUTEURS D'ÉVÉNEMENTS GLOBAUX ===
 document.addEventListener('submit', (event) => {
     const target = event.target as HTMLElement;
     if (target.id === 'newDuelForm') {
@@ -498,7 +470,7 @@ document.addEventListener('submit', (event) => {
 });
 
 
-// a enlenver si tout fonctionnel
+// // a enlenver si tout fonctionnel
 document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
 
@@ -506,10 +478,10 @@ document.addEventListener('click', (event) => {
         event.preventDefault();
         const id = target.getAttribute('data-duel-id');
         if (id) {
-            console.log('🎯 Clic sur Jouer détecté, duelId:', id);
+            console.log(' Clic sur Jouer détecté, duelId:', id);
             handlePlayDuel(id);
         } else {
-            console.error('❌ Pas de duelId trouvé sur le bouton');
+            console.error(' Pas de duelId trouvé sur le bouton');
         }
         return;
     }
@@ -551,7 +523,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
         } catch (error) {
             
-            // Créer le formulaire avec des exemples même si getLyricsList échoue
             const fallbackFiles = [
                 "Adele - Hello.json",
                 "Ed Sheeran - Shape of You.json", 
@@ -561,7 +532,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             ];
         }
         
-        // Vérifier que le contenu a bien été inséré
         const containerAfter = document.getElementById("PrepGrille");
         
     }, 200);

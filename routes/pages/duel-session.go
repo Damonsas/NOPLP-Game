@@ -168,11 +168,9 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
     		<link rel="icon" type="image/png" sizes="32x32" href="../asset/ressource/img/favicon/favicon-32x32.png">
     		<link rel="icon" type="image/png" sizes="16x16" href="../asset/ressource/img/favicon/favicon-16x16.png">
 			<script defer src="/asset/js/script.js"></script>
-			<script src="/asset/js/vocal.js"></script>
-    		<script type="module" src="/asset/js/duel.js"></script>
-    		<script type="module" src="/asset/js/ui.js"></script>
-			<script type="module" src="/asset/js/music-client.js"></script>
-			<script type="module" src="/asset/js/game-client.js"></script>
+    		<script defer type="module" src="/asset/js/gameform.js"></script>
+    		<script defer type="module" src="/asset/js/gamelogic.js"></script>
+    		<script defer type="module" src="/asset/js/gamenotification.js"></script>
 
 		</head>
 		<body>
