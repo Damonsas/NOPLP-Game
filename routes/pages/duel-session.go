@@ -156,6 +156,20 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Définir les fonctions helper pour le template
+	funcMap := template.FuncMap{
+		"hasAudio": func(audioURL *string) bool {
+			return audioURL != nil && *audioURL != ""
+		},
+		"getAudio": func(audioURL *string) string {
+			if audioURL != nil {
+				return *audioURL
+			}
+			return ""
+		},
+	}
+
+	// TEMPLATE CORRIGÉ avec gestion des champs optionnels
 	tmpl := `
 		<!DOCTYPE html>
 		<html lang="fr">
@@ -163,10 +177,14 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 			<meta charset="UTF-8">
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<title>Noplp-jeu</title>
-			<link rel="stylesheet" href="/asset/scss/style.css">
 			<link rel="apple-touch-icon" sizes="180x180" href="../asset/ressource/img/favicon/apple-touch-icon.png">
     		<link rel="icon" type="image/png" sizes="32x32" href="../asset/ressource/img/favicon/favicon-32x32.png">
     		<link rel="icon" type="image/png" sizes="16x16" href="../asset/ressource/img/favicon/favicon-16x16.png">
+			<link rel="stylesheet" href="/asset/scss/style.css">
+
+    		<script src="https://kit.fontawesome.com/8b05597a3d.js" crossorigin="anonymous"></script>
+
+
 			<script defer src="/asset/js/script.js"></script>
     		<script defer type="module" src="/asset/js/gameform.js"></script>
     		<script defer type="module" src="/asset/js/gamelogic.js"></script>
@@ -174,129 +192,131 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 
 		</head>
 		<body>
-    <div class="duelContainer">
-        <div class="duel-header">
-            <h1>{{.Duel.Name}}</h1>
-        </div>
+		<div id="mainbody">
+			<nav class="nav_toggle">
+			<button type="button" class="menu-toggle-btn" id="menutogglebtn">
+				<i class="fa-solid fa-bars"></i>
+			</button>
+			<div class="side-bar" id="sidebarmenu">            
+				<li class="btn">
+					<a href="../">Accueil <i class="fa-regular fa-house"></i></a>
+				</li>
+			</div>
+			</nav>
+			<div class="duelContainer">
+			<div class="duel-header">
+				<h1>{{.Duel.Name}}</h1>
+			</div>
 
-        <section class="duel-form">
-            <div class="same-song-section">
-                <button class="same-song-button" onclick="toggleElement('same-song-details')" >
-                    🎵C'est La Même Chanson
-                </button>
-                <div id="same-song-details" class="hidden-element song-card" style="max-width: 500px; margin: 0 auto;">
-                    <div class="song-info">
-                        <div class="song-title">{{.Duel.SameSong.Title}}</div>
-                        <div class="song-artist">par {{.Duel.SameSong.Artist}}</div>
-                    </div>
-                    {{if .Duel.SameSong.AudioURL}}
-                    <div>
-                        <strong>Audio:</strong> <a href="{{.Duel.SameSong.AudioURL}}" target="_blank">Écouter</a>
-                    </div>
-                    {{end}}
-                    <div class="lyrics-status">
-                        {{if .SameSongLyricsExists}}
-                        <span class="lyrics-available">✓ Paroles disponibles</span>
-                        {{else}}
-                        <span class="lyrics-missing">✗ Paroles non disponibles</span>
-                        {{end}}
-                    </div>
-                </div>
-            </div>
-
-            <div class="points-grid">
-                {{range .LevelsOrder}}
-                {{$level := .}}
-                {{$pointLevel := index $.Duel.Points $level}}
-                <button class="point-button fade-in-left-normal" onclick="toggleLevelSongs('level-{{$level}}')">
-                    <div>{{$level}} Points</div>
-                    <div style="font-size: 14px; margin-top: 5px;">{{$pointLevel.Theme}}</div>
-                </button>
-                {{end}}
-            </div>
-
-            {{range .LevelsOrder}}
-            {{$level := .}}
-            {{$pointLevel := index $.Duel.Points $level}}
-            <div id="level-{{$level}}" class="hidden-element songs-for-level">
-                <div class="level-section">
-                    <div class="level-header">
-                        <h3>{{$level}} Points - {{$pointLevel.Theme}}</h3>
-                    </div>
-                    <div class="level-songs-container">
-                        {{range $index, $song := $pointLevel.Songs}}
-                        <div class="song-card" onclick="previewSong('{{$song.Title}}', '{{$song.Artist}}')">
-                            <div class="song-info">
-                                <div class="song-title">{{$song.Title}}</div>
-                                <div class="song-artist">par {{$song.Artist}}</div>
-                            </div>
-                            {{if $song.AudioURL}}
-                            <div>
-                                <strong>Audio:</strong> <a href="{{$song.AudioURL}}" target="_blank">Écouter</a>
-                            </div>
-                            {{end}}
-                            <div class="lyrics-status">
-                                {{if index (index $.LyricsExists $level) $index}}
-                                <span class="lyrics-available">✓ Paroles disponibles</span>
-                                {{else}}
-                                <span class="lyrics-missing">✗ Paroles non disponibles</span>
-                                {{end}}
-                            </div>
-                            <div class="song-actions">
-                                <button type="button" class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Title}}', '{{$song.Artist}}')">
-                                    🎵 Aperçu
-                                </button>
-                                <button type="button" class="btn-select" onclick="event.stopPropagation(); selectSong('{{$level}}', {{$index}}, '{{$song.Title}}', '{{$song.Artist}}')">
-                                    Sélectionner
-                                </button>
-                            </div>
-                        </div>
-                        {{end}}
-                    </div>
-                </div>
-            </div>
-            {{end}}
-        </section>
-
-        <section class="songSelect duel-container">
-			<div id="music-player" class="music-player" style="display: none;">
-				<h4 id="current-song-info">Aucune chanson sélectionnée</h4>
-				<div class="audio-controls">
-					<audio id="audio-player" controls style="width: 100%;">
-						Votre navigateur ne supporte pas l'élément audio.
-					</audio>
+			<section class="duel-form">
+				<div class="same-song-section">
+					<button class="same-song-button" onclick="toggleElement('same-song-details')" >
+						🎵C'est La Même Chanson
+					</button>
+					<div id="same-song-details" class="hidden-element song-card" style="max-width: 500px; margin: 0 auto;">
+						<div class="song-info">
+							<div class="song-title">{{.Duel.SameSong.Title}}</div>
+							<div class="song-artist">par {{.Duel.SameSong.Artist}}</div>
+						</div>
+						<div>
+						</div>
+						<div class="lyrics-status">
+							{{if .SameSongLyricsExists}}
+							<span class="lyrics-available">✓ Paroles disponibles</span>
+							{{else}}
+							<span class="lyrics-missing">✗ Paroles non disponibles</span>
+							{{end}}
+						</div>
+					</div>
 				</div>
-				
-			</div>
 
-			<div id="lyrics-container" class="lyrics-container" style="display: none;">
-				<h4>Paroles</h4>
-				<div id="lyrics-text" class="lyrics-text"></div>
-			</div>
-			<div class="actions" id="action-buttons">
-				<button class="startLyricsBtn" class="start-lyrics-button">Demarrer</button>
+				<div class="points-grid">
+					{{range $index, $level := .LevelsOrder}}
+					{{$pointLevel := index $.Duel.Points $level}}
+					<div class="level-wrapper" style="animation-delay: calc({{$index}} * 0.1s);"> 
+					<button class="point-button fade-in-left-normal" onclick="toggleLevelSongs('level-{{$level}}')">
+						<div>{{$level}} Points</div>
+						<div style="font-size: 14px; margin-top: 5px;">{{$pointLevel.Theme}}</div>
+					</button>
 
-				<a class="startLyricsBtn" href="/duel" class="btn btn-secondary">Retour aux duels</a>
-			</div>
-		</section>
+					<div id="level-{{$level}}" class="songs-for-level">
+						<div class="level-section">
+							<div class="level-header">
+								<h3>{{$level}} Points - {{$pointLevel.Theme}}</h3>
+							</div>
+							<div class="level-songs-container">
+								{{range $index, $song := $pointLevel.Songs}}
+								<div class="song-card" onclick="previewSong('{{$song.Title}}', '{{$song.Artist}}')">
+									<div class="song-info">
+										<div class="song-title" style=" color: black">{{$song.Title}}</div>
+										<div class="song-artist" style=" color: black">par {{$song.Artist}}</div>
+									</div>
+									<div class="lyrics-status">
+										{{if index (index $.LyricsExists $level) $index}}
+										<span class="lyrics-available">✓ Paroles disponibles</span>
+										{{else}}
+										<span class="lyrics-missing">✗ Paroles non disponibles</span>
+										{{end}}
+									</div>
+									<div class="song-actions">
+										<button type="button" class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Title}}', '{{$song.Artist}}')">
+											🎵 Aperçu
+										</button>
+										<button type="button" class="btn-select" onclick="event.stopPropagation(); selectSong('{{$level}}', {{$index}}, '{{$song.Title}}', '{{$song.Artist}}')">
+											Sélectionner
+										</button>
+									</div>
+								</div>
+								{{end}}
+							</div>
+						</div>
+					</div>
+					</div>
+					{{end}}
+				</div>
+			</section>
+
+			<section class="songSelect duel-container" style="display: none;" id="song-selection-section">
+				<div id="music-player" class="music-player" style="display: none;">
+					<h4 id="current-song-info">Aucune chanson sélectionnée</h4>
+					<div class="audio-controls">
+						<audio id="audio-player" controls style="width: 100%;">
+							Votre navigateur ne supporte pas l'élément audio.
+						</audio>
+					</div>
+					
+				</div>
+
+				<div id="lyrics-container" class="lyrics-container" style="display: none;">
+					<h4>Paroles</h4>
+					<div id="lyrics-text" class="lyrics-text"></div>
+				</div>
+				<div class="actions" id="action-buttons">
+					<button class="startLyricsBtn" class="start-lyrics-button">Demarrer</button>
+
+					<a class="startLyricsBtn" href="/duel" class="btn btn-secondary">Retour aux duels</a>
+				</div>
+			</section>
 
         
-    </div>
-	</body>
+		</div>
+		</body>
 		</html>`
 
-	t, err := template.New("duel").Parse(tmpl)
+	// Parser le template avec les fonctions helper
+	t, err := template.New("duel").Funcs(funcMap).Parse(tmpl)
 	if err != nil {
 		http.Error(w, "Erreur lors du parsing du template", http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println(">>> 5 Rendu du template pour le duel ID :", selectedDuel.ID)
 
 	if err := t.Execute(w, templateData); err != nil {
 		fmt.Println("Erreur lors de l'exécution du template :", err)
 		http.Error(w, "Erreur lors de l'exécution du template", http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func SelectSongForLevel(w http.ResponseWriter, r *http.Request) {

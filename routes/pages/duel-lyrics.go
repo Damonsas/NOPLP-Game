@@ -29,6 +29,12 @@ type LyricsData struct {
 	Parole  map[string][]string `json:"parole"`
 }
 
+type LyricsFileData struct {
+	Titre   string              `json:"titre"`
+	Artiste string              `json:"artiste"`
+	Parole  map[string][]string `json:"parole"`
+}
+
 type LyricsCheckResponse struct {
 	Exists  bool   `json:"exists"`
 	Content string `json:"content,omitempty"`

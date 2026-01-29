@@ -14,15 +14,201 @@ import (
 
 // généralité : import/ export/ création
 
-func createDirectories() {
-	dirs := []string{duelSaveDataPath, prepDuelDataPath, paroleDataPath}
-	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			fmt.Printf("Erreur lors de la création du dossier %s: %v\n", dir, err)
-		}
+func loadSongMetadataFromLyricsFile(lyricsFileName string) (Titre string, Artiste string, err error) {
+	if lyricsFileName == "" {
+		return "", "", fmt.Errorf("nom de fichier de paroles vide")
 	}
+
+	filePath := filepath.Join(paroleDataPath, lyricsFileName)
+
+	// Vérifier si le fichier existe
+	if _, statErr := os.Stat(filePath); os.IsNotExist(statErr) {
+		// Fallback : parser le nom du fichier
+		return parseLyricsFilename(lyricsFileName)
+	}
+
+	// Lire le fichier JSON
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		// Fallback : parser le nom du fichier
+		return parseLyricsFilename(lyricsFileName)
+	}
+
+	// Parser le JSON
+	var lyricsData LyricsFileData
+	if err := json.Unmarshal(fileContent, &lyricsData); err != nil {
+		// Fallback : parser le nom du fichier
+		return parseLyricsFilename(lyricsFileName)
+	}
+
+	return lyricsData.Titre, lyricsData.Artiste, nil
 }
 
+// Fallback : parser le nom du fichier (ex: "Christophe - Aline.json")
+func parseLyricsFilename(filename string) (title string, artist string, err error) {
+	// Enlever l'extension .json
+	nameWithoutExt := filename
+	if len(filename) > 5 && filename[len(filename)-5:] == ".json" {
+		nameWithoutExt = filename[:len(filename)-5]
+	}
+
+	// Chercher " - " pour séparer artiste et titre
+	separatorIndex := -1
+	for i := 0; i < len(nameWithoutExt)-2; i++ {
+		if nameWithoutExt[i:i+3] == " - " {
+			separatorIndex = i
+			break
+		}
+	}
+
+	if separatorIndex > 0 {
+		artist = nameWithoutExt[:separatorIndex]
+		title = nameWithoutExt[separatorIndex+3:]
+		return title, artist, nil
+	}
+
+	// Si pas de séparateur trouvé
+	return nameWithoutExt, "Artiste inconnu", nil
+}
+
+// Fonction pour compléter les métadonnées d'un duel
+func enrichDuelWithMetadata(duel *Duel) error {
+	// Enrichir les chansons dans chaque niveau de points
+	for levelKey, pointLevel := range duel.Points {
+		for i := range pointLevel.Songs {
+			song := &pointLevel.Songs[i]
+
+			// Si on a un lyricsFile mais pas de title/artist
+			if song.LyricsFile != nil && *song.LyricsFile != "" {
+				if song.Title == "" || song.Artist == "" {
+					title, artist, err := loadSongMetadataFromLyricsFile(*song.LyricsFile)
+					if err == nil {
+						if song.Title == "" {
+							song.Title = title
+						}
+						if song.Artist == "" {
+							song.Artist = artist
+						}
+					}
+				}
+			}
+		}
+		duel.Points[levelKey] = pointLevel
+	}
+
+	// Enrichir sameSong si nécessaire
+	if duel.SameSong.LyricsFile != nil && *duel.SameSong.LyricsFile != "" {
+		if duel.SameSong.Title == "" || duel.SameSong.Artist == "" ||
+			duel.SameSong.Title == "N/A" || duel.SameSong.Artist == "N/A" {
+			title, artist, err := loadSongMetadataFromLyricsFile(*duel.SameSong.LyricsFile)
+			if err == nil {
+				if duel.SameSong.Title == "" || duel.SameSong.Title == "N/A" {
+					duel.SameSong.Title = title
+				}
+				if duel.SameSong.Artist == "" || duel.SameSong.Artist == "N/A" {
+					duel.SameSong.Artist = artist
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// MODIFIER la fonction CreateDuel pour enrichir les métadonnées
+func CreateDuel(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Erreur lors de la lecture du corps de la requête", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println("1 Corps reçu:", string(body))
+
+	var singleDuel Duel
+	if err := json.Unmarshal(body, &singleDuel); err == nil {
+		fmt.Println("2 Duel décodé:", singleDuel)
+
+		// AJOUTER ICI : Enrichir avec les métadonnées
+		if err := enrichDuelWithMetadata(&singleDuel); err != nil {
+			fmt.Println("Avertissement : erreur lors de l'enrichissement des métadonnées:", err)
+		}
+		fmt.Println("2b Duel enrichi:", singleDuel)
+
+		if err := validateDuelForClient(&singleDuel); err != nil {
+			fmt.Println("3 Validation échouée:", err)
+			http.Error(w, fmt.Sprintf("Données de duel invalides: %v", err), http.StatusBadRequest)
+			return
+		}
+
+		updateNextDuelID()
+		if (singleDuel.ID != 0 && isIDTaken(singleDuel.ID)) || singleDuel.ID == 0 {
+			singleDuel.ID = nextDuelID
+			nextDuelID++
+		}
+
+		duels = append(duels, singleDuel)
+		updateNextDuelID()
+		fmt.Println("4 Duel ajouté. ID attribué:", singleDuel.ID)
+
+		if err := saveDuelsToServer(); err != nil {
+			http.Error(w, "Erreur lors de la sauvegarde du fichier", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(singleDuel)
+		return
+	}
+
+	// Gestion du tableau de duels (code existant)
+	var duelsToCreate []Duel
+	if err := json.Unmarshal(body, &duelsToCreate); err != nil {
+		http.Error(w, "Erreur lors du décodage JSON : un duel ou un tableau de duels est attendu.", http.StatusBadRequest)
+		return
+	}
+
+	if len(duelsToCreate) != 1 {
+		http.Error(w, "La création ne peut concerner qu'un seul duel à la fois.", http.StatusBadRequest)
+		return
+	}
+
+	newDuel := duelsToCreate[0]
+
+	// Enrichir avec les métadonnées
+	if err := enrichDuelWithMetadata(&newDuel); err != nil {
+		fmt.Println("Avertissement : erreur lors de l'enrichissement des métadonnées:", err)
+	}
+
+	if err := validateDuel(&newDuel); err != nil {
+		http.Error(w, fmt.Sprintf("Données de duel invalides: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	updateNextDuelID()
+	if (newDuel.ID != 0 && isIDTaken(newDuel.ID)) || newDuel.ID == 0 {
+		newDuel.ID = nextDuelID
+		nextDuelID++
+	}
+
+	duels = append(duels, newDuel)
+	updateNextDuelID()
+
+	if err := saveDuelsToServer(); err != nil {
+		http.Error(w, "Erreur lors de la sauvegarde du fichier", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode([]Duel{newDuel})
+
+	fmt.Println("6 Duel créé avec succès avec l'ID :", newDuel.ID)
+}
+
+// MODIFIER aussi LoadDuelFromJSON pour enrichir les duels importés
 func LoadDuelFromJSON(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		http.Error(w, "Erreur lors de l'analyse du formulaire multipart", http.StatusBadRequest)
@@ -48,6 +234,11 @@ func LoadDuelFromJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Enrichir avec les métadonnées
+	if err := enrichDuelWithMetadata(&loadedDuel); err != nil {
+		fmt.Println("Avertissement : erreur lors de l'enrichissement des métadonnées:", err)
+	}
+
 	if err := validateDuel(&loadedDuel); err != nil {
 		http.Error(w, fmt.Sprintf("Fichier JSON de duel invalide: %v", err), http.StatusBadRequest)
 		return
@@ -66,6 +257,15 @@ func LoadDuelFromJSON(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(loadedDuel)
+}
+
+func createDirectories() {
+	dirs := []string{duelSaveDataPath, prepDuelDataPath, paroleDataPath}
+	for _, dir := range dirs {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			fmt.Printf("Erreur lors de la création du dossier %s: %v\n", dir, err)
+		}
+	}
 }
 
 func updateNextDuelID() {
@@ -92,83 +292,6 @@ func GetDuels(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(duels); err != nil {
 		http.Error(w, "Erreur lors de l'encodage JSON des duels", http.StatusInternalServerError)
 	}
-}
-
-func CreateDuel(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Erreur lors de la lecture du corps de la requête", http.StatusBadRequest)
-		return
-	}
-
-	fmt.Println("Corps reçu:", string(body)) //  LOG 1
-
-	var singleDuel Duel
-	if err := json.Unmarshal(body, &singleDuel); err == nil {
-		fmt.Println(" Duel décodé:", singleDuel) //  LOG 2
-
-		if err := validateDuelForClient(&singleDuel); err != nil {
-			fmt.Println(" Validation échouée:", err) //  LOG 3
-			http.Error(w, fmt.Sprintf("Données de duel invalides: %v", err), http.StatusBadRequest)
-			return
-		}
-
-		updateNextDuelID()
-		if (singleDuel.ID != 0 && isIDTaken(singleDuel.ID)) || singleDuel.ID == 0 {
-			singleDuel.ID = nextDuelID
-			nextDuelID++
-		}
-
-		duels = append(duels, singleDuel)
-		updateNextDuelID()
-
-		if err := saveDuelsToServer(); err != nil {
-			http.Error(w, "Erreur lors de la sauvegarde du fichier", http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(singleDuel)
-		return
-	}
-
-	var duelsToCreate []Duel
-	if err := json.Unmarshal(body, &duelsToCreate); err != nil {
-		http.Error(w, "Erreur lors du décodage JSON : un duel ou un tableau de duels est attendu.", http.StatusBadRequest)
-		return
-	}
-
-	if len(duelsToCreate) != 1 {
-		http.Error(w, "La création ne peut concerner qu'un seul duel à la fois.", http.StatusBadRequest)
-		return
-	}
-
-	newDuel := duelsToCreate[0]
-
-	if err := validateDuel(&newDuel); err != nil {
-		http.Error(w, fmt.Sprintf("Données de duel invalides: %v", err), http.StatusBadRequest)
-		return
-	}
-
-	updateNextDuelID()
-	if (newDuel.ID != 0 && isIDTaken(newDuel.ID)) || newDuel.ID == 0 {
-		newDuel.ID = nextDuelID
-		nextDuelID++
-	}
-
-	duels = append(duels, newDuel)
-	updateNextDuelID()
-
-	if err := saveDuelsToServer(); err != nil {
-		http.Error(w, "Erreur lors de la sauvegarde du fichier", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	json.NewEncoder(w).Encode([]Duel{newDuel})
 }
 
 func GetDuelByID(w http.ResponseWriter, r *http.Request) {

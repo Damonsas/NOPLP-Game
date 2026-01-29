@@ -73,6 +73,32 @@
   transform: translateX(0);
 }
 
+.points-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.points-grid .level-wrapper {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease forwards;
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.points-grid .level-wrapper .songs-for-level {
+  display: none;
+}
+.points-grid .level-wrapper .songs-for-level .active {
+  display: block;
+}
+
 body .duelContainer {
   display: flex;
   flex-direction: column;

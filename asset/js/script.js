@@ -24,5 +24,15 @@ document.onclick = (e) => {
     }
 };
 
+window.toggleLevelSongs = (levelId) => {
+    const target = document.getElementById(levelId);
+    if (!target) return;
+    const isVisible = target.style.display === 'block';
+    document.querySelectorAll('.songs-for-level').forEach(div => {
+        div.style.display = 'none';
+    });
+    target.style.display = isVisible ? 'none' : 'block';
+};
 
 window.toggleElement = toggleElement;
+window.toggleLevelSongs = toggleLevelSongs;
