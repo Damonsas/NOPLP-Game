@@ -80,7 +80,7 @@
 }
 .points-grid .level-wrapper {
   opacity: 0;
-  animation: fadeInUp 0.5s ease forwards;
+  animation: fadeInUp 1s ease forwards;
 }
 @keyframes fadeInUp {
   from {
@@ -266,20 +266,6 @@ body .songSelect {
 .actions a {
   text-decoration: none;
   color: #fff;
-}
-
-@keyframes fade-in-left-normal {
-  0% {
-    transform: translateX(-50px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-.fade-in-left-normal {
-  animation: fade-in-left-normal 1s ease 0s 1 normal none;
 }
 
 .solo-container {

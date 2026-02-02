@@ -19,34 +19,29 @@ func loadSongMetadataFromLyricsFile(lyricsFileName string) (Titre string, Artist
 		return "", "", fmt.Errorf("nom de fichier de paroles vide")
 	}
 
-	filePath := filepath.Join(paroleDataPath, lyricsFileName)
+	path := filepath.Join(paroleDataPath, lyricsFileName)
+	absPath, _ := filepath.Abs(path)
 
-	// Vérifier si le fichier existe
-	if _, statErr := os.Stat(filePath); os.IsNotExist(statErr) {
-		// Fallback : parser le nom du fichier
+	if _, statErr := os.Stat(absPath); os.IsNotExist(statErr) {
 		return parseLyricsFilename(lyricsFileName)
 	}
 
 	// Lire le fichier JSON
-	fileContent, err := os.ReadFile(filePath)
+	fileContent, err := os.ReadFile(absPath)
 	if err != nil {
-		// Fallback : parser le nom du fichier
 		return parseLyricsFilename(lyricsFileName)
 	}
 
 	// Parser le JSON
 	var lyricsData LyricsFileData
 	if err := json.Unmarshal(fileContent, &lyricsData); err != nil {
-		// Fallback : parser le nom du fichier
 		return parseLyricsFilename(lyricsFileName)
 	}
 
 	return lyricsData.Titre, lyricsData.Artiste, nil
 }
 
-// Fallback : parser le nom du fichier (ex: "Christophe - Aline.json")
-func parseLyricsFilename(filename string) (title string, artist string, err error) {
-	// Enlever l'extension .json
+func parseLyricsFilename(filename string) (Titre string, Artiste string, err error) {
 	nameWithoutExt := filename
 	if len(filename) > 5 && filename[len(filename)-5:] == ".json" {
 		nameWithoutExt = filename[:len(filename)-5]
@@ -62,9 +57,9 @@ func parseLyricsFilename(filename string) (title string, artist string, err erro
 	}
 
 	if separatorIndex > 0 {
-		artist = nameWithoutExt[:separatorIndex]
-		title = nameWithoutExt[separatorIndex+3:]
-		return title, artist, nil
+		Artiste = nameWithoutExt[:separatorIndex]
+		Titre = nameWithoutExt[separatorIndex+3:]
+		return Titre, Artiste, nil
 	}
 
 	// Si pas de séparateur trouvé
@@ -80,14 +75,14 @@ func enrichDuelWithMetadata(duel *Duel) error {
 
 			// Si on a un lyricsFile mais pas de title/artist
 			if song.LyricsFile != nil && *song.LyricsFile != "" {
-				if song.Title == "" || song.Artist == "" {
+				if song.Titre == "" || song.Artiste == "" {
 					title, artist, err := loadSongMetadataFromLyricsFile(*song.LyricsFile)
 					if err == nil {
-						if song.Title == "" {
-							song.Title = title
+						if song.Titre == "" {
+							song.Titre = title
 						}
-						if song.Artist == "" {
-							song.Artist = artist
+						if song.Artiste == "" {
+							song.Artiste = artist
 						}
 					}
 				}
@@ -98,15 +93,15 @@ func enrichDuelWithMetadata(duel *Duel) error {
 
 	// Enrichir sameSong si nécessaire
 	if duel.SameSong.LyricsFile != nil && *duel.SameSong.LyricsFile != "" {
-		if duel.SameSong.Title == "" || duel.SameSong.Artist == "" ||
-			duel.SameSong.Title == "N/A" || duel.SameSong.Artist == "N/A" {
+		if duel.SameSong.Titre == "" || duel.SameSong.Artiste == "" ||
+			duel.SameSong.Titre == "N/A" || duel.SameSong.Artiste == "N/A" {
 			title, artist, err := loadSongMetadataFromLyricsFile(*duel.SameSong.LyricsFile)
 			if err == nil {
-				if duel.SameSong.Title == "" || duel.SameSong.Title == "N/A" {
-					duel.SameSong.Title = title
+				if duel.SameSong.Titre == "" || duel.SameSong.Titre == "N/A" {
+					duel.SameSong.Titre = title
 				}
-				if duel.SameSong.Artist == "" || duel.SameSong.Artist == "N/A" {
-					duel.SameSong.Artist = artist
+				if duel.SameSong.Artiste == "" || duel.SameSong.Artiste == "N/A" {
+					duel.SameSong.Artiste = artist
 				}
 			}
 		}
@@ -122,18 +117,13 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erreur lors de la lecture du corps de la requête", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println("1 Corps reçu:", string(body))
-
 	var singleDuel Duel
 	if err := json.Unmarshal(body, &singleDuel); err == nil {
-		fmt.Println("2 Duel décodé:", singleDuel)
 
 		// AJOUTER ICI : Enrichir avec les métadonnées
 		if err := enrichDuelWithMetadata(&singleDuel); err != nil {
 			fmt.Println("Avertissement : erreur lors de l'enrichissement des métadonnées:", err)
 		}
-		fmt.Println("2b Duel enrichi:", singleDuel)
 
 		if err := validateDuelForClient(&singleDuel); err != nil {
 			fmt.Println("3 Validation échouée:", err)
@@ -149,7 +139,6 @@ func CreateDuel(w http.ResponseWriter, r *http.Request) {
 
 		duels = append(duels, singleDuel)
 		updateNextDuelID()
-		fmt.Println("4 Duel ajouté. ID attribué:", singleDuel.ID)
 
 		if err := saveDuelsToServer(); err != nil {
 			http.Error(w, "Erreur lors de la sauvegarde du fichier", http.StatusInternalServerError)
@@ -547,19 +536,19 @@ func validateDuel(duel *Duel) error {
 		}
 
 		for i, song := range pointLevel.Songs {
-			if song.Title == "" {
+			if song.Titre == "" {
 				return fmt.Errorf("le titre de la chanson %d pour %s points est requis", i+1, level)
 			}
-			if song.Artist == "" {
+			if song.Artiste == "" {
 				return fmt.Errorf("l'artiste de la chanson %d pour %s points est requis", i+1, level)
 			}
 		}
 	}
 
-	if duel.SameSong.Title == "" {
+	if duel.SameSong.Titre == "" {
 		return fmt.Errorf("le titre de 'La Même Chanson' est requis")
 	}
-	if duel.SameSong.Artist == "" {
+	if duel.SameSong.Artiste == "" {
 		return fmt.Errorf("l'artiste de 'La Même Chanson' est requis")
 	}
 

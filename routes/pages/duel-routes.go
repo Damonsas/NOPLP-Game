@@ -5,6 +5,7 @@ import (
 )
 
 func SetupDuelRoutes(r *mux.Router) {
+
 	r.HandleFunc("/duel", DuelMaestroChallenger).Methods("GET")
 
 	r.HandleFunc("/api/duels", GetDuels).Methods("GET")
@@ -18,9 +19,11 @@ func SetupDuelRoutes(r *mux.Router) {
 
 	r.HandleFunc("/duel-game", CreateGameSession).Methods("GET")
 
+	//r.HandleFunc("/api/lyrics-data/{level}/{songIndex}", GetLyricsData).Methods("GET")
+
 	r.HandleFunc("/api/game-sessions", StartGameSession).Methods("POST")
 	r.HandleFunc("/api/game-sessions/{id}", GetGameSession).Methods("GET")
 
-	r.HandleFunc("/api/game-sessions/{id}/lyrics-visibility", HandleLyricsVisibility).Methods("POST")
+	//r.HandleFunc("/api/game-sessions/{id}/lyrics-visibility", HandleLyricsVisibility).Methods("POST")
 
 }

@@ -21,7 +21,7 @@ func DuelMaestroChallenger(w http.ResponseWriter, r *http.Request) {
 
 func StartGameSession(w http.ResponseWriter, r *http.Request) {
 	var request struct {
-		DuelID int `json:"duelId"` /// le potentiel pb
+		DuelID int `json:"duelId"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -134,11 +134,24 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 		templateData.LyricsExists[level] = make(map[int]bool)
 		if pointLevel, exists := selectedDuel.Points[level]; exists {
 			for i, song := range pointLevel.Songs {
-				if song.LyricsFile != nil && *song.LyricsFile != "" {
-					filePath := filepath.Join(paroleDataPath, *song.LyricsFile)
-					if _, err := os.Stat(filePath); err == nil {
-						templateData.LyricsExists[level][i] = true
-					}
+				path := filepath.Join(paroleDataPath, *song.LyricsFile)
+				absPath, _ := filepath.Abs(path)
+				wd, _ := os.Getwd()
+				_, err := os.Stat(path)
+
+				fmt.Printf("Dossier d'exécution (WD) : %s\n", wd)
+				fmt.Printf("Chemin construit : %s\n", path)
+				fmt.Printf("Chemin absolu voulu : %s\n", absPath)
+				if err != nil {
+					fmt.Printf("ERREUR : %v\n", err)
+				} else {
+					fmt.Printf("SUCCÈS : Fichier trouvé ! ✅\n")
+				}
+				fmt.Printf("---------------------------\n")
+				if _, err := os.Stat(path); err == nil {
+					templateData.LyricsExists[level][i] = true
+				} else {
+					fmt.Printf("Erreur Stat: %v\n", err) // VOIR L'ERREUR REELLE (ex: path incorrect)
 				}
 			}
 		}
@@ -215,8 +228,8 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 					</button>
 					<div id="same-song-details" class="hidden-element song-card" style="max-width: 500px; margin: 0 auto;">
 						<div class="song-info">
-							<div class="song-title">{{.Duel.SameSong.Title}}</div>
-							<div class="song-artist">par {{.Duel.SameSong.Artist}}</div>
+							<div class="song-titre">{{.Duel.SameSong.Titre}}</div>
+							<div class="song-artiste">par {{.Duel.SameSong.Artiste}}</div>
 						</div>
 						<div>
 						</div>
@@ -246,10 +259,10 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 							</div>
 							<div class="level-songs-container">
 								{{range $index, $song := $pointLevel.Songs}}
-								<div class="song-card" onclick="previewSong('{{$song.Title}}', '{{$song.Artist}}')">
+								<div class="song-card" onclick="previewSong('{{$song.Titre}}', '{{$song.Artiste}}')">
 									<div class="song-info">
-										<div class="song-title" style=" color: black">{{$song.Title}}</div>
-										<div class="song-artist" style=" color: black">par {{$song.Artist}}</div>
+										<div class="song-titre" style=" color: black">{{$song.Titre}}</div>
+										<div class="song-artiste" style=" color: black">par {{$song.Artiste}}</div>
 									</div>
 									<div class="lyrics-status">
 										{{if index (index $.LyricsExists $level) $index}}
@@ -259,10 +272,10 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 										{{end}}
 									</div>
 									<div class="song-actions">
-										<button type="button" class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Title}}', '{{$song.Artist}}')">
+										<button type="button" class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Titre}}', '{{$song.Artiste}}')">
 											🎵 Aperçu
 										</button>
-										<button type="button" class="btn-select" onclick="event.stopPropagation(); selectSong('{{$level}}', {{$index}}, '{{$song.Title}}', '{{$song.Artist}}')">
+										<button type="button" class="btn-select" onclick="event.stopPropagation(); selectSong('{{$level}}', {{$index}}, '{{$song.Titre}}', '{{$song.Artiste}}')">
 											Sélectionner
 										</button>
 									</div>
@@ -303,7 +316,6 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 		</body>
 		</html>`
 
-	// Parser le template avec les fonctions helper
 	t, err := template.New("duel").Funcs(funcMap).Parse(tmpl)
 	if err != nil {
 		http.Error(w, "Erreur lors du parsing du template", http.StatusInternalServerError)

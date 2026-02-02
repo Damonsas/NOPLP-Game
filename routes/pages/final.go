@@ -64,8 +64,8 @@ func GetLyricsFinal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lyricsData = LyricsData{
-		Titre:   song.Title,
-		Artiste: song.Artist,
+		Titre:   song.Titre,
+		Artiste: song.Artiste,
 		Parole:  map[string][]string{"default": {"Paroles non disponibles"}},
 	}
 

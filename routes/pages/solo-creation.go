@@ -357,19 +357,19 @@ func validateSolo(duel *Duel) error {
 		}
 
 		for i, song := range pointLevel.Songs {
-			if song.Title == "" {
+			if song.Titre == "" {
 				return fmt.Errorf("le titre de la chanson %d pour %s points est requis", i+1, level)
 			}
-			if song.Artist == "" {
+			if song.Artiste == "" {
 				return fmt.Errorf("l'artiste de la chanson %d pour %s points est requis", i+1, level)
 			}
 		}
 	}
 
-	if duel.SameSong.Title == "" {
+	if duel.SameSong.Titre == "" {
 		return fmt.Errorf("le titre de 'La Même Chanson' est requis")
 	}
-	if duel.SameSong.Artist == "" {
+	if duel.SameSong.Artiste == "" {
 		return fmt.Errorf("l'artiste de 'La Même Chanson' est requis")
 	}
 

@@ -28,8 +28,10 @@ def texte_en_json(texte):
         "paroles": paroles
     }
 
+    ## format du truc : couplet1 sans : 
+
 # Nom du fichier à convertir
-nom_fichier_txt = os.path.join(os.path.dirname(__file__), "Dalida - Laissez moi danser.txt")
+nom_fichier_txt = os.path.join(os.path.dirname(__file__), "Clair Obscur - Lumière.txt")
 if not os.path.exists(nom_fichier_txt):
     print(f"Le fichier {nom_fichier_txt} n'existe pas dans ce dossier.")
 else:
@@ -38,7 +40,7 @@ else:
 
     json_data = texte_en_json(texte)
 
-    nom_fichier_json = os.path.join(os.path.dirname(__file__), "Dalida - Laissez moi danser.json")
+    nom_fichier_json = os.path.join(os.path.dirname(__file__), "Clair Obscur - Lumière.json")
     with open(nom_fichier_json, "w", encoding="utf-8") as f:
         json.dump(json_data, f, ensure_ascii=False, indent=2)
 

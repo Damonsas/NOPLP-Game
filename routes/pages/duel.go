@@ -8,8 +8,8 @@ import (
 )
 
 type Song struct {
-	Title      string  `json:"title"`
-	Artist     string  `json:"artist"`
+	Titre      string  `json:"titre"`
+	Artiste    string  `json:"artiste"`
 	LyricsFile *string `json:"lyricsFile,omitempty"`
 }
 
@@ -48,7 +48,7 @@ var nextDuelID int = 1
 const (
 	duelSaveDataPath = "/data/serverdata/duelsavedata"
 	prepDuelDataPath = "/data/serverdata/prepdueldata"
-	paroleDataPath   = "/data/serverdata/paroledata"
+	paroleDataPath   = "data/paroledata"
 	contentType      = "content-Type"
 	jsonType         = "application/json"
 )

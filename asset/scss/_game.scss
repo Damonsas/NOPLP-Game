@@ -160,8 +160,3 @@ body {
         }
     }
 
-  @keyframes fade-in-left-normal {0% { transform: translateX(-50px); opacity: 0; } 100% { transform: translateX(0); opacity: 1;} }
-
-.fade-in-left-normal { 
-    animation: fade-in-left-normal 1s ease 0s 1 normal none; 
-}

@@ -1,23 +1,18 @@
 [
   {
-    "titre": "Moi... Lolita",
-    "artiste": "Alizee",
-    "ligne": "Alizee - Moi... Lolita"
-  },
-  {
-    "titre": "Balance ton quoi",
-    "artiste": "Angèle",
-    "ligne": "Angèle - Balance ton quoi"
-  },
-  {
-    "titre": "La Bohème",
-    "artiste": "Charles Aznavour",
-    "ligne": "Charles Aznavour - La Bohème"
+    "titre": "Moi Lolita",
+    "artiste": "Alizé",
+    "ligne": "Alizé - Moi Lolita"
   },
   {
     "titre": "Ma philosophie",
     "artiste": "Amel Bent",
     "ligne": "Amel Bent - Ma philosophie"
+  },
+  {
+    "titre": "Balance ton quoi",
+    "artiste": "Angèle",
+    "ligne": "Angèle - Balance ton quoi"
   },
   {
     "titre": "Face à la mer",
@@ -30,14 +25,24 @@
     "ligne": "Calogéro - Pomme C"
   },
   {
+    "titre": "La Bohème",
+    "artiste": "Charles Aznavour",
+    "ligne": "Charles Aznavour - La Bohème"
+  },
+  {
     "titre": "Aline",
     "artiste": "Christophe",
     "ligne": "Christophe - Aline"
   },
   {
+    "titre": "Lumière",
+    "artiste": "Clair Obscur",
+    "ligne": "Clair Obscur - Lumière"
+  },
+  {
     "titre": "Golden baby",
-    "artiste": "Cœur de pirate",
-    "ligne": "Cœur de pirate - Golden baby"
+    "artiste": "Coeur de pirate",
+    "ligne": "Coeur de pirate - Golden baby"
   },
   {
     "titre": "Laissez moi danser",
@@ -45,13 +50,18 @@
     "ligne": "Dalida - Laissez moi danser"
   },
   {
+    "titre": "Envole Moi",
+    "artiste": "Goldman",
+    "ligne": "Goldman - Envole Moi"
+  },
+  {
     "titre": "Désenchantée",
     "artiste": "Mylene Farmer",
     "ligne": "Mylene Farmer - Désenchantée"
   },
   {
-    "titre": "Envole Moi",
-    "artiste": "Goldman",
-    "ligne": "Goldman - Envole Moi"
+    "titre": "De le dire",
+    "artiste": "Spore",
+    "ligne": "Spore - De le dire"
   }
 ]
