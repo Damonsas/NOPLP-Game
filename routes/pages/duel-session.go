@@ -182,7 +182,6 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// TEMPLATE CORRIGÉ avec gestion des champs optionnels
 	tmpl := `
 		<!DOCTYPE html>
 		<html lang="fr">
@@ -202,6 +201,7 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
     		<script defer type="module" src="/asset/js/gameform.js"></script>
     		<script defer type="module" src="/asset/js/gamelogic.js"></script>
     		<script defer type="module" src="/asset/js/gamenotification.js"></script>
+			<script defer type="module" src="/asset/js/gamedisplay.js"></script>
 
 		</head>
 		<body>

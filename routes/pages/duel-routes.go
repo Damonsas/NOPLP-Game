@@ -22,7 +22,7 @@ func SetupDuelRoutes(r *mux.Router) {
 	//r.HandleFunc("/api/lyrics-data/{level}/{songIndex}", GetLyricsData).Methods("GET")
 
 	r.HandleFunc("/api/game-sessions", StartGameSession).Methods("POST")
-	r.HandleFunc("/api/game-sessions/{id}", GetGameSession).Methods("GET")
+	r.HandleFunc("/api/game-sessions/{session}", GetGameSession).Methods("GET")
 
 	//r.HandleFunc("/api/game-sessions/{id}/lyrics-visibility", HandleLyricsVisibility).Methods("POST")
 

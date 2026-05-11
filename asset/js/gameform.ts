@@ -174,7 +174,7 @@ function generateSongSelectionHtml(points: number, lyricsFiles: string[]): strin
     return `
       <label>Chanson:</label>
       <select name="song1-${points}" required>
-        <option style="color: black " value="">Sélectionner une musique</option>
+        <option style="color: black " value="">Sélectionner une chanson</option>
         ${songOptions}
 
       </select>
@@ -183,12 +183,12 @@ function generateSongSelectionHtml(points: number, lyricsFiles: string[]): strin
     return `
       <label>Chanson 1:</label>
       <select name="song1-${points}" required>
-        <option style="color: black value="">Sélectionner une musique</option>
+        <option style="color: black value="">Sélectionner une chanson</option>
         ${songOptions}
       </select>
       <label>Chanson 2:</label>
       <select name="song2-${points}" required>
-        <option style="color: black value="" >Sélectionner une musique</option>
+        <option style="color: black value="" >Sélectionner une chanson</option>
         ${songOptions}
 
       </select>
@@ -244,7 +244,7 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
 
   let formHtml = `
     <div class="form-container">
-      <h2 style="color: red;">Choisissez vos musiques</h2>
+      <h2 style="color: red;">Choisissez vos chansons</h2>
       <button id="back-to-list-btn" type="button">← Retour à la liste</button>
       <form id="newDuelForm">
         <h3>Créer une nouvelle grille de ${modeText}</h3>
