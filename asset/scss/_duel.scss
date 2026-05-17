@@ -1,4 +1,4 @@
-@import 'mixins';
+@use 'mixins' as *;
 
 .point-section {
     visibility: hidden;

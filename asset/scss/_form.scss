@@ -1,4 +1,4 @@
-@import "mixins";
+@use "mixins" as *;
 
 .form-container {
     background: linear-gradient( #3675ff,#4c64ff, #13007f );

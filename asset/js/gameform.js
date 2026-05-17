@@ -81,7 +81,7 @@ function isSoloMode() {
  * @returns La chaîne HTML de la carte.
  */
 function generateDuelCard(duel) {
-    const themes = DUEL_POINTS_CATEGORIES.map(p => { var _a; return ((_a = duel.points[p.toString()]) === null || _a === void 0 ? void 0 : _a.theme); }).filter(t => t).join(', ');
+    const themes = DUEL_POINTS_CATEGORIES.map(p => { var _a; return (_a = duel.points[String(p)]) === null || _a === void 0 ? void 0 : _a.theme; }).filter(t => t).join(', ');
     const currentMode = isSoloMode();
     const playUrl = currentMode
         ? `/solo?id=${duel.id}`
@@ -165,7 +165,7 @@ function generateSongSelectionHtml(points, lyricsFiles) {
         return `
       <label>Chanson:</label>
       <select name="song1-${points}" required>
-        <option style="color: black " value="">Sélectionner une musique</option>
+        <option style="color: black " value="">Sélectionner une chanson</option>
         ${songOptions}
 
       </select>
@@ -175,12 +175,12 @@ function generateSongSelectionHtml(points, lyricsFiles) {
         return `
       <label>Chanson 1:</label>
       <select name="song1-${points}" required>
-        <option style="color: black value="">Sélectionner une musique</option>
+        <option style="color: black value="">Sélectionner une chanson</option>
         ${songOptions}
       </select>
       <label>Chanson 2:</label>
       <select name="song2-${points}" required>
-        <option style="color: black value="" >Sélectionner une musique</option>
+        <option style="color: black value="" >Sélectionner une chanson</option>
         ${songOptions}
 
       </select>
@@ -226,7 +226,7 @@ function renderCreateDuelForm(lyricsFiles) {
     const modeText = soloMode ? 'solo' : 'duel';
     let formHtml = `
     <div class="form-container">
-      <h2 style="color: red;">Choisissez vos musiques</h2>
+      <h2 style="color: red;">Choisissez vos chansons</h2>
       <button id="back-to-list-btn" type="button">← Retour à la liste</button>
       <form id="newDuelForm">
         <h3>Créer une nouvelle grille de ${modeText}</h3>
@@ -256,8 +256,9 @@ function handleNewDuelFormSubmit(event) {
         event.preventDefault();
         const form = event.target;
         const formData = new FormData(form);
-        const duelData = {};
+        const duelData = { points: {} };
         const soloMode = isSoloMode();
+        const duelPoints = duelData.points;
         for (const [key, value] of formData) {
             const parts = key.split('-');
             const fieldName = parts[0];
@@ -266,25 +267,23 @@ function handleNewDuelFormSubmit(event) {
                 duelData.name = value;
             }
             else if (points) {
-                if (!duelData.points) {
-                    duelData.points = {};
-                }
-                if (!duelData.points[points]) {
-                    duelData.points[points] = {};
+                const pointsKey = points;
+                if (!duelPoints[pointsKey]) {
+                    duelPoints[pointsKey] = {};
                 }
                 if (fieldName === 'theme') {
-                    duelData.points[points].theme = value;
+                    duelPoints[pointsKey].theme = value;
                 }
                 else if (fieldName.startsWith('song')) {
                     const songIndex = fieldName === 'song1' ? 0 : 1;
-                    if (!duelData.points[points].songs) {
-                        duelData.points[points].songs = soloMode ? [{}] : [{}, {}];
+                    if (!duelPoints[pointsKey].songs) {
+                        duelPoints[pointsKey].songs = soloMode ? [{}] : [{}, {}];
                     }
                     if (soloMode && songIndex === 0) {
-                        duelData.points[points].songs[0] = { lyricsFile: value };
+                        duelPoints[pointsKey].songs[0] = { lyricsFile: value };
                     }
                     else if (!soloMode) {
-                        duelData.points[points].songs[songIndex] = { lyricsFile: value };
+                        duelPoints[pointsKey].songs[songIndex] = { lyricsFile: value };
                     }
                 }
             }

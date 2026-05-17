@@ -77,7 +77,7 @@ function isSoloMode(): boolean {
  * @returns La chaîne HTML de la carte.
  */
 function generateDuelCard(duel: Duel): string {
-  const themes = DUEL_POINTS_CATEGORIES.map(p => (duel.points[p.toString()]?.theme)).filter(t => t).join(', ');
+  const themes = DUEL_POINTS_CATEGORIES.map(p => duel.points[String(p) as keyof typeof duel.points]?.theme).filter(t => t).join(', ');
   const currentMode = isSoloMode();
   
   
@@ -278,8 +278,9 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
 
-    const duelData: Partial<Duel> = {};
+    const duelData: Partial<Duel> = { points: {} as Duel['points'] };
     const soloMode = isSoloMode();
+    const duelPoints = duelData.points as Duel['points'];
 
     for (const [key, value] of formData as any) {
         const parts = key.split('-');
@@ -289,23 +290,21 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
         if (fieldName === 'duelName') {
             duelData.name = value as string;
         } else if (points) {
-            if (!duelData.points) {
-                duelData.points = {} as any;
-            }
-            if (!duelData.points[points]) {
-                duelData.points[points] = {} as any;
+            const pointsKey = points as keyof Duel['points'];
+            if (!(duelPoints[pointsKey] as any)) {
+                duelPoints[pointsKey] = {} as any;
             }
             if (fieldName === 'theme') {
-                (duelData.points[points] as any).theme = value as string;
+                (duelPoints[pointsKey] as any).theme = value as string;
             } else if (fieldName.startsWith('song')) {
                 const songIndex = fieldName === 'song1' ? 0 : 1;
-                if (!(duelData.points[points] as any).songs) {
-                    (duelData.points[points] as any).songs = soloMode ? [{}] : [{}, {}];
+                if (!(duelPoints[pointsKey] as any).songs) {
+                    (duelPoints[pointsKey] as any).songs = soloMode ? [{}] : [{}, {}];
                 }
                 if (soloMode && songIndex === 0) {
-                    (duelData.points[points] as any).songs[0] = { lyricsFile: value as string } as any;
+                    (duelPoints[pointsKey] as any).songs[0] = { lyricsFile: value as string } as any;
                 } else if (!soloMode) {
-                    (duelData.points[points] as any).songs[songIndex] = { lyricsFile: value as string } as any;
+                    (duelPoints[pointsKey] as any).songs[songIndex] = { lyricsFile: value as string } as any;
                 }
             }
         }

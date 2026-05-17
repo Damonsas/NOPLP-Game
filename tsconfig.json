@@ -3,6 +3,7 @@
     "target": "ES6",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
+    "rootDir": "./asset/js",
     "outDir": "./asset/js/"
   },
   "include": [

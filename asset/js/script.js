@@ -24,6 +24,17 @@ document.onclick = (e) => {
     }
 };
 
+window.displaySongSelection = (selectionId) => {
+    const target = document.getElementById(selectionId);
+    if (!target) return;
+
+    document.querySelectorAll('.songSelect').forEach(section => {
+        section.style.display = 'none';
+    });
+
+    target.style.display = 'block';
+};
+
 window.toggleLevelSongs = (levelId) => {
     const target = document.getElementById(levelId);
     if (!target) return;
@@ -36,3 +47,4 @@ window.toggleLevelSongs = (levelId) => {
 
 window.toggleElement = toggleElement;
 window.toggleLevelSongs = toggleLevelSongs;
+window.displaySongSelection = displaySongSelection;

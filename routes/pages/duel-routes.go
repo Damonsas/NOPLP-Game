@@ -19,11 +19,10 @@ func SetupDuelRoutes(r *mux.Router) {
 
 	r.HandleFunc("/duel-game", CreateGameSession).Methods("GET")
 
-	//r.HandleFunc("/api/lyrics-data/{level}/{songIndex}", GetLyricsData).Methods("GET")
+	r.HandleFunc("/api/lyrics/{filename}", GetLyricsFileHandler).Methods("GET")
+	r.HandleFunc("/api/lyrics-visibility/{filename}", HandleLyricsVisibility).Methods("GET")
 
 	r.HandleFunc("/api/game-sessions", StartGameSession).Methods("POST")
 	r.HandleFunc("/api/game-sessions/{session}", GetGameSession).Methods("GET")
-
-	//r.HandleFunc("/api/game-sessions/{id}/lyrics-visibility", HandleLyricsVisibility).Methods("POST")
 
 }

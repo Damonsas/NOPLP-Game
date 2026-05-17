@@ -51,4 +51,16 @@ func DuelpageHandler(w http.ResponseWriter, r *http.Request) {
 func SoloHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s", r.Method, r.URL.Path)
 	http.ServeFile(w, r, "routes/pages/solo.html")
+
+	data := game.ChallengernameData{}
+	cname := r.FormValue("cname")
+	data.Cname = cname
+
+	if cname != "" {
+		data.Message1 = data.Cname
+
+	} else {
+		data.Message1 = "Challenger"
+	}
+
 }

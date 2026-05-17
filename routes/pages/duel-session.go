@@ -82,41 +82,86 @@ func GetGameSession(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func CreateGameSession(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(">>> Requête reçue pour /duel-game, traitement par DisplayDuel...")
-
+func getDuelIDFromQuery(w http.ResponseWriter, r *http.Request) (int, bool) {
 	duelID := r.URL.Query().Get("id")
 	if duelID == "" {
 		http.Error(w, "ID de duel manquant dans les paramètres de la requête", http.StatusBadRequest)
-		return
+		return 0, false
 	}
 
 	id, err := strconv.Atoi(duelID)
 	if err != nil {
 		http.Error(w, "ID de duel invalide", http.StatusBadRequest)
+		return 0, false
+	}
+
+	return id, true
+}
+
+func findDuelByID(id int) *Duel {
+	for i := range duels {
+		if duels[i].ID == id {
+			return &duels[i]
+		}
+	}
+	return nil
+}
+
+func lyricsFileExists(file *string) bool {
+	if file == nil || *file == "" {
+		return false
+	}
+	filePath := filepath.Join(paroleDataPath, *file)
+	_, err := os.Stat(filePath)
+	return err == nil
+}
+
+func buildLyricsExistsMap(selectedDuel *Duel) map[string]map[int]bool {
+	lyricsExists := make(map[string]map[int]bool)
+	for _, level := range []string{"50", "40", "30", "20", "10"} {
+		lyricsExists[level] = make(map[int]bool)
+		pointLevel, exists := selectedDuel.Points[level]
+		if !exists {
+			continue
+		}
+		for i, song := range pointLevel.Songs {
+			if lyricsFileExists(song.LyricsFile) {
+				lyricsExists[level][i] = true
+			}
+		}
+	}
+	return lyricsExists
+}
+
+func handleGameSessionAction(w http.ResponseWriter, r *http.Request, id int) bool {
+	action := r.FormValue("action")
+	switch action {
+	case "start_session":
+		http.Redirect(w, r, fmt.Sprintf("/duel-game?duelId=%d", id), http.StatusSeeOther)
+		return true
+	case "export":
+		http.Redirect(w, r, fmt.Sprintf("/api/export-duel-server/%d", id), http.StatusSeeOther)
+		return true
+	default:
+		return false
+	}
+}
+
+func CreateGameSession(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(">>> Requête reçue pour /duel-game, traitement par DisplayDuel...")
+
+	id, ok := getDuelIDFromQuery(w, r)
+	if !ok {
 		return
 	}
 
-	var selectedDuel *Duel
-	for i := range duels {
-		if duels[i].ID == id {
-			selectedDuel = &duels[i]
-			break
-		}
-	}
-
+	selectedDuel := findDuelByID(id)
 	if selectedDuel == nil {
 		http.Error(w, "Duel non trouvé", http.StatusNotFound)
 		return
 	}
 
-	sameSongLyricsExists := false
-	if selectedDuel.SameSong.LyricsFile != nil && *selectedDuel.SameSong.LyricsFile != "" {
-		filePath := filepath.Join(paroleDataPath, *selectedDuel.SameSong.LyricsFile)
-		if _, err := os.Stat(filePath); err == nil {
-			sameSongLyricsExists = true
-		}
-	}
+	sameSongLyricsExists := lyricsFileExists(selectedDuel.SameSong.LyricsFile)
 
 	templateData := struct {
 		Duel                 *Duel
@@ -126,45 +171,12 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 	}{
 		Duel:                 selectedDuel,
 		LevelsOrder:          []string{"50", "40", "30", "20", "10"},
-		LyricsExists:         make(map[string]map[int]bool),
+		LyricsExists:         buildLyricsExistsMap(selectedDuel),
 		SameSongLyricsExists: sameSongLyricsExists,
 	}
 
-	for _, level := range templateData.LevelsOrder {
-		templateData.LyricsExists[level] = make(map[int]bool)
-		if pointLevel, exists := selectedDuel.Points[level]; exists {
-			for i, song := range pointLevel.Songs {
-				path := filepath.Join(paroleDataPath, *song.LyricsFile)
-				absPath, _ := filepath.Abs(path)
-				wd, _ := os.Getwd()
-				_, err := os.Stat(path)
-
-				fmt.Printf("Dossier d'exécution (WD) : %s\n", wd)
-				fmt.Printf("Chemin construit : %s\n", path)
-				fmt.Printf("Chemin absolu voulu : %s\n", absPath)
-				if err != nil {
-					fmt.Printf("ERREUR : %v\n", err)
-				} else {
-					fmt.Printf("SUCCÈS : Fichier trouvé ! ✅\n")
-				}
-				fmt.Printf("---------------------------\n")
-				if _, err := os.Stat(path); err == nil {
-					templateData.LyricsExists[level][i] = true
-				} else {
-					fmt.Printf("Erreur Stat: %v\n", err) // VOIR L'ERREUR REELLE (ex: path incorrect)
-				}
-			}
-		}
-	}
-
 	if r.Method == http.MethodGet {
-		action := r.FormValue("action")
-		switch action {
-		case "start_session":
-			http.Redirect(w, r, fmt.Sprintf("/duel-game?duelId=%d", id), http.StatusSeeOther)
-			return
-		case "export":
-			http.Redirect(w, r, fmt.Sprintf("/api/export-duel-server/%d", id), http.StatusSeeOther)
+		if handleGameSessionAction(w, r, id) {
 			return
 		}
 	}
@@ -275,9 +287,31 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 										<button type="button" class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Titre}}', '{{$song.Artiste}}')">
 											🎵 Aperçu
 										</button>
-										<button type="button" class="btn-select" onclick="event.stopPropagation(); selectSong('{{$level}}', {{$index}}, '{{$song.Titre}}', '{{$song.Artiste}}')">
-											Sélectionner
+										<button type="button" class="btn-select" onclick="event.stopPropagation(); displaySongSelection('selection-{{$level}}')">
+    										Sélectionner
 										</button>
+										<section class="songSelect duel-container" id="selection-{{$level}}">
+											<div id="music-player" class="music-player">
+												<h4>{{$song.Titre}} - {{$song.Artiste}}</h4>
+												<div class="audio-controls">
+													<audio id="audio-player" controls style="width: 100%;">
+														Votre navigateur ne supporte pas l'élément audio.
+													</audio>
+												</div>
+					
+											</div>
+
+											<div id="lyrics-container-{{$level}}" class="lyrics-container">
+												<h4>Paroles</h4>
+												<div id="lyrics-text-{{$level}}" class="lyrics-text">
+												
+												</div>
+											</div>
+											<div class="actions" id="action-buttons">
+												<button class="startLyricsBtn start-lyrics-button" onclick="initLyrics('{{$song.LyricsFile}}', {{$level}}, 'lyrics-text-{{$level}}')">Demarrer</button>
+												<a class="startLyricsBtn btn btn-secondary" href="/game-session/{session}">Retour aux duels</a>
+											</div>
+										</section>
 									</div>
 								</div>
 								{{end}}
@@ -289,27 +323,7 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 				</div>
 			</section>
 
-			<section class="songSelect duel-container" style="display: none;" id="song-selection-section">
-				<div id="music-player" class="music-player" style="display: none;">
-					<h4 id="current-song-info">Aucune chanson sélectionnée</h4>
-					<div class="audio-controls">
-						<audio id="audio-player" controls style="width: 100%;">
-							Votre navigateur ne supporte pas l'élément audio.
-						</audio>
-					</div>
-					
-				</div>
-
-				<div id="lyrics-container" class="lyrics-container" style="display: none;">
-					<h4>Paroles</h4>
-					<div id="lyrics-text" class="lyrics-text"></div>
-				</div>
-				<div class="actions" id="action-buttons">
-					<button class="startLyricsBtn" class="start-lyrics-button">Demarrer</button>
-
-					<a class="startLyricsBtn" href="/duel" class="btn btn-secondary">Retour aux duels</a>
-				</div>
-			</section>
+			
 
         
 		</div>
@@ -486,4 +500,34 @@ func HandleStartSong(w http.ResponseWriter, r *http.Request) {
 		"session":   session,
 	}
 	json.NewEncoder(w).Encode(response)
+}
+
+func GetLyricsJSON(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	songFile := vars["file"] // ex: "Clair Obscur - Lumière.json"
+
+	filePath := filepath.Join(paroleDataPath, songFile)
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		http.Error(w, "Fichier non trouvé", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(content)
+}
+func GetLyricsFileHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	fileName := vars["filename"]
+
+	filePath := filepath.Join(paroleDataPath, fileName)
+
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		http.Error(w, "Fichier de paroles non trouvé", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(content)
 }

@@ -1,10 +1,10 @@
-@import "mixins.scss";
-@import "duel.scss";
-@import "game.scss";
-@import "solo.scss";
-@import "button.scss";
-@import "form.scss";
-@import "navbar.scss";
+@use "mixins.scss" as *;
+@use "duel.scss";
+@use "game.scss";
+@use "solo.scss";
+@use "button.scss";
+@use "form.scss";
+@use "navbar.scss";
 
 html {
     height: 100vh;
