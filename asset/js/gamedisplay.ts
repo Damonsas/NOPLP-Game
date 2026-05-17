@@ -78,14 +78,14 @@ window.initLyrics = async function(songFileName: string, points: number, targetI
             sectionDiv.appendChild(title);
             
             let isMasked = false;
-            if (points >= 10 && points <= 30 && section.toLowerCase().includes("refrain2")) {
+            if (points >= 10 && points <= 50 && section.toLowerCase().includes("refrain2")) {
                 isMasked = true;
             }
 
             lines.forEach(line => {
                 const p = document.createElement('p');
                 if (isMasked) {
-                    p.textContent = line.replace(/[^\s]/g, '█');
+                    p.textContent = line.replace(/[a-zA-ZÀ-ÿ]+/g, '_');
                     p.classList.add('masked');
                 } else {
                     p.textContent = line;
