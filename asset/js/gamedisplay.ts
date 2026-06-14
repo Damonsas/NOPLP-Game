@@ -10,6 +10,13 @@ interface LyricsJSON {
     artiste: string;
     parole: { [key: string]: string[] };
 }
+
+interface Song {
+    titre: string;
+    artiste: string;
+    filename: string;
+}
+
 async function selectSong(songId: string) {
     try {
         const response = await fetch(`/api/lyrics/${songId}`);
@@ -50,6 +57,9 @@ export {};
 declare global {
     interface Window {
         initLyrics?: (songFileName: string, points: number, targetId: string) => Promise<void>;
+    }
+     interface Document {
+        playAudio: (filename: string) => void;
     }
 }
 
@@ -99,4 +109,11 @@ window.initLyrics = async function(songFileName: string, points: number, targetI
     } catch (error) {
         console.error("Erreur lors du chargement des paroles:", error);
     }
+}   
+
+document.playAudio = function(filename: string) {
+    const audio = new Audio(`https://asset.nolp-jeu.fr/musiques/${encodeURIComponent(filename)}`);
+    audio.play().catch(error => {
+        console.error("Erreur lors de la lecture de l'audio:", error);
+    });
 }

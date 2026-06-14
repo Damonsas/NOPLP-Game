@@ -63,7 +63,7 @@ window.initLyrics = function (songFileName, points, targetId) {
                 lines.forEach(line => {
                     const p = document.createElement('p');
                     if (isMasked) {
-                        p.textContent = line.replace(/[a-zA-ZÀ-ÿ']+/g, '_');
+                        p.textContent = line.replace(/[a-zA-ZÀ-ÿ]+/g, '_');
                         p.classList.add('masked');
                     }
                     else {
@@ -77,6 +77,12 @@ window.initLyrics = function (songFileName, points, targetId) {
         catch (error) {
             console.error("Erreur lors du chargement des paroles:", error);
         }
+    });
+};
+document.playAudio = function (filename) {
+    const audio = new Audio(`https://asset.nolp-jeu.fr/musiques/${encodeURIComponent(filename)}`);
+    audio.play().catch(error => {
+        console.error("Erreur lors de la lecture de l'audio:", error);
     });
 };
 export {};

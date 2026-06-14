@@ -531,3 +531,31 @@ func GetLyricsFileHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(content)
 }
+
+func GetSongFileHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	filename := vars["filename"]
+
+	filePath := filepath.Join("https://asset.nolp-jeu.fr/musiques/", filename)
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		http.Error(w, "Fichier de chanson non trouvé", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(content)
+}
+
+func SongLauncher(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	Titre := vars["titre"]
+	Artiste := vars["artiste"]
+	if Titre != "" && Artiste != "" {
+		http.Redirect(w, r, fmt.Sprintf("/preview?titre=%s&artiste=%s", Titre, Artiste), http.StatusSeeOther)
+		return
+	} else {
+		http.Error(w, "Instrumental non trouvé", http.StatusNotFound)
+		return
+	}
+}
