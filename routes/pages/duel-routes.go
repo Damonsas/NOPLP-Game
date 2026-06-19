@@ -25,6 +25,5 @@ func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/api/game-sessions", StartGameSession).Methods("POST")
 	r.HandleFunc("/api/game-sessions/{session}", GetGameSession).Methods("GET")
 
-	r.HandleFunc("https://asset.nolp-jeu.fr/musiques/{filename}", GetSongFileHandler).Methods("GET")
-
+	r.HandleFunc("/api/musiques/{filename}", GetSongFileHandler).Methods("GET")
 }

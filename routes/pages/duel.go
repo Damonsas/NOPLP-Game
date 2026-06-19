@@ -49,6 +49,7 @@ const (
 	duelSaveDataPath = "./data/serverdata/duelsavedata"
 	prepDuelDataPath = "./data/serverdata/prepdueldata"
 	paroleDataPath   = "./data/paroledata"
+	musicDataPath    = "https://asset.nolp-jeu.fr/musiques"
 	contentType      = "content-Type"
 	jsonType         = "application/json"
 )

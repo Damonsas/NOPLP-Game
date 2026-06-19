@@ -98,12 +98,15 @@ body {
 
         }
 
+    $all-levels: 10, 20, 30, 40, 50;
 
-    #music-player {
+    @each $level in $all-levels {    
+
+    #music-player-#{$level} {
         background-color: #3a8b59;
         }
 
-    #lyrics-container {
+    #lyrics-container-#{$level} {
         background-color: #c227da;
     }
 
@@ -190,6 +193,6 @@ body {
     }
 
 
-
+}
 
 

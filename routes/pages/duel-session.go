@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -291,10 +293,10 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
     										Sélectionner
 										</button>
 										<section class="songSelect duel-container" id="selection-{{$level}}">
-											<div id="music-player" class="music-player">
+											<div id="music-player-{{$level}}" class="music-player">
 												<h4>{{$song.Titre}} - {{$song.Artiste}}</h4>
 												<div class="audio-controls">
-													<audio id="audio-player" controls style="width: 100%;">
+													<audio id="audio-player-{{$level}}" controls style="width: 100%;">
 														Votre navigateur ne supporte pas l'élément audio.
 													</audio>
 												</div>
@@ -307,7 +309,7 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 												
 												</div>
 											</div>
-											<div class="actions" id="action-buttons">
+											<div class="actions" id="action-buttons-{{$level}}">
 												<button class="startLyricsBtn start-lyrics-button" onclick="initLyrics('{{$song.LyricsFile}}', {{$level}}, 'lyrics-text-{{$level}}')">Demarrer</button>
 												<a class="startLyricsBtn btn btn-secondary" href="/game-session/{session}">Retour aux duels</a>
 											</div>
@@ -536,15 +538,31 @@ func GetSongFileHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	filename := vars["filename"]
 
-	filePath := filepath.Join("https://asset.nolp-jeu.fr/musiques/", filename)
-	content, err := os.ReadFile(filePath)
+	remoteURL := musicDataPath + "/" + filename
+
+	resp, err := http.Get(remoteURL)
 	if err != nil {
-		http.Error(w, "Fichier de chanson non trouvé", http.StatusNotFound)
+		log.Printf("Erreur lors de la récupération de la musique: %v", err)
+		http.Error(w, "Impossible de joindre le serveur de musique", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Si le Homelab renvoie une erreur (ex: 404)
+	if resp.StatusCode != http.StatusOK {
+		http.Error(w, "Fichier de chanson non trouvé sur le homelab", http.StatusNotFound)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(content)
+	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
+	if contentLength := resp.Header.Get("Content-Length"); contentLength != "" {
+		w.Header().Set("Content-Length", contentLength)
+	}
+
+	_, err = io.Copy(w, resp.Body)
+	if err != nil {
+		log.Printf("Erreur lors du streaming du fichier audio: %v", err)
+	}
 }
 
 func SongLauncher(w http.ResponseWriter, r *http.Request) {

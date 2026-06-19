@@ -41,14 +41,13 @@ window.initLyrics = function (songFileName, points, targetId) {
         try {
             const response = yield fetch(`/api/lyrics/${encodeURIComponent(songFileName)}`);
             if (!response.ok)
-                throw new Error("Erreur lors de la récupération du JSON");
+                throw new Error("Erreur lors de la récupération du JSON des paroles");
             const data = yield response.json();
-            console.log("Données reçues du serveur Go :", data);
+            console.log("Données de paroles reçues :", data);
             const container = document.getElementById(targetId);
             if (!container)
                 return;
             container.innerHTML = '';
-            // Logique de masquage
             Object.entries(data.parole).forEach(([section, lines]) => {
                 const sectionDiv = document.createElement('div');
                 sectionDiv.className = "lyric-section mb-3";
@@ -73,9 +72,26 @@ window.initLyrics = function (songFileName, points, targetId) {
                 });
                 container.appendChild(sectionDiv);
             });
+            const audioPlayer = document.getElementById(`audio-player-${points}`);
+            if (audioPlayer) {
+                let audioFileName = songFileName.replace('.json', '.mp3');
+                audioFileName = audioFileName
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+                console.log(`[Audio] Chargement du lecteur #audio-player-${points} avec :`, audioFileName);
+                audioPlayer.src = `/api/musiques/${encodeURIComponent(audioFileName)}`;
+                audioPlayer.load();
+                audioPlayer.play().catch(error => {
+                    console.error("Erreur d'autoplay :", error);
+                });
+            }
+            else {
+                console.error(`Impossible de trouver le lecteur audio : #audio-player-${points}`);
+            }
         }
         catch (error) {
-            console.error("Erreur lors du chargement des paroles:", error);
+            console.error("Erreur globale lors de l'initialisation du round :", error);
         }
     });
 };
