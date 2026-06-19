@@ -46,9 +46,9 @@ var gameSessions map[string]*GameSession
 var nextDuelID int = 1
 
 const (
-	duelSaveDataPath = "/data/serverdata/duelsavedata"
-	prepDuelDataPath = "/data/serverdata/prepdueldata"
-	paroleDataPath   = "data/paroledata"
+	duelSaveDataPath = "./data/serverdata/duelsavedata"
+	prepDuelDataPath = "./data/serverdata/prepdueldata"
+	paroleDataPath   = "./data/paroledata"
 	contentType      = "content-Type"
 	jsonType         = "application/json"
 )
