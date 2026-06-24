@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { showNotification } from './gamenotification.js';
 import { addDuel, loadDuelsFromStorage, preparedDuels } from './gamelogic.js';
 const DUEL_POINTS_CATEGORIES = [50, 40, 30, 20, 10];
+const MEME_SONG = { titre: '', artiste: '', parole: '' };
 /**
  * Récupère la liste des fichiers de paroles locaux
  * @returns Promise avec la liste des noms de fichiers

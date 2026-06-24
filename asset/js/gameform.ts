@@ -194,12 +194,13 @@ function generateSongSelectionHtml(points: number, lyricsFiles: string[]): strin
       </select>
     `;
   }
+
 }
 
 function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): void {
   if (!formOrContainer) return;
 
-  const songSelects = Array.from(formOrContainer.querySelectorAll('select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
+  const songSelects = Array.from(formOrContainer.querySelectorAll('select[name^"sameSongFile"], select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
 
   function refreshDisabledOptions() {
     const selectedValues = songSelects
@@ -242,6 +243,8 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
   const soloMode = isSoloMode();
   const modeText = soloMode ? 'solo' : 'duel';
 
+  const songOptions = lyricsFiles.map(file => `<option style="color: black" value="${file}">${file}</option>`).join('');
+
   let formHtml = `
     <div class="form-container">
       <h2 style="color: red;">Choisissez vos chansons</h2>
@@ -250,7 +253,14 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
         <h3>Créer une nouvelle grille de ${modeText}</h3>
         <label for="duelName">Nom de la grille:</label>
         <input type="text" id="duelName" name="duelName" required >
+
+        <label>Sélectionner la chanson unique :</label>
+        <select name="sameSongFile" required>
+          <option style="color: black" value="">Choisir la même chanson</option>
+          ${songOptions}
+        </select>
   `;
+
 
   DUEL_POINTS_CATEGORIES.forEach(points => {
     formHtml += `
@@ -282,6 +292,8 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
     const soloMode = isSoloMode();
     const duelPoints = duelData.points as Duel['points'];
 
+    const sameSongFileValue = formData.get('sameSongFile') as string;
+
     for (const [key, value] of formData as any) {
         const parts = key.split('-');
         const fieldName = parts[0];
@@ -310,7 +322,7 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
         }
     }
 
-    const allSongSelects = Array.from((form as HTMLFormElement).querySelectorAll('select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
+    const allSongSelects = Array.from((form as HTMLFormElement).querySelectorAll('select[name^="sameSongFile"], select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
     const selectedValues = allSongSelects.map(s => s.value).filter(v => v && v.length > 0);
 
     const duplicates = selectedValues.reduce((acc: Record<string, number>, val) => {
@@ -329,7 +341,7 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
       id: Date.now(),
       name: duelData.name as string,
       points: duelData.points as any,
-      sameSong: { title: 'N/A', artist: 'N/A', lyricsFile: '' },
+      sameSong: { title: 'N/A', artist: 'N/A', lyricsFile: sameSongFileValue },
       createdAt: new Date().toISOString()
     };
 

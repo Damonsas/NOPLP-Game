@@ -294,7 +294,7 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 										</button>
 										<section class="songSelect duel-container" id="selection-{{$level}}">
 											<div id="music-player-{{$level}}" class="music-player">
-												<h4>{{$song.Titre}} - {{$song.Artiste}}</h4>
+												<h4 id="song-titre-{{$level}}">{{$song.Titre}} - {{$song.Artiste}}</h4>
 												<div class="audio-controls">
 													<audio id="audio-player-{{$level}}" controls style="width: 100%;">
 														Votre navigateur ne supporte pas l'élément audio.
