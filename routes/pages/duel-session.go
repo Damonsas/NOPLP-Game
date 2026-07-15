@@ -210,7 +210,6 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 
     		<script src="https://kit.fontawesome.com/8b05597a3d.js" crossorigin="anonymous"></script>
 
-
 			<script defer src="/asset/js/script.js"></script>
     		<script defer type="module" src="/asset/js/gameform.js"></script>
     		<script defer type="module" src="/asset/js/gamelogic.js"></script>
@@ -245,8 +244,6 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 							<div class="song-titre">{{.Duel.SameSong.Titre}}</div>
 							<div class="song-artiste">par {{.Duel.SameSong.Artiste}}</div>
 						</div>
-						<div>
-						</div>
 						<div class="lyrics-status">
 							{{if .SameSongLyricsExists}}
 							<span class="lyrics-available">✓ Paroles disponibles</span>
@@ -258,9 +255,9 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 				</div>
 
 				<div class="points-grid">
-					{{range $index, $level := .LevelsOrder}}
+					{{range $levelIndex, $level := .LevelsOrder}}
 					{{$pointLevel := index $.Duel.Points $level}}
-					<div class="level-wrapper" style="animation-delay: calc({{$index}} * 0.1s);"> 
+					<div class="level-wrapper"> 
 					<button class="point-button fade-in-left-normal" onclick="toggleLevelSongs('level-{{$level}}')">
 						<div>{{$level}} Points</div>
 						<div style="font-size: 14px; margin-top: 5px;">{{$pointLevel.Theme}}</div>
@@ -272,14 +269,14 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 								<h3>{{$level}} Points - {{$pointLevel.Theme}}</h3>
 							</div>
 							<div class="level-songs-container">
-								{{range $index, $song := $pointLevel.Songs}}
+								{{range $songIndex, $song := $pointLevel.Songs}}
 								<div class="song-card" onclick="previewSong('{{$song.Titre}}', '{{$song.Artiste}}')">
 									<div class="song-info">
-										<div class="song-titre" style=" color: black">{{$song.Titre}}</div>
-										<div class="song-artiste" style=" color: black">par {{$song.Artiste}}</div>
+										<div class="song-titre" style="color: black">{{$song.Titre}}</div>
+										<div class="song-artiste" style="color: black">par {{$song.Artiste}}</div>
 									</div>
 									<div class="lyrics-status">
-										{{if index (index $.LyricsExists $level) $index}}
+										{{if index (index $.LyricsExists $level) $songIndex}}
 										<span class="lyrics-available">✓ Paroles disponibles</span>
 										{{else}}
 										<span class="lyrics-missing">✗ Paroles non disponibles</span>
@@ -289,29 +286,28 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 										<button type="button" class="btn-preview" onclick="event.stopPropagation(); previewSong('{{$song.Titre}}', '{{$song.Artiste}}')">
 											🎵 Aperçu
 										</button>
-										<button type="button" class="btn-select" onclick="event.stopPropagation(); displaySongSelection('selection-{{$level}}')">
+										<button type="button" class="btn-select" onclick="event.stopPropagation(); displaySongSelection('selection-{{$level}}-{{$songIndex}}')">
     										Sélectionner
 										</button>
-										<section class="songSelect duel-container" id="selection-{{$level}}">
-											<div id="music-player-{{$level}}" class="music-player">
-												<h4 id="song-titre-{{$level}}">{{$song.Titre}} - {{$song.Artiste}}</h4>
+										<section class="songSelect duel-container" id="selection-{{$level}}-{{$songIndex}}" style="display: none;">
+											<div id="music-player-{{$level}}-{{$songIndex}}" class="music-player">
+												<h4 id="song-titre-{{$level}}-{{$songIndex}}">{{$song.Titre}} - {{$song.Artiste}}</h4>
 												<div class="audio-controls">
-													<audio id="audio-player-{{$level}}" controls style="width: 100%;">
+													<audio id="audio-player-{{$level}}-{{$songIndex}}" controls style="width: 100%;">
 														Votre navigateur ne supporte pas l'élément audio.
 													</audio>
 												</div>
-					
 											</div>
 
-											<div id="lyrics-container-{{$level}}" class="lyrics-container">
+											<div id="lyrics-container-{{$level}}-{{$songIndex}}" class="lyrics-container">
 												<h4>Paroles</h4>
-												<div id="lyrics-text-{{$level}}" class="lyrics-text">
+												<div id="lyrics-text-{{$level}}-{{$songIndex}}" class="lyrics-text">
 												
 												</div>
 											</div>
-											<div class="actions" id="action-buttons-{{$level}}">
-												<button class="startLyricsBtn start-lyrics-button" onclick="initLyrics('{{$song.LyricsFile}}', {{$level}}, 'lyrics-text-{{$level}}')">Demarrer</button>
-												<a class="startLyricsBtn btn btn-secondary" href="/game-session/{session}">Retour aux duels</a>
+											<div class="actions" id="action-buttons-{{$level}}-{{$songIndex}}">
+												<button class="startLyricsBtn start-lyrics-button" onclick="initLyrics('{{$song.LyricsFile}}', {{$level}}, 'lyrics-text-{{$level}}-{{$songIndex}}')">Demarrer</button>
+												<a class="startLyricsBtn btn btn-secondary" href="/duel">Retour aux duels</a>
 											</div>
 										</section>
 									</div>
@@ -324,10 +320,6 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 					{{end}}
 				</div>
 			</section>
-
-			
-
-        
 		</div>
 		</body>
 		</html>`
