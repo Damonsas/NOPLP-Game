@@ -1,11 +1,10 @@
 import { showNotification } from './gamenotification.js';
-import { addDuel, loadDuelsFromStorage, preparedDuels, Duel, getLyricsList } from './gamelogic.js';
+import { addDuel, loadDuelsFromStorage, preparedDuels, Duel } from './gamelogic.js';
 
 const DUEL_POINTS_CATEGORIES = [50, 40, 30, 20, 10];
 
-
 /**
- * Récupère la liste des fichiers de paroles locaux
+ * Récupère la liste des fichiers de paroles locaux depuis l'index
  * @returns Promise avec la liste des noms de fichiers
  */
 async function getLyricsListLocal(): Promise<string[]> {
@@ -25,7 +24,6 @@ async function getLyricsListLocal(): Promise<string[]> {
       return [];
     }
 
-   
     const files = arr.map((item: any) => {
       if (!item) return null;
       const raw = item.ligne || (item.artiste && item.titre ? `${item.artiste} - ${item.titre}` : null);
@@ -41,27 +39,6 @@ async function getLyricsListLocal(): Promise<string[]> {
   }
 }
 
-
-/**
- * Charge un fichier de paroles spécifique
- * @param filename Nom du fichier à charger
- * @returns Promise avec le contenu du fichier JSON
- */
-async function loadLyricsFile(filename: string): Promise<any> {
-    try {
-        const response = await fetch(`./data/paroledata/${filename}`);
-        if (!response.ok) {
-            throw new Error(`Impossible de charger ${filename}: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log(`Fichier ${filename} chargé avec succès`);
-        return data;
-    } catch (error) {
-        console.error(`Erreur lors du chargement de ${filename}:`, error);
-        throw error;
-    }
-}
-
 /**
  * Détermine si on est en mode solo ou duel basé sur l'URL actuelle
  * @returns true si mode solo, false si mode duel
@@ -70,21 +47,12 @@ function isSoloMode(): boolean {
   return window.location.pathname.includes('solo');
 }
 
-
 /**
  * Génère la carte HTML pour un duel donné.
  * @param duel Le duel à afficher.
  * @returns La chaîne HTML de la carte.
  */
 function generateDuelCard(duel: Duel): string {
-  const themes = DUEL_POINTS_CATEGORIES.map(p => duel.points[String(p) as keyof typeof duel.points]?.theme).filter(t => t).join(', ');
-  const currentMode = isSoloMode();
-  
-  
-  const playUrl = currentMode 
-    ? `/solo?id=${duel.id}` 
-    : `/duel-game?id=${duel.id}`;  
-
   const supprform = `/duel-delete?id=${duel.id}`;
   const modifform = `/duel-edit?id=${duel.id}`;
 
@@ -96,7 +64,6 @@ function generateDuelCard(duel: Duel): string {
       <button onclick="window.location.href='${modifform}'"> Modifier </button>
     </div>
   `;
-
 }
 
 async function handlePlayDuel(duelId: string) {
@@ -165,7 +132,6 @@ function renderDuelList(): void {
   container.innerHTML = duelsHtml;
 }
 
-
 function generateSongSelectionHtml(points: number, lyricsFiles: string[]): string {
   const soloMode = isSoloMode();
   const songOptions = lyricsFiles.map(file => `<option style="color: black" value="${file}">${file}</option>`).join('');
@@ -174,33 +140,30 @@ function generateSongSelectionHtml(points: number, lyricsFiles: string[]): strin
     return `
       <label>Chanson:</label>
       <select name="song1-${points}" required>
-        <option style="color: black " value="">Sélectionner une chanson</option>
+        <option style="color: black" value="">Sélectionner une chanson</option>
         ${songOptions}
-
       </select>
     `;
   } else {
     return `
       <label>Chanson 1:</label>
       <select name="song1-${points}" required>
-        <option style="color: black value="">Sélectionner une chanson</option>
+        <option style="color: black" value="">Sélectionner une chanson</option>
         ${songOptions}
       </select>
       <label>Chanson 2:</label>
       <select name="song2-${points}" required>
-        <option style="color: black value="" >Sélectionner une chanson</option>
+        <option style="color: black" value="">Sélectionner une chanson</option>
         ${songOptions}
-
       </select>
     `;
   }
-
 }
 
 function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): void {
   if (!formOrContainer) return;
 
-  const songSelects = Array.from(formOrContainer.querySelectorAll('select[name^"sameSongFile"], select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
+  const songSelects = Array.from(formOrContainer.querySelectorAll('select[name^="sameSongFile"], select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
 
   function refreshDisabledOptions() {
     const selectedValues = songSelects
@@ -220,18 +183,12 @@ function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): voi
   }
 
   songSelects.forEach(select => {
-    select.addEventListener('change', () => {
-      refreshDisabledOptions();
-    });
-
-    select.addEventListener('input', () => {
-      refreshDisabledOptions();
-    });
+    select.addEventListener('change', refreshDisabledOptions);
+    select.addEventListener('input', refreshDisabledOptions);
   });
 
   refreshDisabledOptions();
 }
-
 
 function renderCreateDuelForm(lyricsFiles: string[]): void {
   const container = document.getElementById("PrepGrille");
@@ -242,7 +199,6 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
 
   const soloMode = isSoloMode();
   const modeText = soloMode ? 'solo' : 'duel';
-
   const songOptions = lyricsFiles.map(file => `<option style="color: black" value="${file}">${file}</option>`).join('');
 
   let formHtml = `
@@ -252,15 +208,14 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
       <form id="newDuelForm">
         <h3>Créer une nouvelle grille de ${modeText}</h3>
         <label for="duelName">Nom de la grille:</label>
-        <input type="text" id="duelName" name="duelName" required >
+        <input type="text" id="duelName" name="duelName" required>
 
-        <label>Sélectionner la chanson unique :</label>
-        <select name="sameSongFile" required>
+        <label for="sameSongFile">Sélectionner la chanson unique ("La Même Chanson") :</label>
+        <select name="sameSongFile" id="sameSongFile" required>
           <option style="color: black" value="">Choisir la même chanson</option>
           ${songOptions}
         </select>
   `;
-
 
   DUEL_POINTS_CATEGORIES.forEach(points => {
     formHtml += `
@@ -326,15 +281,15 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
     const selectedValues = allSongSelects.map(s => s.value).filter(v => v && v.length > 0);
 
     const duplicates = selectedValues.reduce((acc: Record<string, number>, val) => {
-    acc[val] = (acc[val] || 0) + 1;
-    return acc;
-     }, {});
+      acc[val] = (acc[val] || 0) + 1;
+      return acc;
+    }, {});
 
     const dupKeys = Object.keys(duplicates).filter(k => duplicates[k] > 1);
     if (dupKeys.length > 0) {
-    const example = dupKeys.slice(0, 3).join(', ');
-    showNotification(`Erreur : la/les chanson(s) suivante(s) est/sont sélectionnée(s) plusieurs fois : ${example}`, 'error');
-    return; // stop la soumission
+      const example = dupKeys.slice(0, 3).join(', ');
+      showNotification(`Erreur : la/les chanson(s) suivante(s) est/sont sélectionnée(s) plusieurs fois : ${example}`, 'error');
+      return;
     }
 
     const newDuel: Duel = {
@@ -348,7 +303,7 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
     try {
         await addDuel(newDuel);
         showNotification(`Grille ${soloMode ? 'solo' : 'duel'} créée et sauvegardée!`, 'success');
-        showDuelList(); // Retour à la liste
+        showDuelList();
     } catch (error: unknown) {
         if (error instanceof Error) {
             showNotification(`Erreur lors de la création : ${error.message}`, 'error');
@@ -358,11 +313,7 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
     }
 }
 
-/**
- * Affiche le formulaire de création et cache la liste
- */
 function showCreateForm(): void {
-    
     const formContainer = document.getElementById("PrepGrille");
     const listContent = document.querySelector('.duels-list') as HTMLElement;
     const alertContent = document.querySelector('.alert') as HTMLElement;
@@ -372,23 +323,10 @@ function showCreateForm(): void {
         getLyricsListLocal().then(lyricsFiles => {
             if (lyricsFiles.length > 0) {
                 renderCreateDuelForm(lyricsFiles);
-            } else {
-                ([
-                    "Adele - Hello.json",
-                    "Ed Sheeran - Shape of You.json",
-                    "Billie Eilish - Bad Guy.json"
-                ]);
             }
             showFormWithStyles(formContainer);
         }).catch(error => {
             console.error("Erreur lors de la récupération des fichiers:", error);
-            console.log("Utilisation d'une liste par défaut pour le formulaire");
-            
-            ([
-                "Artiste Exemple - Chanson 1.json",
-                "Artiste Test - Chanson 2.json",
-                "Demo Artist - Test Song.json"
-            ]);
             showFormWithStyles(formContainer);
         });
     } else {
@@ -400,9 +338,6 @@ function showCreateForm(): void {
     if (menuButton) menuButton.style.display = 'none';
 }
 
-/**
- * Applique les styles d'affichage au formulaire
- */
 function showFormWithStyles(formContainer: HTMLElement | null): void {
     if (formContainer) {
         formContainer.style.display = 'block';
@@ -415,28 +350,22 @@ function showFormWithStyles(formContainer: HTMLElement | null): void {
 }
 
 function showDuelList(): void {
-    console.log("showDuelList appelé");
-    
     const formContainer = document.getElementById("PrepGrille");
-    const listContent = document.querySelector('.duels-list') as HTMLElement;
     const alertContent = document.querySelector('.alert') as HTMLElement;
     const menuButton = document.querySelector('.button_prep_grille') as HTMLElement;
 
     if (formContainer) {
         formContainer.style.display = 'none';
     }
-
     if (alertContent) {
         alertContent.style.display = 'block';
     }
-
     if (menuButton) {
         menuButton.style.display = 'block';
     }
 
     loadDuelsFromStorage();
 }
-
 
 async function handleImportFormSubmit(event: Event): Promise<void> {
     event.preventDefault();
@@ -480,8 +409,6 @@ document.addEventListener('submit', (event) => {
     }
 });
 
-
-// // a enlenver si tout fonctionnel
 document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
 
@@ -489,61 +416,35 @@ document.addEventListener('click', (event) => {
         event.preventDefault();
         const id = target.getAttribute('data-duel-id');
         if (id) {
-            console.log(' Clic sur Jouer détecté, duelId:', id);
             handlePlayDuel(id);
-        } else {
-            console.error(' Pas de duelId trouvé sur le bouton');
         }
         return;
     }
     
     if (target.id === 'create-duel-btn') {
         event.preventDefault();
-        console.log("Bouton create-duel-btn cliqué");
         showCreateForm();
     } else if (target.id === 'back-to-list-btn') {
         event.preventDefault();
-        console.log("Bouton back-to-list-btn cliqué");
         showDuelList();
     }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-    
     loadDuelsFromStorage();
-    
     renderDuelList();
     
     setTimeout(async () => {
         let prepGrilleContainer = document.getElementById("PrepGrille");
-        console.log("PrepGrille après renderDuelList:", prepGrilleContainer);
-        
-        if (!prepGrilleContainer) {
-            console.error("PrepGrille TOUJOURS non trouvé après renderDuelList !");
-            return;
-        }
+        if (!prepGrilleContainer) return;
 
         try {
             const lyricsFiles = await getLyricsListLocal();
-            
             if (lyricsFiles.length > 0) {
                 renderCreateDuelForm(lyricsFiles);
-            } else {
-                throw new Error("Aucun fichier lyrics trouvé");
             }
-            
         } catch (error) {
-            
-            const fallbackFiles = [
-                "Adele - Hello.json",
-                "Ed Sheeran - Shape of You.json", 
-                "Billie Eilish - Bad Guy.json",
-                "The Weeknd - Blinding Lights.json",
-                "Dua Lipa - Levitating.json"
-            ];
+            console.error("Erreur d'initialisation des paroles:", error);
         }
-        
-        const containerAfter = document.getElementById("PrepGrille");
-        
     }, 200);
 });

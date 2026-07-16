@@ -172,38 +172,47 @@ body .song-card {
   border-radius: 10px;
   border-color: 4px solid #c4cefc;
 }
-body .songs-for-level {
+
+.songs-for-level {
   margin-top: 20px;
 }
-body .level-songs-container {
+
+.level-songs-container {
   display: grid;
   gap: 10px;
 }
-body .level-wrapper {
+
+.level-wrapper {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
-body #song-selection-section {
+
+#song-selection-section {
   display: none;
 }
-body .songSelect {
+
+.songSelect {
   width: 50vw;
 }
-body #music-player-10 {
+
+#music-player-10 {
   background-color: #3a8b59;
 }
-body #lyrics-container-10 {
+
+#lyrics-container-10 {
   background-color: #c227da;
 }
-body .music-player {
+
+.music-player {
   margin: 10px 0;
   padding: 10px;
   background: #f5f5f5;
   border-radius: 5px;
 }
-body .lyrics-container {
+
+.lyrics-container {
   margin: 15px 0;
   padding: 15px;
   background: linear-gradient(45deg, #6536ff, #354bf3, #162d94 70%);
@@ -212,12 +221,14 @@ body .lyrics-container {
   max-height: 300px;
   overflow-y: auto;
 }
-body .lyrics-text {
+
+.lyrics-text {
   line-height: 1.6;
   font-family: monospace;
   white-space: pre-wrap;
 }
-body .masked-text {
+
+.masked-text {
   background: #333;
   color: #333;
   border-radius: 2px;
@@ -225,7 +236,8 @@ body .masked-text {
      -moz-user-select: none;
           user-select: none;
 }
-body .btn-select {
+
+.btn-select {
   background: #28a745;
   color: white;
   border: none;
@@ -234,10 +246,12 @@ body .btn-select {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-select:hover {
+
+.btn-select:hover {
   background: #218838;
 }
-body .btn-preview {
+
+.btn-preview {
   background: #17a2b8;
   color: white;
   border: none;
@@ -246,25 +260,31 @@ body .btn-preview {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-preview:hover {
+
+.btn-preview:hover {
   background: #138496;
 }
-body .audio-controls {
+
+.audio-controls {
   margin: 10px 0;
 }
-body #music-player-20 {
+
+#music-player-20 {
   background-color: #3a8b59;
 }
-body #lyrics-container-20 {
+
+#lyrics-container-20 {
   background-color: #c227da;
 }
-body .music-player {
+
+.music-player {
   margin: 10px 0;
   padding: 10px;
   background: #f5f5f5;
   border-radius: 5px;
 }
-body .lyrics-container {
+
+.lyrics-container {
   margin: 15px 0;
   padding: 15px;
   background: linear-gradient(45deg, #6536ff, #354bf3, #162d94 70%);
@@ -273,12 +293,14 @@ body .lyrics-container {
   max-height: 300px;
   overflow-y: auto;
 }
-body .lyrics-text {
+
+.lyrics-text {
   line-height: 1.6;
   font-family: monospace;
   white-space: pre-wrap;
 }
-body .masked-text {
+
+.masked-text {
   background: #333;
   color: #333;
   border-radius: 2px;
@@ -286,7 +308,8 @@ body .masked-text {
      -moz-user-select: none;
           user-select: none;
 }
-body .btn-select {
+
+.btn-select {
   background: #28a745;
   color: white;
   border: none;
@@ -295,10 +318,12 @@ body .btn-select {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-select:hover {
+
+.btn-select:hover {
   background: #218838;
 }
-body .btn-preview {
+
+.btn-preview {
   background: #17a2b8;
   color: white;
   border: none;
@@ -307,25 +332,31 @@ body .btn-preview {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-preview:hover {
+
+.btn-preview:hover {
   background: #138496;
 }
-body .audio-controls {
+
+.audio-controls {
   margin: 10px 0;
 }
-body #music-player-30 {
+
+#music-player-30 {
   background-color: #3a8b59;
 }
-body #lyrics-container-30 {
+
+#lyrics-container-30 {
   background-color: #c227da;
 }
-body .music-player {
+
+.music-player {
   margin: 10px 0;
   padding: 10px;
   background: #f5f5f5;
   border-radius: 5px;
 }
-body .lyrics-container {
+
+.lyrics-container {
   margin: 15px 0;
   padding: 15px;
   background: linear-gradient(45deg, #6536ff, #354bf3, #162d94 70%);
@@ -334,12 +365,14 @@ body .lyrics-container {
   max-height: 300px;
   overflow-y: auto;
 }
-body .lyrics-text {
+
+.lyrics-text {
   line-height: 1.6;
   font-family: monospace;
   white-space: pre-wrap;
 }
-body .masked-text {
+
+.masked-text {
   background: #333;
   color: #333;
   border-radius: 2px;
@@ -347,7 +380,8 @@ body .masked-text {
      -moz-user-select: none;
           user-select: none;
 }
-body .btn-select {
+
+.btn-select {
   background: #28a745;
   color: white;
   border: none;
@@ -356,10 +390,12 @@ body .btn-select {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-select:hover {
+
+.btn-select:hover {
   background: #218838;
 }
-body .btn-preview {
+
+.btn-preview {
   background: #17a2b8;
   color: white;
   border: none;
@@ -368,25 +404,31 @@ body .btn-preview {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-preview:hover {
+
+.btn-preview:hover {
   background: #138496;
 }
-body .audio-controls {
+
+.audio-controls {
   margin: 10px 0;
 }
-body #music-player-40 {
+
+#music-player-40 {
   background-color: #3a8b59;
 }
-body #lyrics-container-40 {
+
+#lyrics-container-40 {
   background-color: #c227da;
 }
-body .music-player {
+
+.music-player {
   margin: 10px 0;
   padding: 10px;
   background: #f5f5f5;
   border-radius: 5px;
 }
-body .lyrics-container {
+
+.lyrics-container {
   margin: 15px 0;
   padding: 15px;
   background: linear-gradient(45deg, #6536ff, #354bf3, #162d94 70%);
@@ -395,12 +437,14 @@ body .lyrics-container {
   max-height: 300px;
   overflow-y: auto;
 }
-body .lyrics-text {
+
+.lyrics-text {
   line-height: 1.6;
   font-family: monospace;
   white-space: pre-wrap;
 }
-body .masked-text {
+
+.masked-text {
   background: #333;
   color: #333;
   border-radius: 2px;
@@ -408,7 +452,8 @@ body .masked-text {
      -moz-user-select: none;
           user-select: none;
 }
-body .btn-select {
+
+.btn-select {
   background: #28a745;
   color: white;
   border: none;
@@ -417,10 +462,12 @@ body .btn-select {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-select:hover {
+
+.btn-select:hover {
   background: #218838;
 }
-body .btn-preview {
+
+.btn-preview {
   background: #17a2b8;
   color: white;
   border: none;
@@ -429,25 +476,31 @@ body .btn-preview {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-preview:hover {
+
+.btn-preview:hover {
   background: #138496;
 }
-body .audio-controls {
+
+.audio-controls {
   margin: 10px 0;
 }
-body #music-player-50 {
+
+#music-player-50 {
   background-color: #3a8b59;
 }
-body #lyrics-container-50 {
+
+#lyrics-container-50 {
   background-color: #c227da;
 }
-body .music-player {
+
+.music-player {
   margin: 10px 0;
   padding: 10px;
   background: #f5f5f5;
   border-radius: 5px;
 }
-body .lyrics-container {
+
+.lyrics-container {
   margin: 15px 0;
   padding: 15px;
   background: linear-gradient(45deg, #6536ff, #354bf3, #162d94 70%);
@@ -456,12 +509,14 @@ body .lyrics-container {
   max-height: 300px;
   overflow-y: auto;
 }
-body .lyrics-text {
+
+.lyrics-text {
   line-height: 1.6;
   font-family: monospace;
   white-space: pre-wrap;
 }
-body .masked-text {
+
+.masked-text {
   background: #333;
   color: #333;
   border-radius: 2px;
@@ -469,7 +524,8 @@ body .masked-text {
      -moz-user-select: none;
           user-select: none;
 }
-body .btn-select {
+
+.btn-select {
   background: #28a745;
   color: white;
   border: none;
@@ -478,10 +534,12 @@ body .btn-select {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-select:hover {
+
+.btn-select:hover {
   background: #218838;
 }
-body .btn-preview {
+
+.btn-preview {
   background: #17a2b8;
   color: white;
   border: none;
@@ -490,19 +548,22 @@ body .btn-preview {
   cursor: pointer;
   margin: 5px;
 }
-body .btn-preview:hover {
+
+.btn-preview:hover {
   background: #138496;
 }
-body .audio-controls {
+
+.audio-controls {
   margin: 10px 0;
 }
-body .actions {
+
+.actions {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 20px;
 }
-body .actions .startLyricsBtn {
+.actions .startLyricsBtn {
   background: radial-gradient(#c8bdea, #22309b, #0b184f 70%);
   padding: 12px 25px;
   border-radius: 20px;
@@ -513,7 +574,7 @@ body .actions .startLyricsBtn {
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
-body .actions a {
+.actions a {
   text-decoration: none;
   color: #fff;
 }
@@ -658,15 +719,6 @@ body .actions a {
 
 .section-btn.active {
   background: #28a745;
-}
-
-.lyrics-container {
-  margin: 20px 0;
-  padding: 15px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  min-height: 200px;
 }
 
 .masked-text {

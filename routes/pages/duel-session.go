@@ -236,11 +236,11 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 
 			<section class="duel-form">
 				<div class="same-song-section">
-					<button class="same-song-button" onclick="toggleElement('same-song-details')" >
+					<button type="button" class="same-song-button" onclick="toggleElement('same-song-details')" >
 						🎵C'est La Même Chanson
 					</button>
-					<div id="same-song-details" class="hidden-element song-card" style="max-width: 500px; margin: 0 auto;">
-						<div class="song-info">
+					<div id="same-song-details" class="hidden-element song-card" style="display: none;">
+						<div class="song-info" style="color: black;" >
 							<div class="song-titre">{{.Duel.SameSong.Titre}}</div>
 							<div class="song-artiste">par {{.Duel.SameSong.Artiste}}</div>
 						</div>
@@ -251,6 +251,30 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 							<span class="lyrics-missing">✗ Paroles non disponibles</span>
 							{{end}}
 						</div>
+						<div class="song-actions" style="margin-top: 15px;">
+							<button type="button" class="btn-select" onclick="displaySongSelection('selection-same-song')">
+								Sélectionner
+							</button>
+						</div>
+						<section class="songSelect duel-container" id="selection-same-song" style="display: none; margin-top: 15px;">
+							<div id="music-player-same-song" class="music-player">
+								<h4 id="song-titre-same-song">{{.Duel.SameSong.Titre}} - {{.Duel.SameSong.Artiste}}</h4>
+								<div class="audio-controls">
+									<audio id="audio-player-same-song" controls style="width: 100%;">
+										Votre navigateur ne supporte pas l'élément audio.
+									</audio>
+								</div>
+							</div>
+
+							<div id="lyrics-container-same-song" class="lyrics-container">
+								<h4>Paroles</h4>
+								<div id="lyrics-text-same-song" class="lyrics-text"></div>
+							</div>
+							<div class="actions" id="action-buttons-same-song">
+								<button class="startLyricsBtn start-lyrics-button" onclick="initLyrics('{{.Duel.SameSong.LyricsFile}}', 'same-song', 'lyrics-text-same-song')">Démarrer</button>
+								<a class="startLyricsBtn btn btn-secondary" href="/duel">Retour aux duels</a>
+							</div>
+						</section>
 					</div>
 				</div>
 

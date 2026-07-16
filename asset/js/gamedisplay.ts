@@ -32,7 +32,6 @@ async function selectSong(songId: string) {
                 const sectionDiv = document.createElement('div');
                 sectionDiv.className = 'lyric-section';
                 
-                // On ajoute un titre pour le couplet/refrain si tu veux
                 sectionDiv.innerHTML = `<h5>${sectionName}</h5>`;
 
                 lines.forEach(line => {
@@ -53,17 +52,50 @@ async function selectSong(songId: string) {
 
 export {};
 
-
 declare global {
     interface Window {
-        initLyrics?: (songFileName: string, points: number, targetId: string) => Promise<void>;
+        initLyrics?: (songFileName: string, points: number | string, targetId: string) => Promise<void>;
     }
-     interface Document {
+    interface Document {
         playAudio: (filename: string) => void;
     }
 }
 
-window.initLyrics = async function(songFileName: string, points: number, targetId: string) {
+// Générateur de nombre aléatoire inclusif
+function getRandomInt(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function maskWordsInLine(line: string, wordsCountToMask: number): string {
+    const tokens = line.split(/(\s+)/);
+    
+    const wordIndices: number[] = [];
+    tokens.forEach((token, index) => {
+        if (/[a-zA-ZÀ-ÿ]+/.test(token)) {
+            wordIndices.push(index);
+        }
+    });
+
+    if (wordIndices.length === 0) return line;
+
+    const exactMaskCount = Math.min(wordsCountToMask, wordIndices.length);
+    
+    const maxStartIndex = wordIndices.length - exactMaskCount;
+    const startIndex = getRandomInt(0, maxStartIndex);
+
+    const targetIndicesToMask = wordIndices.slice(startIndex, startIndex + exactMaskCount);
+
+    const maskedTokens = tokens.map((token, index) => {
+        if (targetIndicesToMask.includes(index)) {
+            return token.replace(/[a-zA-ZÀ-ÿ]/g, '_');
+        }
+        return token;
+    });
+
+    return maskedTokens.join('');
+}
+
+window.initLyrics = async function(songFileName: string, points: number | string, targetId: string) {
     try {
         const response = await fetch(`/api/lyrics/${encodeURIComponent(songFileName)}`);
         if (!response.ok) throw new Error("Erreur lors de la récupération du JSON des paroles");
@@ -76,28 +108,94 @@ window.initLyrics = async function(songFileName: string, points: number, targetI
         
         container.innerHTML = ''; 
 
-        Object.entries(data.parole).forEach(([section, lines]) => {
+        const sectionsKeys = Object.keys(data.parole);
+        
+        const refrains = sectionsKeys.filter(k => k.toLowerCase().includes('refrain'));
+        const couplets = sectionsKeys.filter(k => k.toLowerCase().includes('couplet'));
+
+        const firstRefrainKey = refrains[0] || null;
+        const secondRefrainKey = refrains[1] || refrains[0] || null; // fallback au 1er si pas de 2ème
+        const secondCoupletKey = couplets[1] || couplets[0] || null;
+
+        let mode: 'points' | 'same-song' = 'points';
+        let wordsToMask = 0;
+        let targetSectionKey: string | null = null;
+
+        const pointsStr = String(points);
+
+        if (pointsStr === "same-song") {
+            mode = 'same-song';
+        } else {
+            const pts = parseInt(pointsStr, 10);
+            if (pts === 50) {
+                wordsToMask = getRandomInt(8, 10);
+                targetSectionKey = secondRefrainKey;
+            } else if (pts === 40) {
+                wordsToMask = getRandomInt(5, 7);
+                targetSectionKey = firstRefrainKey;
+            } else if (pts === 30) {
+                wordsToMask = getRandomInt(4, 5);
+                targetSectionKey = secondCoupletKey;
+            } else if (pts === 20) {
+                wordsToMask = 3;
+                targetSectionKey = secondCoupletKey;
+            } else if (pts === 10) {
+                wordsToMask = 2;
+                targetSectionKey = secondCoupletKey;
+            }
+        }
+
+        let sameSongCutLineIndex = -1;
+        let sameSongCurrentLineCounter = 0;
+        let sameSongIsCutting = false;
+
+        if (mode === 'same-song') {
+            sameSongCutLineIndex = getRandomInt(3, 5);
+        }
+
+        sectionsKeys.forEach((sectionName) => {
+            const lines = data.parole[sectionName];
             const sectionDiv = document.createElement('div');
             sectionDiv.className = "lyric-section mb-3";
 
             const title = document.createElement('h5');
-            title.textContent = section;
+            title.textContent = sectionName;
             title.style.visibility = "hidden"; 
             sectionDiv.appendChild(title);
+
+            const isTargetSection = (mode === 'points' && targetSectionKey && sectionName === targetSectionKey);
             
-            let isMasked = false;
-            if (points >= 10 && points <= 50 && section.toLowerCase().includes("refrain2")) {
-                isMasked = true;
+            let randomLineIndexToMask = -1;
+            if (isTargetSection && lines.length > 0) {
+                randomLineIndexToMask = getRandomInt(0, lines.length - 1);
             }
 
-            lines.forEach(line => {
+            lines.forEach((line, index) => {
                 const p = document.createElement('p');
-                if (isMasked) {
-                    p.textContent = line.replace(/[a-zA-ZÀ-ÿ]+/g, '_');
-                    p.classList.add('masked');
+
+                if (mode === 'same-song') {
+                    if (sameSongCurrentLineCounter >= sameSongCutLineIndex) {
+                        sameSongIsCutting = true;
+                    }
+
+                    if (sameSongIsCutting) {
+                        p.textContent = line.replace(/[a-zA-ZÀ-ÿ]/g, '_');
+                        p.classList.add('masked');
+                    } else {
+                        p.textContent = line;
+                    }
+                    sameSongCurrentLineCounter++;
+
                 } else {
-                    p.textContent = line;
+                    // Logique classique par Points
+                    if (isTargetSection && index === randomLineIndexToMask) {
+                        p.textContent = maskWordsInLine(line, wordsToMask);
+                        p.classList.add('masked');
+                    } else {
+                        p.textContent = line;
+                    }
                 }
+
                 sectionDiv.appendChild(p);
             });
 
