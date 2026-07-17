@@ -126,7 +126,7 @@ window.initLyrics = async function(songFileName: string, points: number | string
         if (pointsStr === "same-song") {
             mode = 'same-song';
         } else {
-            const pts = parseInt(pointsStr, 10);
+            const pts = Number.parseInt(pointsStr, 10);
             if (pts === 50) {
                 wordsToMask = getRandomInt(8, 10);
                 targetSectionKey = secondRefrainKey;
@@ -186,14 +186,12 @@ window.initLyrics = async function(songFileName: string, points: number | string
                     }
                     sameSongCurrentLineCounter++;
 
-                } else {
+                } else if (isTargetSection && index === randomLineIndexToMask) {
                     // Logique classique par Points
-                    if (isTargetSection && index === randomLineIndexToMask) {
-                        p.textContent = maskWordsInLine(line, wordsToMask);
-                        p.classList.add('masked');
-                    } else {
-                        p.textContent = line;
-                    }
+                    p.textContent = maskWordsInLine(line, wordsToMask);
+                    p.classList.add('masked');
+                } else {
+                    p.textContent = line;
                 }
 
                 sectionDiv.appendChild(p);

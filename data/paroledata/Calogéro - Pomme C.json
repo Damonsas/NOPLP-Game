@@ -3,9 +3,53 @@
     "artiste": "Calogéro",
   
     "parole": {
-        "couplet1" : ["Isn't it nice to have a computer that will talk to you ? \n\n J'ai son image \n J'ai son email \n Son cœur au bout du clavier \n J'ai son visage \n Et l'envie d'elle \n Sans jamais l'avoir touchée \n\n"],
-        "refrain" : ["Dois-je sauver \n Ou bien abandonner ? \n\n Pomme C un homme et une femme \n Et c'est tout un programme \n Un ciel artificiel \n Pomme, qui m'allume et qui me quitte ? \n On s'aime trop vite \n Le vice et le virtuel \n\n"],
-        "couplet2" : ["Elle m'écrit \n Mais mon écran \n Formate les sentiments \n Mais j'imagine qu'une machine \n Ne peut que faire semblant \n M'A D S L \n N'est pas vraiment réelle \n\n" ],
-        "refrain2" : ["Pomme C un homme et une femme \n Et c'est tout un programme \n Un ciel artificiel \n Pomme, qui m'allume et qui me quitte ? \n On s'aime trop vite \n C'est le vice et le virtuel \n\n Un peu d'amour, copié-collé \n Un peu d'amour, pomme c \n Un peu d'amour téléchargé \n Un peu d'amour à sauver. à sauver \n Mais l'amour n'est pas virtuel \n\n Pomme C un homme et une femme \n Et c'est tout un programme \n Mais l'amour n'est pas virtuel \n Pomme, qui m'allume \n Et qui me quitte \n On s'aime trop vite \n C'est le vice et le virtuel \n\n Dois-je sauver \n Ou bien dois-je abandonner ?"]
+        "couplet1" : [
+            "Isn't it nice to have a computer that will talk to you ?",
+            "J'ai son image",
+            "J'ai son email",
+            "Son cœur au bout du clavier",
+            "J'ai son visage",
+            "Et l'envie d'elle",
+            "Sans jamais l'avoir touchée"
+        ],
+        "refrain" : [
+            "Dois-je sauver",
+            "Ou bien abandonner ?",
+            "Pomme C un homme et une femme",
+            "Et c'est tout un programme",
+            "Un ciel artificiel",
+            "Pomme, qui m'allume et qui me quitte ?",
+            "On s'aime trop vite",
+            "Le vice et le virtuel"
+        ],
+        "couplet2" : [
+            "Elle m'écrit",
+            "Mais mon écran",
+            "Formate les sentiments",
+            "Mais j'imagine qu'une machine",
+            "Ne peut que faire semblant",
+            "M'A D S L",
+            "N'est pas vraiment réelle"
+        ],
+        "refrain2" : [
+            "Pomme C un homme et une femme",
+            "Et c'est tout un programme",
+            "Un ciel artificiel",
+            "Pomme, qui m'allume et qui me quitte ?",
+            "On s'aime trop vite",
+            "C'est le vice et le virtuel",
+            "Un peu d'amour, copié-collé",
+            "Un peu d'amour, pomme c",
+            "Un peu d'amour téléchargé",
+            "Un peu d'amour à sauver. à sauver",
+            "Mais l'amour n'est pas virtuel",
+            "Pomme C un homme et une femme",
+            "Et c'est tout un programme",
+            "Mais l'amour n'est pas virtuel",
+            "Pomme, qui m'allume",
+            "Et qui me quitte",
+            "On s'aime trop vite",
+            "C'est le vice et le virtuel"
+        ]
     }
  }
