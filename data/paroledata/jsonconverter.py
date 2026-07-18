@@ -27,7 +27,7 @@ def texte_en_json(texte):
     return {
         "titre": titre,
         "artiste": artiste,
-        "paroles": paroles
+        "parole": parole
     }
 
     ## format du truc : couplet1 sans : 
