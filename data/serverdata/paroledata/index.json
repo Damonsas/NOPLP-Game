@@ -15,9 +15,19 @@
     "ligne": "Amel Bent - Ma philosophie"
   },
   {
+    "titre": "1,2,3",
+    "artiste": "Anais Delva",
+    "ligne": "Anais Delva - 1,2,3"
+  },
+  {
     "titre": "Balance ton quoi",
     "artiste": "Angèle",
     "ligne": "Angèle - Balance ton quoi"
+  },
+  {
+    "titre": "En apesanteur",
+    "artiste": "Calogéro",
+    "ligne": "Calogéro - En apesanteur"
   },
   {
     "titre": "Face à la mer",
@@ -55,9 +65,19 @@
     "ligne": "Dalida - Laissez moi danser"
   },
   {
-    "titre": "1,2,3",
-    "artiste": "Dracula",
-    "ligne": "Dracula - 1,2,3"
+    "titre": "ella, elle l'a",
+    "artiste": "France Gall",
+    "ligne": "France Gall - ella, elle l'a"
+  },
+  {
+    "titre": "Gardien de nuit",
+    "artiste": "Francis cabrel",
+    "ligne": "Francis cabrel - Gardien de nuit"
+  },
+  {
+    "titre": "C'est ta chance",
+    "artiste": "Goldman",
+    "ligne": "Goldman - C'est ta chance"
   },
   {
     "titre": "Envole Moi",
@@ -65,13 +85,43 @@
     "ligne": "Goldman - Envole Moi"
   },
   {
+    "titre": "Nicky larson",
+    "artiste": "Jean paul césari",
+    "ligne": "Jean paul césari - Nicky larson"
+  },
+  {
+    "titre": "c'est la vie",
+    "artiste": "Mika",
+    "ligne": "Mika - c'est la vie"
+  },
+  {
+    "titre": "L'assasymphonie",
+    "artiste": "Mozart l'opéra rock",
+    "ligne": "Mozart l'opéra rock - L'assasymphonie"
+  },
+  {
     "titre": "Désenchantée",
     "artiste": "Mylene Farmer",
     "ligne": "Mylene Farmer - Désenchantée"
   },
   {
+    "titre": "Comme un homme",
+    "artiste": "Patrick fiori",
+    "ligne": "Patrick fiori - Comme un homme"
+  },
+  {
+    "titre": "Je suis malade",
+    "artiste": "Serge lama",
+    "ligne": "Serge lama - Je suis malade"
+  },
+  {
     "titre": "De le dire",
     "artiste": "Spore",
     "ligne": "Spore - De le dire"
+  },
+  {
+    "titre": "Ces soirées là",
+    "artiste": "Yannick",
+    "ligne": "Yannick - Ces soirées là"
   }
 ]

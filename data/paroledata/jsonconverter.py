@@ -15,13 +15,13 @@ def texte_en_json(texte):
     pattern = re.compile(r'^(couplet\d*|refrain\d*)[\.]?', re.IGNORECASE | re.MULTILINE)
     splits = pattern.split(texte)
     
-    paroles = {}
+    parole = {}
     i = 1
     while i < len(splits):
         key = splits[i].lower().replace('.', '').replace(' ', '')
         content = splits[i+1].strip()
         lines = [line.strip() for line in content.split('\n') if line.strip()]
-        paroles[key] = lines
+        parole[key] = lines
         i += 2
 
     return {
@@ -33,7 +33,7 @@ def texte_en_json(texte):
     ## format du truc : couplet1 sans : 
 
 # Nom du fichier à convertir
-nom_fichier_txt = os.path.join(os.path.dirname(__file__), "Yannick - Ces soirées là.txt")
+nom_fichier_txt = os.path.join(os.path.dirname(__file__), "Mozart l'opéra rock - L'assasymphonie.txt")
 if not os.path.exists(nom_fichier_txt):
     print(f"Le fichier {nom_fichier_txt} n'existe pas dans ce dossier.")
 else:
@@ -42,7 +42,7 @@ else:
 
     json_data = texte_en_json(texte)
 
-    nom_fichier_json = os.path.join(os.path.dirname(__file__), "Yannick - Ces soirées là.json")
+    nom_fichier_json = os.path.join(os.path.dirname(__file__), "Mozart l'opéra rock - L'assasymphonie.json")
     with open(nom_fichier_json, "w", encoding="utf-8") as f:
         json.dump(json_data, f, ensure_ascii=False, indent=2)
 
