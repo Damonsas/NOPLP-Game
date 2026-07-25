@@ -55,7 +55,7 @@ function maskWordsInLine(line, wordsCountToMask) {
     const targetIndicesToMask = wordIndices.slice(startIndex, startIndex + exactMaskCount);
     const maskedTokens = tokens.map((token, index) => {
         if (targetIndicesToMask.includes(index)) {
-            return token.replace(/[a-zA-ZÀ-ÿ]/g, '_');
+            return "_";
         }
         return token;
     });
@@ -82,12 +82,13 @@ window.initLyrics = function (songFileName, points, targetId) {
             let mode = 'points';
             let wordsToMask = 0;
             let targetSectionKey = null;
-            const pointsStr = String(points);
-            if (pointsStr === "same-song") {
+            const targetTargetId = String(points);
+            const actualLevel = targetTargetId.split('-')[0];
+            if (targetTargetId === "same-song") {
                 mode = 'same-song';
             }
             else {
-                const pts = parseInt(pointsStr, 10);
+                const pts = Number.parseInt(actualLevel, 10);
                 if (pts === 50) {
                     wordsToMask = getRandomInt(8, 10);
                     targetSectionKey = secondRefrainKey;
@@ -135,8 +136,8 @@ window.initLyrics = function (songFileName, points, targetId) {
                             sameSongIsCutting = true;
                         }
                         if (sameSongIsCutting) {
-                            p.textContent = line.replace(/[a-zA-ZÀ-ÿ]/g, '_');
-                            p.classList.add('masked');
+                            p.textContent = "🔒 [Paroles masquées]";
+                            p.classList.add('same-song-hidden-line');
                         }
                         else {
                             p.textContent = line;
@@ -144,7 +145,6 @@ window.initLyrics = function (songFileName, points, targetId) {
                         sameSongCurrentLineCounter++;
                     }
                     else {
-                        // Logique classique par Points
                         if (isTargetSection && index === randomLineIndexToMask) {
                             p.textContent = maskWordsInLine(line, wordsToMask);
                             p.classList.add('masked');

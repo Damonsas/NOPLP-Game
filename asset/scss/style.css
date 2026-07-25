@@ -149,6 +149,9 @@ body .same-song-section {
   justify-content: center;
   flex-direction: column;
 }
+body .same-song-section .song-action {
+  margin-top: 15px;
+}
 body .same-song-button {
   background: radial-gradient(#d5caf9, #354bf3, #162d94 70%);
   padding: 12px 25px;

@@ -61,7 +61,6 @@ declare global {
     }
 }
 
-// Générateur de nombre aléatoire inclusif
 function getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -79,7 +78,6 @@ function maskWordsInLine(line: string, wordsCountToMask: number): string {
     if (wordIndices.length === 0) return line;
 
     const exactMaskCount = Math.min(wordsCountToMask, wordIndices.length);
-    
     const maxStartIndex = wordIndices.length - exactMaskCount;
     const startIndex = getRandomInt(0, maxStartIndex);
 
@@ -87,7 +85,7 @@ function maskWordsInLine(line: string, wordsCountToMask: number): string {
 
     const maskedTokens = tokens.map((token, index) => {
         if (targetIndicesToMask.includes(index)) {
-            return token.replace(/[a-zA-ZÀ-ÿ]/g, '_');
+            return "_";
         }
         return token;
     });
@@ -114,19 +112,20 @@ window.initLyrics = async function(songFileName: string, points: number | string
         const couplets = sectionsKeys.filter(k => k.toLowerCase().includes('couplet'));
 
         const firstRefrainKey = refrains[0] || null;
-        const secondRefrainKey = refrains[1] || refrains[0] || null; // fallback au 1er si pas de 2ème
+        const secondRefrainKey = refrains[1] || refrains[0] || null; 
         const secondCoupletKey = couplets[1] || couplets[0] || null;
 
         let mode: 'points' | 'same-song' = 'points';
         let wordsToMask = 0;
         let targetSectionKey: string | null = null;
 
-        const pointsStr = String(points);
-
-        if (pointsStr === "same-song") {
+        const targetTargetId = String(points); 
+        const actualLevel = targetTargetId.split('-')[0]; 
+        
+        if (targetTargetId === "same-song") {
             mode = 'same-song';
         } else {
-            const pts = Number.parseInt(pointsStr, 10);
+            const pts = Number.parseInt(actualLevel, 10); 
             if (pts === 50) {
                 wordsToMask = getRandomInt(8, 10);
                 targetSectionKey = secondRefrainKey;
@@ -153,55 +152,55 @@ window.initLyrics = async function(songFileName: string, points: number | string
             sameSongCutLineIndex = getRandomInt(3, 5);
         }
 
-        sectionsKeys.forEach((sectionName) => {
-            const lines = data.parole[sectionName];
-            const sectionDiv = document.createElement('div');
-            sectionDiv.className = "lyric-section mb-3";
 
-            const title = document.createElement('h5');
-            title.textContent = sectionName;
-            title.style.visibility = "hidden"; 
-            sectionDiv.appendChild(title);
+    sectionsKeys.forEach((sectionName) => {
+        const lines = data.parole[sectionName];
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = "lyric-section mb-3";
 
-            const isTargetSection = (mode === 'points' && targetSectionKey && sectionName === targetSectionKey);
-            
-            let randomLineIndexToMask = -1;
-            if (isTargetSection && lines.length > 0) {
-                randomLineIndexToMask = getRandomInt(0, lines.length - 1);
-            }
+        const title = document.createElement('h5');
+        title.textContent = sectionName;
+        title.style.visibility = "hidden"; 
+        sectionDiv.appendChild(title);
 
-            lines.forEach((line, index) => {
-                const p = document.createElement('p');
+        const isTargetSection = targetSectionKey !== null && sectionName === targetSectionKey;
+        const randomLineIndexToMask = isTargetSection && lines.length > 0
+            ? getRandomInt(0, lines.length - 1)
+            : -1;
 
-                if (mode === 'same-song') {
-                    if (sameSongCurrentLineCounter >= sameSongCutLineIndex) {
-                        sameSongIsCutting = true;
-                    }
+        lines.forEach((line, index) => {
+            const p = document.createElement('p');
 
-                    if (sameSongIsCutting) {
-                        p.textContent = line.replace(/[a-zA-ZÀ-ÿ]/g, '_');
-                        p.classList.add('masked');
-                    } else {
-                        p.textContent = line;
-                    }
-                    sameSongCurrentLineCounter++;
+            if (mode === 'same-song') {
+                if (sameSongCurrentLineCounter >= sameSongCutLineIndex) {
+                    sameSongIsCutting = true;
+                }
 
-                } else if (isTargetSection && index === randomLineIndexToMask) {
-                    // Logique classique par Points
+                if (sameSongIsCutting) {
+                    p.textContent = "🔒 [Paroles masquées]";
+                    p.classList.add('same-song-hidden-line');
+                } else {
+                    p.textContent = line;
+                }
+                sameSongCurrentLineCounter++;
+
+            } else {
+                // Logique par points (10 à 50)
+                if (isTargetSection && index === randomLineIndexToMask) {
                     p.textContent = maskWordsInLine(line, wordsToMask);
                     p.classList.add('masked');
                 } else {
                     p.textContent = line;
                 }
+            }
 
-                sectionDiv.appendChild(p);
-            });
-
-            container.appendChild(sectionDiv);
+            sectionDiv.appendChild(p);
         });
 
-        const audioPlayer = document.getElementById(`audio-player-${points}`) as HTMLAudioElement | null;
+        container.appendChild(sectionDiv);
+    });
 
+    const audioPlayer = document.getElementById(`audio-player-${points}`) as HTMLAudioElement | null;
         if (audioPlayer) {
             let audioFileName = songFileName.replace('.json', '.mp3');
             

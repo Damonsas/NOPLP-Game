@@ -11,8 +11,8 @@ func SetupDuelRoutes(r *mux.Router) {
 	r.HandleFunc("/api/duels", GetDuels).Methods("GET")
 	r.HandleFunc("/api/duels", CreateDuel).Methods("POST")
 	r.HandleFunc("/api/duels/{id:[0-9]+}", GetDuelByID).Methods("GET")
-	r.HandleFunc("/api/duels/{id:[0-9]+}", UpdateDuel).Methods("PUT")
-	r.HandleFunc("/api/duels/{id:[0-9]+}", DeleteDuel).Methods("DELETE")
+	r.HandleFunc("/api/duels/{id:[0-9]+}", DeleteDuelHandler).Methods("DELETE")
+	r.HandleFunc("/api/duels/{id:[0-9]+}", UpdateDuelHandler).Methods("PUT", "POST")
 	r.HandleFunc("/api/upload-duel", LoadDuelFromJSON).Methods("POST")
 
 	r.HandleFunc("/api/download-duel/{id:[0-9]+}", DownloadDuel).Methods("GET")

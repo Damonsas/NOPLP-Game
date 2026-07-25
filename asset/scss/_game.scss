@@ -49,6 +49,9 @@ body {
             display: flex;
             justify-content: center;
             flex-direction: column;
+            .song-action{
+                margin-top: 15px;
+            }
         }
 
         .same-song-button {

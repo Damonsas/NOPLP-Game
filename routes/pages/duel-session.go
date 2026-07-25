@@ -251,12 +251,12 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 							<span class="lyrics-missing">✗ Paroles non disponibles</span>
 							{{end}}
 						</div>
-						<div class="song-actions" style="margin-top: 15px;">
+						<div class="song-actions">
 							<button type="button" class="btn-select" onclick="displaySongSelection('selection-same-song')">
 								Sélectionner
 							</button>
 						</div>
-						<section class="songSelect duel-container" id="selection-same-song" style="display: none; margin-top: 15px;">
+						<section class="songSelect duel-container" id="selection-same-song" style="display: none;">
 							<div id="music-player-same-song" class="music-player">
 								<h4 id="song-titre-same-song">{{.Duel.SameSong.Titre}} - {{.Duel.SameSong.Artiste}}</h4>
 								<div class="audio-controls">
@@ -270,8 +270,12 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 								<h4>Paroles</h4>
 								<div id="lyrics-text-same-song" class="lyrics-text"></div>
 							</div>
+
 							<div class="actions" id="action-buttons-same-song">
-								<button class="startLyricsBtn start-lyrics-button" onclick="initLyrics('{{.Duel.SameSong.LyricsFile}}', 'same-song', 'lyrics-text-same-song')">Démarrer</button>
+								<button class="startLyricsBtn start-lyrics-button" 
+										onclick="initLyrics('{{.Duel.SameSong.LyricsFile}}', 'same-song', 'lyrics-text-same-song')">
+									Démarrer
+								</button>
 								<a class="startLyricsBtn btn btn-secondary" href="/duel">Retour aux duels</a>
 							</div>
 						</section>
@@ -325,12 +329,12 @@ func CreateGameSession(w http.ResponseWriter, r *http.Request) {
 
 											<div id="lyrics-container-{{$level}}-{{$songIndex}}" class="lyrics-container">
 												<h4>Paroles</h4>
-												<div id="lyrics-text-{{$level}}-{{$songIndex}}" class="lyrics-text">
-												
-												</div>
+												<div id="lyrics-text-{{$level}}-{{$songIndex}}" class="lyrics-text"></div>
 											</div>
+
 											<div class="actions" id="action-buttons-{{$level}}-{{$songIndex}}">
-												<button class="startLyricsBtn start-lyrics-button" onclick="initLyrics('{{$song.LyricsFile}}', {{$level}}, 'lyrics-text-{{$level}}-{{$songIndex}}')">Demarrer</button>
+												<!-- On passe '{{$level}}-{{$songIndex}}' en second paramètre pour correspondre à l'ID audio -->
+												<button class="startLyricsBtn start-lyrics-button" onclick="initLyrics('{{$song.LyricsFile}}', '{{$level}}-{{$songIndex}}', 'lyrics-text-{{$level}}-{{$songIndex}}')">Démarrer</button>
 												<a class="startLyricsBtn btn btn-secondary" href="/duel">Retour aux duels</a>
 											</div>
 										</section>

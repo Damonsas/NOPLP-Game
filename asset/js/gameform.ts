@@ -3,10 +3,8 @@ import { addDuel, loadDuelsFromStorage, preparedDuels, Duel } from './gamelogic.
 
 const DUEL_POINTS_CATEGORIES = [50, 40, 30, 20, 10];
 
-/**
- * Récupère la liste des fichiers de paroles locaux depuis l'index
- * @returns Promise avec la liste des noms de fichiers
- */
+let editingDuelId: number | null = null;
+
 async function getLyricsListLocal(): Promise<string[]> {
   const indexPath = './data/serverdata/paroledata/index.json';
   try {
@@ -31,7 +29,6 @@ async function getLyricsListLocal(): Promise<string[]> {
       return raw.endsWith('.json') ? raw : `${raw}.json`;
     }).filter(Boolean) as string[];
 
-    console.log("Fichiers lyrics trouvés via index.json:", files);
     return files;
   } catch (err) {
     console.error("Erreur lors de la récupération via index.json:", err);
@@ -39,40 +36,34 @@ async function getLyricsListLocal(): Promise<string[]> {
   }
 }
 
-/**
- * Détermine si on est en mode solo ou duel basé sur l'URL actuelle
- * @returns true si mode solo, false si mode duel
- */
 function isSoloMode(): boolean {
   return window.location.pathname.includes('solo');
 }
 
-/**
- * Génère la carte HTML pour un duel donné.
- * @param duel Le duel à afficher.
- * @returns La chaîne HTML de la carte.
- */
 function generateDuelCard(duel: Duel): string {
-  const supprform = `/duel-delete?id=${duel.id}`;
-  const modifform = `/duel-edit?id=${duel.id}`;
-
   return `
-    <div class="duel-card" data-duel-id="${duel.id}">
+    <div class="duel-card" id="duel-card-${duel.id}" data-duel-id="${duel.id}">
       <h3>${duel.name}</h3>
-      <button class="play-duel-btn" data-duel-id="${duel.id}">Jouer</button>
-      <button onclick="window.location.href='${supprform}'"> Supprimer <i class="fa-regular fa-trash-can"></i> </button>
-      <button onclick="window.location.href='${modifform}'"> Modifier </button>
+      <div class="duel-actions">
+        <button type="button" class="play-duel-btn btn " data-duel-id="${duel.id}">Jouer</button>
+        <button type="button" class="edit-duel-btn btn " data-duel-id="${duel.id}">
+            Modifier <i class="fa-regular fa-pen-to-square"></i>
+        </button>
+        <button type="button" class="delete-duel-btn btn " data-duel-id="${duel.id}">
+            Supprimer <i class="fa-regular fa-trash-can"></i>
+        </button>
+      </div>
     </div>
   `;
 }
 
 async function handlePlayDuel(duelId: string) {
   try {
-    const id = parseInt(duelId);
-    if (isNaN(id)) throw new Error('ID invalide');
+    const id = Number.parseInt(duelId, 10);
+    if (Number.isNaN(id)) throw new Error('ID invalide');
 
-    const duels = JSON.parse(localStorage.getItem('duels') || '[]');
-    const duel = duels.find((d: any) => d.id == id);
+    const duels: Duel[] = JSON.parse(localStorage.getItem('duels') || '[]');
+    const duel = duels.find((d) => d.id === id);
     if (!duel) throw new Error('Duel non trouvé');
 
     const res = await fetch('/api/duels', {
@@ -92,17 +83,90 @@ async function handlePlayDuel(duelId: string) {
   }
 }
 
-/**
- * Génère le bouton "Préparer une grille".
- * @returns La chaîne HTML du bouton.
- */
+
+async function handleDeleteDuel(duelId: string) {
+  if (!confirm("Voulez-vous vraiment supprimer cette grille ?")) return;
+
+  const id = Number.parseInt(duelId, 10);
+  try {
+    const res = await fetch(`/api/duels/${id}`, { method: 'DELETE' });
+    
+    if (!res.ok) {
+      console.warn(`L'API a répondu ${res.status}, suppression locale en cours...`);
+    }
+
+    const duels: Duel[] = JSON.parse(localStorage.getItem('duels') || '[]');
+    const updatedDuels = duels.filter(d => d.id !== id);
+    localStorage.setItem('duels', JSON.stringify(updatedDuels));
+
+    const indexInMemory = preparedDuels.findIndex(d => d.id === id);
+    if (indexInMemory !== -1) {
+      preparedDuels.splice(indexInMemory, 1);
+    }
+
+    const cardEl = document.getElementById(`duel-card-${id}`);
+    if (cardEl) {
+      cardEl.remove();
+    } else {
+      renderDuelList();
+    }
+
+    showNotification("Grille supprimée avec succès !", "success");
+
+    if (preparedDuels.length === 0) {
+      renderDuelList();
+    }
+
+  } catch (error) {
+    console.error("Erreur lors de la suppression:", error);
+    showNotification("Erreur lors de la suppression.", "error");
+  }
+}
+
+async function handleEditDuel(duelId: string) {
+  const id = Number.parseInt(duelId, 10);
+  const duels: Duel[] = JSON.parse(localStorage.getItem('duels') || '[]');
+  const duel = duels.find(d => d.id === id);
+
+  if (!duel) {
+    showNotification("Impossible de trouver la grille à modifier", "error");
+    return;
+  }
+
+  editingDuelId = id;
+  showCreateForm();
+
+  setTimeout(() => {
+    const nameInput = document.getElementById('duelName') as HTMLInputElement;
+    const sameSongSelect = document.getElementById('sameSongFile') as HTMLSelectElement;
+
+    if (nameInput) nameInput.value = duel.name;
+    if (sameSongSelect && duel.sameSong) sameSongSelect.value = duel.sameSong.lyricsFile || '';
+
+    if (duel.points) {
+      DUEL_POINTS_CATEGORIES.forEach(pts => {
+        const categoryData = (duel.points as any)[pts];
+        if (categoryData) {
+          const themeInput = document.querySelector(`input[name="theme-${pts}"]`) as HTMLInputElement;
+          const song1Select = document.querySelector(`select[name="song1-${pts}"]`) as HTMLSelectElement;
+          const song2Select = document.querySelector(`select[name="song2-${pts}"]`) as HTMLSelectElement;
+
+          if (themeInput && categoryData.theme) themeInput.value = categoryData.theme;
+          if (song1Select && categoryData.songs?.[0]) song1Select.value = categoryData.songs[0].lyricsFile || '';
+          if (song2Select && categoryData.songs?.[1]) song2Select.value = categoryData.songs[1].lyricsFile || '';
+        }
+      });
+    }
+
+    const formTitle = document.querySelector('#newDuelForm h3');
+    if (formTitle) formTitle.textContent = "Modifier la grille";
+  }, 100);
+}
+
 function getMenuHtml(): string {
   return `<div class="button_prep_grille"><button id="create-duel-btn">Préparer une grille</button></div>`;
 }
 
-/**
- * Affiche la liste des duels disponibles ou le message d'absence de duel.
- */
 function renderDuelList(): void {
   const container = document.querySelector(".Sectionduel") as HTMLElement;
   if (!container) return;
@@ -166,9 +230,9 @@ function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): voi
   const songSelects = Array.from(formOrContainer.querySelectorAll('select[name^="sameSongFile"], select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
 
   function refreshDisabledOptions() {
-    const selectedValues = songSelects
+    const selectedValues = new Set(songSelects
       .map(s => s.value)
-      .filter(v => v && v.length > 0);
+      .filter(v => v && v.length > 0));
 
     songSelects.forEach(select => {
       const ownValue = select.value;
@@ -177,7 +241,7 @@ function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): voi
           opt.disabled = false;
           return;
         }
-        opt.disabled = selectedValues.includes(opt.value);
+        opt.disabled = selectedValues.has(opt.value);
       });
     });
   }
@@ -192,10 +256,7 @@ function attachUniqueSelectionHandlers(formOrContainer: HTMLElement | null): voi
 
 function renderCreateDuelForm(lyricsFiles: string[]): void {
   const container = document.getElementById("PrepGrille");
-  if (!container) {
-    console.error("Container PrepGrille non trouvé");
-    return;
-  }
+  if (!container) return;
 
   const soloMode = isSoloMode();
   const modeText = soloMode ? 'solo' : 'duel';
@@ -229,7 +290,7 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
   });
 
   formHtml += `
-        <button type="submit">Créer</button>
+        <button type="submit">${editingDuelId ? 'Enregistrer les modifications' : 'Créer'}</button>
       </form>
     </div>
   `;
@@ -237,6 +298,7 @@ function renderCreateDuelForm(lyricsFiles: string[]): void {
   container.innerHTML = formHtml;
   attachUniqueSelectionHandlers(document.getElementById('newDuelForm'));
 }
+
 
 async function handleNewDuelFormSubmit(event: Event): Promise<void> {
     event.preventDefault();
@@ -277,23 +339,8 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
         }
     }
 
-    const allSongSelects = Array.from((form as HTMLFormElement).querySelectorAll('select[name^="sameSongFile"], select[name^="song1-"], select[name^="song2-"]')) as HTMLSelectElement[];
-    const selectedValues = allSongSelects.map(s => s.value).filter(v => v && v.length > 0);
-
-    const duplicates = selectedValues.reduce((acc: Record<string, number>, val) => {
-      acc[val] = (acc[val] || 0) + 1;
-      return acc;
-    }, {});
-
-    const dupKeys = Object.keys(duplicates).filter(k => duplicates[k] > 1);
-    if (dupKeys.length > 0) {
-      const example = dupKeys.slice(0, 3).join(', ');
-      showNotification(`Erreur : la/les chanson(s) suivante(s) est/sont sélectionnée(s) plusieurs fois : ${example}`, 'error');
-      return;
-    }
-
     const newDuel: Duel = {
-      id: Date.now(),
+      id: editingDuelId || Date.now(),
       name: duelData.name as string,
       points: duelData.points as any,
       sameSong: { title: 'N/A', artist: 'N/A', lyricsFile: sameSongFileValue },
@@ -302,7 +349,10 @@ async function handleNewDuelFormSubmit(event: Event): Promise<void> {
 
     try {
         await addDuel(newDuel);
-        showNotification(`Grille ${soloMode ? 'solo' : 'duel'} créée et sauvegardée!`, 'success');
+        showNotification(`Grille ${soloMode ? 'solo' : 'duel'} sauvegardée !`, 'success');
+        
+        editingDuelId = null;
+        
         showDuelList();
     } catch (error: unknown) {
         if (error instanceof Error) {
@@ -364,7 +414,9 @@ function showDuelList(): void {
         menuButton.style.display = 'block';
     }
 
+    editingDuelId = null; 
     loadDuelsFromStorage();
+    renderDuelList(); 
 }
 
 async function handleImportFormSubmit(event: Event): Promise<void> {
@@ -382,7 +434,7 @@ async function handleImportFormSubmit(event: Event): Promise<void> {
         try {
             const result = e.target?.result;
             if (typeof result !== 'string') {
-                throw new Error('Le contenu du fichier n\'est pas une chaîne de caractères.');
+                throw new TypeError('Le contenu du fichier n\'est pas une chaîne de caractères.');
             }
             const duelData = JSON.parse(result) as Duel;
 
@@ -411,18 +463,34 @@ document.addEventListener('submit', (event) => {
 
 document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
-
-    if (target.classList.contains('play-duel-btn')) {
+    
+    const playBtn = target.closest('.play-duel-btn');
+    if (playBtn) {
         event.preventDefault();
-        const id = target.getAttribute('data-duel-id');
-        if (id) {
-            handlePlayDuel(id);
-        }
+        const id = playBtn.getAttribute('data-duel-id');
+        if (id) handlePlayDuel(id);
+        return;
+    }
+
+    const deleteBtn = target.closest('.delete-duel-btn');
+    if (deleteBtn) {
+        event.preventDefault();
+        const id = deleteBtn.getAttribute('data-duel-id');
+        if (id) handleDeleteDuel(id);
+        return;
+    }
+
+    const editBtn = target.closest('.edit-duel-btn');
+    if (editBtn) {
+        event.preventDefault();
+        const id = editBtn.getAttribute('data-duel-id');
+        if (id) handleEditDuel(id);
         return;
     }
     
     if (target.id === 'create-duel-btn') {
         event.preventDefault();
+        editingDuelId = null;
         showCreateForm();
     } else if (target.id === 'back-to-list-btn') {
         event.preventDefault();

@@ -407,7 +407,7 @@ func DownloadDuel(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func UpdateDuel(w http.ResponseWriter, r *http.Request) {
+func UpdateDuelHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	duelID, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -452,29 +452,30 @@ func UpdateDuel(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(updatedDuel)
 }
 
-func DeleteDuel(w http.ResponseWriter, r *http.Request) {
+func DeleteDuelHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	duelID, err := strconv.Atoi(vars["id"])
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "ID du duel invalide pour la suppression", http.StatusBadRequest)
+		http.Error(w, "ID invalide", http.StatusBadRequest)
 		return
 	}
 
-	for i, duel := range duels {
-		if duel.ID == duelID {
+	found := false
+	for i, d := range duels {
+		if d.ID == id {
 			duels = append(duels[:i], duels[i+1:]...)
-
-			if err := saveDuelsToServer(); err != nil {
-				http.Error(w, "Erreur lors de la sauvegarde après suppression", http.StatusInternalServerError)
-				return
-			}
-
-			w.WriteHeader(http.StatusNoContent)
-			return
+			found = true
+			break
 		}
 	}
 
-	http.Error(w, "Duel non trouvé pour la suppression", http.StatusNotFound)
+	if !found {
+		http.Error(w, "Duel non trouvé", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Duel supprimé avec succès"})
 }
 
 func validateDuelForClient(duel *Duel) error {
