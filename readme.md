@@ -31,7 +31,6 @@ Tout comme dans la célèbre émission de télévision, le principe est simple :
 
 ##  Technologies utilisées
 
-*(N'hésitez pas à compléter cette section dans votre fichier final avec les technos exactes que vous avez utilisées, par exemple :)*
 * **Frontend :** HTML5, SCCSS, TypeScript
 * **Backend :** Go
 * **Déploiement :** Render, VPS
