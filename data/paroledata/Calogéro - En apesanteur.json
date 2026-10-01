@@ -3,45 +3,43 @@
   "artiste": "Calogéro",
   "parole": {
     "couplet1": [
-      "J'arrive à me glisser juste avant que les portes ne se referment",
-      "Elle me dit quel étage et sa voix me fait quitter la terre ferme",
-      "Alors",
-      "Les chiffres dansent",
-      "Tout se mélange",
-      "Je suis en tête à tête avec un ange"
+      { "time": "0:1.30", "text": "J'arrive à me glisser juste avant que les portes ne se referment" },
+      { "time": "0:8.30", "text": "Elle me dit quel étage et sa voix me fait quitter la terre ferme" },
+      { "time": "0:14.46", "text": "Alors" },
+      { "time": "0:16.87", "text": "Les chiffres dansent" },
+      { "time": "0:20.37", "text": "Tout se mélange" },
+      { "time": "0:23.83", "text": "Je suis en tête à tête avec un ange" }
     ],
     "refrain1": [
-      "A-A-A-A En apesanteur",
-      "A-A-A-A Pourvu que les secondes soient des heures",
-      "A-A-A-A En apesanteur",
-      "A-A-A-A Pourvu qu'on soit les seuls dans cet ascenseur"
+      { "time": "0:31.00", "text": "A-A-A-A En apesanteur" },
+      { "time": "0:37.73", "text": "A-A-A-A Pourvu que les secondes soient des heures" },
+      { "time": "0:44.60", "text": "A-A-A-A En apesanteur" },
+      { "time": "0:51.52", "text": "A-A-A-A Pourvu qu'on soit les seuls dans cet ascenseur" }
     ],
     "couplet2": [
-      "Elle arrange ses cheveux, j'ai le cœur juste au bord des yeux",
-      "Et sans la regarder je sens la chaleur d'un autre langage",
-      "Alors",
-      "Les yeux rivés",
-      "Sur les étages",
-      "Pourvu que rien n'arrête le voyage",
-      "refain2",
-      "A-A-A-A  En apesanteur",
-      "A-A-A-A  Pourvu que les secondes soient des heures",
-      "A-A-A-A  En apesanteur",
-      "A-A-A-A  Pourvu qu'on soit les seuls dans cet ascenseur, dans cet ascenseur",
-      "pont",
-      "J'arrive à me glisser juste avant que les portes ne se referment",
-      "A-A-A-A",
-      "A-A-A-A"
+      { "time": "0:56.33", "text": "Elle arrange ses cheveux, j'ai le cœur juste au bord des yeux" },
+      { "time": "1:03.24", "text": "Et sans la regarder je sens la chaleur d'un autre langage" },
+      { "time": "1:09.46", "text": "Alors" },
+      { "time": "1:11.68", "text": "Les yeux rivés" },
+      { "time": "1:15.16", "text": "Sur les étages" },
+      { "time": "1:18.89", "text": "Pourvu que rien n'arrête le voyage" },
+      { "time": "1:25.97", "text": "A-A-A-A  En apesanteur" },
+      { "time": "1:32.95", "text": "A-A-A-A  Pourvu que les secondes soient des heures" },
+      { "time": "1:39.88", "text": "A-A-A-A  En apesanteur" },
+      { "time": "1:46.54", "text": "A-A-A-A  Pourvu qu'on soit les seuls dans cet ascenseur, dans cet ascenseur" },
+      { "time": "1:52.82", "text": "J'arrive à me glisser juste avant que les portes ne se referment" },
+      { "time": "1:58.02", "text": "A-A-A-A" },
+      { "time": "2:05.73", "text": "A-A-A-A" }
     ],
     "refrain3": [
-      "A-A-A-A En apesanteur",
-      "A-A-A-A Pourvu que les secondes soient des heures",
-      "A-A-A-A En apesanteur",
-      "A-A-A-A Pourvu qu'on soit les seuls dans cet ascenseur, en apesanteur",
-      "A-A-A-A Pourvu que les secondes soient des heures",
-      "En apesanteur",
-      "Pourvu qu'on soit les seuls dans cet ascenseur",
-      "A-A-A-A"
+      { "time": "2:20.97", "text": "A-A-A-A En apesanteur" },
+      { "time": "2:27.84", "text": "A-A-A-A Pourvu que les secondes soient des heures" },
+      { "time": "2:34.66", "text": "A-A-A-A En apesanteur" },
+      { "time": "2:41.65", "text": "A-A-A-A Pourvu qu'on soit les seuls dans cet ascenseur, en apesanteur" },
+      { "time": "2:55.20", "text": "A-A-A-A Pourvu que les secondes soient des heures" },
+      { "time": "3:01.56", "text": "En apesanteur" },
+      { "time": "3:09.11", "text": "Pourvu qu'on soit les seuls dans cet ascenseur" },
+      { "time": "3:12.50", "text": "A-A-A-A" }
     ]
   }
 }
