@@ -71,11 +71,6 @@ declare global {
     }
 }
 
-
-// ---------------------------------------------------------------------------
-// Utilitaires
-// ---------------------------------------------------------------------------
-
 function getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -179,23 +174,29 @@ function startSync(opts: {
     let raf = 0;
     let panel: HTMLElement | null = null;
 
-    // Fenêtre de 3 lignes : précédente, active, suivante. Tout le reste est masqué (display: none).
+    const textEl = box.querySelector<HTMLElement>('.lyrics-text') ?? box;
+
+    // Le bloc de paroles glisse verticalement pour garder la ligne active au centre.
+    // Seules la précédente, l'active et la suivante sont visibles (les autres : opacité 0).
     const applyStates = (active: number) => {
         lines.forEach((l, i) => {
             l.el.classList.toggle('is-active', i === active);
             l.el.classList.toggle('is-past', i < active);
             l.el.classList.toggle('is-upcoming', i > active);
-            l.el.classList.toggle('is-hidden', i < active - 1 || i > active + 1);
+            l.el.classList.toggle('is-far', i < active - 1 || i > active + 1);
         });
-        // une section sans ligne visible disparaît aussi (marges comprises)
-        new Set(lines.map(l => l.el.parentElement)).forEach(sec => {
-            sec?.classList.toggle('is-hidden', !sec.querySelector('.lyric-line:not(.is-hidden)'));
-        });
+        const target = lines[Math.max(active, 0)]?.el;
+        if (target) {
+            const y = box.clientHeight / 2 - (target.offsetTop + target.offsetHeight / 2);
+            textEl.style.transform = `translateY(${y}px)`;
+        }
     };
+    const onResize = () => { if (activeIndex > -2) applyStates(activeIndex); };
+    window.addEventListener('resize', onResize);
 
     box.classList.remove('is-finished');
-    applyStates(-1); // avant le 1er timecode : seule la 1re ligne (la "suivante") est visible
     activeIndex = -1;
+    applyStates(-1); // avant le 1er timecode : la 1re ligne est centrée (elle est "la suivante")
 
     const tick = () => {
         const t = audio.currentTime;
@@ -228,9 +229,9 @@ function startSync(opts: {
         cancelAnimationFrame(raf);
         // fin du morceau : on ré-affiche toute la chanson, défilable
         box.classList.add('is-finished');
-        document.querySelectorAll('.is-hidden').forEach(e => { if (box.contains(e)) e.classList.remove('is-hidden'); });
+        textEl.style.transform = '';
         lines.forEach(l => {
-            l.el.classList.remove('is-upcoming', 'is-active');
+            l.el.classList.remove('is-upcoming', 'is-active', 'is-far');
             l.el.classList.add('is-past');
             if (l.kind === 'locked') {
                 l.el.textContent = l.text;
@@ -319,13 +320,10 @@ function startSync(opts: {
         audio.removeEventListener('pause', onPause);
         audio.removeEventListener('seeking', onSeeking);
         audio.removeEventListener('ended', onEnded);
+        window.removeEventListener('resize', onResize);
         panel?.remove();
     };
 }
-
-// ---------------------------------------------------------------------------
-// Initialisation d'un round
-// ---------------------------------------------------------------------------
 
 window.initLyrics = async function (songFileName: string, points: number | string, targetId: string) {
     try {
